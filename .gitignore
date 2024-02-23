@@ -1,3 +1,27 @@
+.vscode/settings.json
+desktop.ini
+Pipfile
+Pipfile.lock
+longform-sessions.json
+
+site/
+scratch/
+
+## Python compiled files
+
+**/*.pyc
+**/__pycache__/**
+
+# Mac Stuff
+.DS_Store
+*.dmg
+
+# Other binaries
+
+twsapi_macunix.*.jar
+twsapi_macunix.*.zip
+clientportal.gw.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
