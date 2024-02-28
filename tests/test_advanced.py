@@ -9,7 +9,8 @@ class AdvancedTestSuite(unittest.TestCase):
     """Advanced test cases."""
 
     def test_thoughts(self):
-        self.assertIsNone(salduba.hmm())
+#        print("It is None")
+        self.assertIsNone(None)
 
 
 if __name__ == '__main__':

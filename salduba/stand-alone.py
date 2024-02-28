@@ -1,64 +1,14 @@
 
-from typing import Tuple, Optional
 from threading import Timer
-from pathlib import Path
 import datetime
 import logging
-import yaml
-import copy
-import mergedeep
-
 
 import pandas as pd
 
-from ib_tws_proxy.util import LocalLogger
-from ib_proxy import Movement, PlaceOrders
 
-
-class Configuration:
-  default = {
-    "logging": {
-      "level": "INFO"
-    },
-    "tws_server": {
-      "host": "127.0.0.1",
-      "port": "7497"
-    },
-    "client": {
-      "id": "0"
-    },
-    "inputs": {
-      "movements_path": "data/movements.csv",
-    }
-  }
-  default['inputs']['batch'] = f"{Path(default['inputs']['movements_path']).stem}::{datetime.datetime.now()}"
-
-  def __init__(self, config_path: str = 'configuration.yml') -> None:
-    self.config = copy.deepcopy(Configuration.default)
-    with open(config_path, 'r') as config_file:
-      try:
-        loaded_config = yaml.safe_load(config_file)
-        mergedeep.merge(self.config, loaded_config)  # type: ignore
-      except yaml.YAMLError as exc:
-        logging.warn(f"Could not read configuration file: '{config_path}' because of {exc}, using default")
-    self.host = self.config['tws_server']['host']
-    port = self.config['tws_server']['port']
-    if isinstance(port, int):
-      self.port = port
-    elif port.isdigit():
-      self.port = int(port)
-    else:
-      self.port = int(Configuration.default['tws_server']['port'])
-    clId = self.config['client']['id']
-    if isinstance(clId, int):
-      self.clientId = clId
-    elif clId.isdigit():
-      self.clientId = int(clId)
-    else:
-      self.clientId = int(Configuration.default['client']['id'])
-    self.logLevel: int = logging.getLevelNamesMapping()[self.config['logging']['level']]
-    self.movements_path = self.config['inputs']['movements_path']
-    self.batch = self.config['inputs']['batch']
+from salduba.ib_tws_proxy.configuration import Configuration
+from salduba.ib_tws_proxy.util import LocalLogger
+from salduba.ib_tws_proxy.standalone import Movement, PlaceOrders
 
 
 def readMovementsFromPath(movements_path: str, batch: str) -> dict[str, Movement]:
@@ -69,15 +19,15 @@ def readMovementsFromPath(movements_path: str, batch: str) -> dict[str, Movement
   movementsPD = movementsPD[movementsPD['Trade'] != 0]
 
   return {
-    r['Nombre'].upper() :  # type: ignore
-    Movement(
+    r['Nombre'].upper() :  Movement(  # type: ignore
       batch,
       r['Id'],   # type: ignore
       r['Nombre'],   # type: ignore
       r['Trade'],   # type: ignore
       r['Currency'],   # type: ignore
       r['Money'],  # type: ignore
-      overrideExchange='SMART')
+      overrideExchange='SMART'
+    )
     for idx, r in movementsPD.reset_index().iterrows()  # type: ignore
   }
 
@@ -88,7 +38,7 @@ def main() -> None:
   config_file_name = 'configuration.yml'
   logging.info("Starting at %s", datetime.datetime.now())
 
-  config = Configuration(config_file_name)
+  config = Configuration('stand-alone', config_file_name)
   localLogger.setLevel(level=config.logLevel)
 
   movements = readMovementsFromPath(config.movements_path, config.batch)

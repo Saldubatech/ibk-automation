@@ -43,23 +43,11 @@
   @enduml
   */
 
--- See https://interactivebrokers.github.io/tws-api/classIBApi_1_1ComboLeg.html
-CREATE TABLE COMBO_LEG(
-  id varchar(255) primary key,
-  contract_fk varchar(255) not null,
-  conid bigint not null,
-  ratio bigint,
-  action varchar(10) not null,
-  exchange varchar(255),
-  open_close int,
-  short_sale_slot bigint,
-  designated_location varchar(255),
-  exempt_code int default 0
-);
 
 -- See https://interactivebrokers.github.io/tws-api/classIBApi_1_1DeltaNeutralContract.html
 CREATE TABLE DELTA_NEUTRAL_CONTRACT(
   id varchar(255) primary key,
+  at timestamp not null,
   conid bigint not null,
   delta decimal,
   price decimal
@@ -89,15 +77,34 @@ CREATE TABLE CONTRACT (
   description varchar(255),
   issuer_id varchar(255),
   combo_legs_description varchar(255),
-  delta_neutral_contract_fk varchar(255)
+  delta_neutral_contract_fk varchar(255),
+  foreign key(delta_neutral_contract_fk) references DELTA_NEUTRAL_CONTRACT(id)
+);
+
+-- See https://interactivebrokers.github.io/tws-api/classIBApi_1_1ComboLeg.html
+CREATE TABLE COMBO_LEG(
+  id varchar(255) primary key,
+  at timestamp not null,
+  contract_fk varchar(255) not null,
+  conid bigint not null,
+  ratio bigint,
+  action varchar(10) not null,
+  exchange varchar(255),
+  open_close int,
+  short_sale_slot bigint,
+  designated_location varchar(255),
+  exempt_code int default 0,
+  foreign key(contract_fk) references CONTRACT(id)
 );
 
 -- See https://interactivebrokers.github.io/tws-api/classIBApi_1_1TagValue.html
 create table contract_detail_tag(
   id varchar(255) primary key,
+  at timestamp not null,
   contract_fk varchar(255) not null,
   tag varchar(255) not null,
-  val varchar(255) not null
+  val varchar(255) not null,
+  foreign key(contract_fk) references CONTRACT(id)
 );
 
 -- See https://interactivebrokers.github.io/tws-api/classIBApi_1_1ContractDetails.html
@@ -144,7 +151,8 @@ CREATE TABLE CONTRACT_DETAILS(
   notes varchar(4092),
   min_size DECIMAL,
   size_increment DECIMAL,
-  suggested_size_increment DECIMAL
+  suggested_size_increment DECIMAL,
+  foreign key(contract_fk) references CONTRACT(id)
 );
 
 CREATE TABLE MOVEMENT(

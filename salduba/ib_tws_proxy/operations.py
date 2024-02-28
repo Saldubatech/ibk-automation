@@ -19,6 +19,10 @@ class Request:
     return repr(self.__dict__)
 
 
+class RequestResult(StrEnum):
+  OK = 'OK'
+  NOK = 'NOK'
+
 class Response:
   def __init__(self, opId: int, info: str = "") -> None:
     self.opId = opId
