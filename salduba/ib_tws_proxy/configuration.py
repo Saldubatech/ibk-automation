@@ -15,13 +15,18 @@ class Configuration:
     },
     "tws_server": {
       "host": "127.0.0.1",
-      "port": "7497"
+      "port": "7497",
+      "search-delay": "0.5"
     },
     "client": {
       "id": "0"
     },
     "inputs": {
       "movements_path": "data/movements.csv",
+    },
+    "outputs": {
+      "unconfirmed_csv_path": "data/default_unconfirmed_contracts.csv",
+      "not_found_symbols_csv_path": "data/default_symbols_not_found.csv"
     }
   }
   default['inputs']['batch'] = f"{Path(default['inputs']['movements_path']).stem}::{datetime.datetime.now()}"
@@ -57,5 +62,10 @@ class Configuration:
     self.logLevel: int = logging.getLevelNamesMapping()[self.config['logging']['level']]
     self.movements_path = self.config['inputs']['movements_path']
     self.batch = self.config['inputs']['batch']
+    self.unconfirmed_csv_path = self.config['outputs']['unconfirmed_csv_path']
+    self.not_found_symbols_csv_path = self.config['outputs']['not_found_symbols_csv_path']
+    self.dbConfig: DbConfig = DbConfig(self.config['trading_db'], logLevel=self.logLevel)
+    self.search_delay = float(self.config['tws_server']['search-delay'])
 
-    self.dbConfig: DbConfig = DbConfig(self.config['trading_db'])
+  def __repr__(self) -> str:
+    return str(self.__dict__)

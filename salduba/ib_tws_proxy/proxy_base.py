@@ -8,6 +8,8 @@ from ibapi.utils import current_fn_name
 
 from salduba.ib_tws_proxy.operations import ErrorResponse, OperationsTracker
 
+_logger = logging.getLogger(__name__)
+
 
 class Listener(wrapper.EWrapper):
   ignoreErrors = [2104, 2106, 2158]
@@ -15,6 +17,7 @@ class Listener(wrapper.EWrapper):
   def __init__(self, tracker: OperationsTracker) -> None:
     wrapper.EWrapper.__init__(self)
     self.responseTracker = tracker
+    self.done = False
 
   def error(self, reqId: TickerId, errorCode: int, errorString: str, advancedOrderRejectJson: str = ""):
     if errorCode in Listener.ignoreErrors:
@@ -28,9 +31,13 @@ class Listener(wrapper.EWrapper):
       if self.responseTracker.isIdle():
         self.stop("Tracker is Idle")
 
+  def isActive(self) -> bool:
+    return not self.done and self.responseTracker.started
+
   def stop(self, reason: str = ""):
     msg = f"Stopping at {datetime.datetime.now()} because of {reason}" if str else f"Stopping at {datetime.datetime.now()}"
-    logging.info(msg)
+    _logger.info(msg)
+    self.responseTracker.dump(_logger.debug)
     self.done = True
 
   # if hasattr(self, 'account'):
@@ -48,32 +55,33 @@ class Stub(EClient):
 
 
 class ProxyBase(Stub, Listener):
-  def __init__(self) -> None:
+  def __init__(self, logLevel: int = logging.INFO) -> None:
     self.accounts: list[str] = []
     self.tracker = OperationsTracker()
     Listener.__init__(self, self.tracker)
     Stub.__init__(self, wrapper=self)
+    _logger.setLevel(logLevel)
 
   def sendMsg(self, msg: str) -> None:
     caller = current_fn_name(1)
     if caller != 'startApi':
       self.tracker.request(caller, msg)
     super().sendMsg(msg)  # type: ignore
-
+    
   # Need to receive both a nextValidId and a managedAccounts to start
   def nextValidId(self, orderId: int) -> None:
-    logging.info("Updating the nextValidId to: %s", orderId)
+    _logger.debug("Updating the nextValidId to: %s", orderId)
     self.tracker.syncOpId(orderId)
     self.startIfPossible()
 
   def managedAccounts(self, accountsList: str) -> None:
-    logging.info(f"Receiving Accounts: {accountsList}")
+    _logger.info(f"Receiving Accounts: {accountsList}")
     self.accounts = accountsList.split(',')
     self.startIfPossible()
 
   def startIfPossible(self) -> None:
-    logging.info("Start() called")
-    if (not self.tracker.isStarted() and self.accounts):
+    _logger.debug("Start() called")
+    if (not self.tracker.isStarted() and self.tracker.isInitialized() and self.accounts):
       self.tracker.start()
 #      threading.Thread(target=self.doIt).start()
       self.doIt()

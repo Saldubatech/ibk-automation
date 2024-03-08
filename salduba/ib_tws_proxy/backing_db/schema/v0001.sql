@@ -56,6 +56,7 @@ CREATE TABLE DELTA_NEUTRAL_CONTRACT(
 -- See: https://interactivebrokers.github.io/tws-api/classIBApi_1_1Contract.html
 CREATE TABLE CONTRACT (
   id varchar(255) primary key,
+  alias varchar(255) not null,
   at timestamp not null,
   expires_on timestamp,
   status varchar(50) not null,

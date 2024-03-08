@@ -1,12 +1,13 @@
-from typing import Optional
+from typing import Optional, Callable
 from enum import StrEnum
 import datetime
-import threading
 import logging
 
 from ibapi.utils import (
     current_fn_name
 )
+
+_logger = logging.getLogger(__name__)
 
 
 class Request:
@@ -22,6 +23,7 @@ class Request:
 class RequestResult(StrEnum):
   OK = 'OK'
   NOK = 'NOK'
+
 
 class Response:
   def __init__(self, opId: int, info: str = "") -> None:
@@ -58,100 +60,102 @@ class Operation:
 
 
 class OperationsTracker:
-  def __init__(self) -> None:
+  def __init__(self, logLevel: int = logging.INFO) -> None:
     self.pending: dict[int, Operation] = {}
     self.success: list[Operation] = []
     self.errors: list[Operation] = []
     self.started = False
     self._opId: int = -1  # Unique Id for each request, -1 means not initialized
     #    self._lock = threading.Lock()
+    _logger.setLevel(logLevel)
 
   def _unsafeIsStarted(self) -> bool:
-      return self.started and (len(self.success) + len(self.errors) + len(self.pending) > 0)
+    self.dump(_logger.debug)
+    return self.started and (len(self.success) + len(self.errors) + len(self.pending) > 0)
+
+  def isInitialized(self) -> bool:
+    return self._opId != -1
 
   def isStarted(self) -> bool:
-    #    with self._lock:
-    #      logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
     r = self._unsafeIsStarted()
-    #    logging.debug("Released Lock")
     return r
 
+  def dump(self, lg: Callable[[str], None]) -> None:
+    lg(f"Is Started: {self.started}")
+    lg(f"Success: {len(self.success)}")
+    lg(f"Errors: {len(self.errors)}")
+    lg(f"Pending: {len(self.pending)}")
+
   def isIdle(self) -> bool:
-    #    with self._lock:
-    #      logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
     r = self._unsafeIsStarted() and len(self.pending) == 0
-    #    logging.debug("Released Lock")
     return r
 
   def start(self) -> None:
-    #    with self._lock:
-    #     logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
     self.started = True
-    #    logging.debug("Released Lock")
 
   def syncOpId(self, newValue: int) -> None:
-    #    with self._lock:
-    #      logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
     self._opId = newValue
-    #    logging.debug("Released Lock")
 
-  def unsafeNextOpId(self) -> int:
+  def unsafeNextOpId(self) -> Optional[int]:
     # This may "waste" request Id's, it may be replaced by a "peek" and "advance" pair.
     if self._opId != -1:
       oid = self._opId
       self._opId += 1
     else:
-      raise Exception("Trying to get a request Id before available")    
+      oid = None
     return oid
 
   def nextOpId(self) -> int:
     #    with self._lock:
-    #      logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
+    #      _logger.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
     oid = self.unsafeNextOpId()
-    #    logging.debug("Released Lock")
+    if not oid:
+      raise Exception("Trying to get a request Id before available")
+    #    _logger.debug("Released Lock")
     return oid
 
   def request(self, fromCaller: str, msg: str) -> None:
     #    with self._lock:
-    #      logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
-    rId = self._opId - 1 # last one used
-    logging.info(f"Recording request: {rId}")
+    #      _logger.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
+    rId = self._opId - 1  # last one used
+    _logger.debug(f"REQUEST: {rId} from {current_fn_name(2)}::{current_fn_name(1)}")
     if rId not in self.pending.keys():
       self.pending[rId] = Operation(rId, Request(fromCaller, msg))
     else:
       raise Exception(f"Duplicate request Id: {rId} from {fromCaller} with {msg}")
-    #    logging.debug("Released Lock")
+    #    _logger.debug("Released Lock")
 
   def response(self, rs: SuccessResponse) -> None:
     #    with self._lock:
-    #      logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")      
+    #      _logger.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
     if rs.opId not in self.pending.keys():
-      raise Exception(f"Response for unknown request [{current_fn_name(2)}::{current_fn_name(1)}]: {rs} with pending: {self.pending}")
+      raise Exception(f"Response for unknown request [{current_fn_name(2)}::{current_fn_name(1)}]:" +
+                      "{rs} with pending: {self.pending}")
     else:
       self.pending[rs.opId].responses.append(rs)
-    #    logging.debug("Released Lock")
+    #    _logger.debug("Released Lock")
 
   def complete(self, rs: SuccessResponse) -> None:
     # with self._lock:
-    #  logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
+    #  _logger.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
     self.response(rs)
     self.success.append(self.pending[rs.opId])
-    logging.info(f"Removing with complete {rs.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
+    _logger.debug(f"COMPLETE {rs.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
     del self.pending[rs.opId]
-    # logging.debug("Released Lock")
+    # _logger.debug("Released Lock")
 
   def error(self, error: ErrorResponse) -> None:
     # with self._lock:
-    #  logging.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
-    if error.opId not in self.pending.keys():
-      raise Exception(f"Response for unknown request: {error}")
-    else:
+    #  _logger.debug(f"Acquired Lock from {current_fn_name(1)}::{current_fn_name(0)}")
+    if error.opId in self.pending.keys():
       op = self.pending[error.opId]
       op.error = error
       self.errors.append(op)
-      logging.info(f"Removing with error {error.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
+      _logger.info(f"ERROR {error.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
       del self.pending[error.opId]
-    # logging.debug("Released Lock")
+    else:
+      raise Exception(f"Response for unknown request: {error}")
+    # _logger.debug("Released Lock")
 
 
 class OpStatus(StrEnum):

@@ -1,38 +1,11 @@
 from typing import Any
 from enum import StrEnum
 
-
-class RecordMeta:
-  common_fields: list[str] = ['id', 'at']
-
-  def __init__(self, table: str, own_fields: list[str], db_version: int):
-    self.db_version = db_version
-    self.table = table
-    self.own_fields = own_fields
-    self.all_fields = RecordMeta.common_fields + own_fields
-    self.counter = "Select count(id) from " + table
-    self.selector = "Select "+','.join(self.all_fields) + " from " + table
-    self.inserter = 'Insert into ' + table + '(' + ', '.join(self.all_fields) + ') '
-    self.value_inserter = self.inserter + 'values (' + ', '.join(['?'] * len(self.all_fields)) + ');'
-    self.updater = 'Update ' + table + ' set ' + ', '.join([f"{k} = ?" for k in self.all_fields])
-
-
-class Record:
-  def __init__(self, id: str, at: int, companion: RecordMeta, *argsv: list[Any]) -> None:
-    self.id: str = id
-    self.at: int = at
-    self.companion: RecordMeta = companion
-    for field, value in zip(companion.own_fields, argsv):
-      self.__dict__[field] = value
-      
-  def values(self) -> tuple[Any]:
-    return tuple(self.__dict__[f] for f in self.companion.all_fields)
-
-  def __repr__(self) -> str:
-    return str(self.__dict__)
+from salduba.ib_tws_proxy.backing_db.record import RecordMeta, Record
 
 
 db_version = 1
+
 
 deltaNeutralCompanion = RecordMeta(
   'DELTA_NEUTRAL_CONTRACT', [
@@ -47,7 +20,7 @@ deltaNeutralCompanion = RecordMeta(
 class DeltaNeutralContractRecord(Record):
 
   @staticmethod
-  def hydrate(*argsv) -> 'ContractRecord':  # type: ignore
+  def hydrate(*argsv: Any) -> 'DeltaNeutralContractRecord':  # type: ignore
     return DeltaNeutralContractRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
 
   def __init__(self, id: str, at: int, *argsv: list[Any]) -> None:
@@ -88,6 +61,7 @@ class ContractRecordStatus(StrEnum):
 contractCompanion = RecordMeta(
   'CONTRACT',
   [
+    'alias',
     'expires_on',
     'status',
     'conid',
@@ -115,10 +89,13 @@ contractCompanion = RecordMeta(
 
 class ContractRecord(Record):
 
-  nominalClause = "status = 'CONFIRMED'"
+  expiresAfterClause = "(expires_on is null or expires_on > ?)"
+  aliasClause = "(UPPER(alias) = ?)"
+  descriptionClause = "(UPPER(description) = ?)"
+  statusClause = "(status = ?)"
 
   @staticmethod
-  def hydrate(*argsv) -> 'ContractRecord':  # type: ignore
+  def hydrate(*argsv: Any) -> 'ContractRecord':  # type: ignore
     return ContractRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
 
   def __init__(self, id: str, at: int, *argsv: Any) -> None:
