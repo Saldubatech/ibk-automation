@@ -1,0 +1,291 @@
+from typing import Optional, Any
+import logging
+import datetime
+import time
+from uuid import uuid4
+import re
+
+import pandas as pd
+
+from ibapi.common import ListOfContractDescription
+from ibapi.contract import ContractDescription, ContractDetails
+from ibapi.contract import Contract, DeltaNeutralContract
+
+
+from salduba.corvino.persistence.movement_record import MovementRecord, movementCompanion, MovementRepo
+from salduba.ib_tws_proxy.backing_db.record import RecordMeta
+from salduba.ib_tws_proxy.backing_db.model import ContractRecordStatus, DeltaNeutralContractRecord
+from salduba.ib_tws_proxy.backing_db.model import contractCompanion, deltaNeutralCompanion
+from salduba.ib_tws_proxy.backing_db.model import ContractRecord
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo
+from salduba.ib_tws_proxy.operations import Response, SuccessResponse, ErrorResponse
+from salduba.ib_tws_proxy.proxy_base import ProxyBase
+from salduba.corvino.movements import Movement
+from salduba.util.time import millis_epoch, ninety_days
+
+_logger = logging.getLogger(__name__)
+
+
+
+
+
+def _deltaNeutralContractDict(dnc: DeltaNeutralContract, now: int) -> dict[str, Any]:
+  delta_neutral_contract = {
+    'id': str(uuid4()),
+    'at': now,
+    'conid': dnc.conId,
+    'delta': dnc.delta,
+    'price': dnc.price
+  }
+  return delta_neutral_contract
+
+
+def _contractRecordDict(cd: ContractDetails, nowAt: int, shelf_life: int) -> tuple[dict[str, Any], Optional[dict[str, Any]]]:
+  c = cd.contract
+  dnc = _deltaNeutralContractDict(c.deltaNeutralContract, nowAt) if c.deltaNeutralContract else None
+  contract_record: dict[str, Any] = dict(
+    id=str(uuid4()),
+    at=nowAt,
+    alias="",
+    expires_on=nowAt + shelf_life,
+    status=ContractRecordStatus.NOMINAL,
+    conid=c.conId, symbol=c.symbol,
+    sec_type=c.secType,
+    last_trade_date_or_contract_month=c.lastTradeDateOrContractMonth,
+    strike=c.strike,
+    right=c.right,
+    multiplier=c.multiplier,
+    exchange=c.exchange,
+    currency=c.currency,
+    local_symbol=c.localSymbol,
+    primary_exchange=c.primaryExchange,
+    trading_class=c.tradingClass,
+    include_expired=c.includeExpired,
+    sec_id_type=c.secIdType,
+    sec_id=c.secId,
+    description=c.description,
+    issuer_id=c.issuerId,
+    combo_legs_description=c.comboLegsDescrip,
+    delta_neutral_contract_fk=dnc['id'] if dnc else None)
+  return contract_record, dnc
+
+
+def _contractPattern(m: Movement) -> Contract:
+  contract = Contract()
+  contract.symbol = m.symbol
+  contract.currency = m.currency
+  contract.exchange = m.exchange
+  contract.ibk_type = m.ibk_type
+  return contract
+
+
+class UpdaterConfig:
+  def __init__(self, cfg_dict: dict[str, Any], logLevel: int = logging.INFO) -> None:
+    self.unconfirmed_path = cfg_dict['outputs']['unconfirmed_csv_path']
+    self.not_found_symbols_path = cfg_dict['outputs']['not_found_symbols_csv_path']
+    self.search_delay = int(cfg_dict['tws_server']['search-delay'])
+    self.preferred_conids = cfg_dict['inputs']['preferred_conids']
+    self.logLevel = logLevel
+    self.contract_shelf_life = 3 * 30 * 24 * 3600 * 1000  # 3 months * 30 days * 24 h * 3600 sec * 1000 millis
+
+
+class SymbolUpdater(ProxyBase):
+  def __init__(self,
+               contracts: ContractRepo,
+               deltaNeutralRepo: DeltaNeutralContractRepo,
+               movements: MovementRepo,
+               targets: list[Movement],
+               ttl: int = ninety_days,
+               search_delay: Optional[int] = None) -> None:
+    ProxyBase.__init__(self)
+    self.search_delay = search_delay
+    self.ttl = ttl
+    self.targets: list[Movement] = targets
+    self.requested: dict[int, tuple[Movement, list[ContractDetails]]] = {}
+    self.movements = movements
+    movements.insert([m.newRecord() for m in self.targets])
+    self.contractsRepo = contracts
+    self.deltaNeutralContractsRepo = deltaNeutralRepo
+    _logger.info(f"Symbols to Process: {len(self.targets)}")
+    # TODO This is an n+1 query, should be refactored to do the work in the DB.
+    self.refresh_required: list[Movement] = [s for s in self.targets if not self.isContractKnownForMovement(s, millis_epoch())]
+    _logger.info(f"Requiring Refresh: {len(self.refresh_required)}")
+
+  def doIt(self) -> None:
+    _logger.info(f"Checking {len(self.targets)} movements")
+    if self.isActive():
+      self.fetchNextContractDetails()
+    else:
+      _logger.warn("Proxy Not Active...")
+
+  def fetchNextContractDetails(self) -> None:
+    if self.refresh_required:
+      _logger.debug(f"Pending: {len(self.refresh_required)}")
+      oid: Optional[int] = self.tracker.nextOpId()
+      if oid:
+        movement = self.refresh_required.pop(0)
+        self.requested[oid] = (movement, [])
+        _logger.info(f"> Requesting {movement.symbol} from Server, to-go: {len(self.refresh_required)}")
+        self.reqContractDetails(oid, _contractPattern(movement))
+        # self.reqMatchingSymbols(oid, name)
+        time.sleep(self.search_delay)
+    else:
+      _logger.info("No more pending")
+      if self.tracker.isIdle():
+        _logger.info("Found tracker Idle")
+        self.wrap_up()
+        self.stop("Tracker is Idle")
+
+
+
+
+  def disambiguate(self) -> None:
+    symbol_selector = f"""
+    select distinct alias from CONTRACT where status = '{ContractRecordStatus.UNCONFIRMED}';
+    """
+    with self.db as db:
+      with db.cursor() as crs:
+        for symbol in crs.execute(symbol_selector):
+          for candidate in self.contractsRepo.select(['UNCONFIRMED', symbol],
+              ContractRecord.statusClause,
+              ContractRecord.aliasClause):
+            if self.preferred_conids.is_preferred(candidate):
+              crs.execute(f"""
+                          update contract set status = {ContractRecordStatus.RETIRED}
+                          where status = {ContractRecordStatus.UNCONFIRMED}
+                            and id <> ?
+                          """, [candidate.id])
+              crs.execute(f"""
+                          update contract set 
+                            status = {ContractRecordStatus.NOMINAL},
+                            expires_on = ?
+                          where status = {ContractRecordStatus.UNCONFIRMED}
+                            and id = ?
+                          """,
+                [millis_epoch()+self.config.contract_shelf_life, candidate.id])
+
+
+  def isContractKnownForMovement(self, movement: Movement, atTime: int) -> bool:
+    result = False
+    with self.db as db:
+      with db.cursor() as crs:
+        condition = f"""
+                    where
+                    {ContractRecord.expiresAfterClause}
+                    and {ContractRecord.symbolClause}
+                    and {ContractRecord.ibkTypeClause}
+                    and {ContractRecord.exchangeClause}
+                    and {ContractRecord.currencyClause}
+                    and ({ContractRecord.statusClause}
+                         or {ContractRecord.statusClause});"""
+        query = contractCompanion.counter + condition
+        _logger.debug(f"Lookup Symbol {movement.symbol} with Query :\n {query}")
+        parameters = [atTime,
+                      movement.symbol,
+                      movement.ibk_type,
+                      movement.exchange,
+                      movement.currency,
+                      ContractRecordStatus.NOMINAL,
+                      ContractRecordStatus.UNCONFIRMED]
+        _logger.debug(f"And Parameters: {parameters}")
+        rows: list[tuple[int]] = crs.execute(query, parameters).fetchall()
+        if rows and rows[0][0] == 0:
+          _logger.debug("\tNot Found, will request from server")
+        elif rows and rows[0][0] > 1:
+          _logger.warning(f"\tMore than one ({rows[0][0]}) found for {movement.symbol} at {movement.exchange}")
+          result = True
+          # raise Exception(f"Found more than one NOMINAL contract record for {name} with expiration later than {atTime}")
+        else:
+          result = True
+          _logger.debug(f"\tFound one: {rows}")
+    return result
+
+  # Callback
+  def symbolSamples(self, reqId: int,
+                    contractDescriptions: ListOfContractDescription) -> None:   # type: ignore
+    alias = self.requested.get(reqId)
+    if not contractDescriptions:
+      _logger.warn(f"\tNo Contract Description for {self.requested.get(reqId)}")
+    else:
+      _logger.info(f"\tReceived Symbols for {self.requested.get(reqId)}: {contractDescriptions}")
+      del (self.requested[reqId])
+    self.tracker.complete(SuccessResponse(reqId))
+    descriptions: list[ContractDescription] = contractDescriptions
+    now = millis_epoch()
+    for cd in descriptions:
+      d: Contract = cd.contract
+      _logger.debug(f"Processing Contract: {d}")
+      if not d.exchange:
+        d.exchange = d.primaryExchange  # Should this be 'SMART'?
+      # This is here only for clarity. lists are enough for `hydrate`
+      delta_neutral_contract = {
+        'id': str(uuid4()),
+        'at': now,
+        'conid': d.deltaNeutralContract.conId,
+        'delta': d.deltaNeutralContract.delta,
+        'price': d.deltaNeutralContract.price
+      } if d.deltaNeutralContract else None
+      contract_record = {
+        'id': str(uuid4()),
+        'at': now,
+        'alias': alias,
+        'expires_on': now + self.config.contract_shelf_life,
+        'status': ContractRecordStatus.NOMINAL if len(descriptions) == 1 else ContractRecordStatus.UNCONFIRMED,
+        'conid': d.conId,
+        'symbol': d.symbol,
+        'sec_type': d.secType,
+        'last_trade_date_or_contract_month': d.lastTradeDateOrContractMonth,
+        'strike': d.strike,
+        'right': d.right,
+        'multiplier': d.multiplier,
+        'exchange': d.exchange,
+        'currency': d.currency,
+        'local_symbol': d.localSymbol,
+        'primary_exchange': d.primaryExchange,
+        'trading_class': d.tradingClass,
+        'include_expired': d.includeExpired,
+        'sec_id_type': d.secIdType,
+        'sec_id': d.secId,
+        'description': d.description,
+        'issuer_id': d.issuerId,
+        'combo_legs_description': d.comboLegsDescrip,
+        'delta_neutral_contract_fk': delta_neutral_contract['id'] if delta_neutral_contract else None
+      }
+      if delta_neutral_contract:
+        dnc = [delta_neutral_contract[f] for f in deltaNeutralCompanion.all_fields]
+        self.deltaNeutralContractsRepo.insert_raw([dnc])
+      contract_values = [contract_record[f] for f in contractCompanion.all_fields]
+      _logger.debug(f"Inserting {contract_values}")
+      self.contractsRepo.insert_raw([contract_values])
+    self.fetchNextContractDetails()
+
+  def wrap_up(self) -> None:
+    _logger.info("Wrapping up")
+    unconfirmed = self.find_unconfirmed_contracts()
+    if len(unconfirmed) > 0:
+      with open(self.config.unconfirmed_path, 'w') as file:
+        unconfirmed[['alias',
+                     'description',
+                     'conid',
+                     'symbol',
+                     'sec_type',
+                     'exchange',
+                     'currency',
+                     'local_symbol',
+                     'primary_exchange',
+                     'trading_class',
+                     'sec_id_type',
+                     'sec_id',
+                     'issuer_id']].to_csv(file)
+    if len(self.requested) > 0:
+      _logger.debug(f"Missing Requests: {self.requested.values()}")
+      with open(self.config.not_found_symbols_path, 'w') as file:
+        for s in self.requested.values():
+          file.write(s+'\n')
+
+  def find_unconfirmed_contracts(self) -> pd.DataFrame:
+    return self.contractsRepo.selectAsDataFrame(
+      [ContractRecordStatus.UNCONFIRMED, millis_epoch()],
+      ContractRecord.statusClause,
+      ContractRecord.expiresAfterClause
+      )  # 'status = {}'.format(ContractRecordStatus.UNCONFIRMED))

@@ -1,0 +1,113 @@
+Ticker,Trade,Nombre,Symbol,RawType,Country,IbkType,Currency,Exchange,Exchange2
+ABBN SW Equity,-19,ABB Ltd,ABBN,Equity,SW,STK,CHF,EBS,
+ALSN SW Equity,23,ALSO Holding AG,ALSN,Equity,SW,STK,CHF,EBS,
+COTN SW Equity,-2,Comet Holding AG,COTN,Equity,SW,STK,CHF,EBS,
+IFCN SW Equity,23,Inficon Holding AG,IFCN,Equity,SW,STK,CHF,EBS,
+KARN SW Equity,-7,Kardex Holding AG,KARN,Equity,SW,STK,CHF,EBS,
+KNIN SW Equity,24,Kuehne + Nagel International AG,KNIN,Equity,SW,STK,CHF,EBS,
+LEHN SW Equity,-15,LEM Holding SA,LEHN,Equity,SW,STK,CHF,EBS,
+LOGN SW Equity,-12,Logitech International SA,LOGN,Equity,SW,STK,CHF,EBS,
+ASML NA Equity,-3,ASML Holding NV,ASML,Equity,NA,STK,EUR,AEB,
+ROVI SM Equity,-114,Laboratorios Farmaceuticos Rovi SA,ROVI,Equity,SM,STK,EUR,BM,
+MONC IM Equity,851,Moncler SpA,MONC,Equity,IM,STK,EUR,BVME,
+AIXA GR Equity,-1600,AIXTRON SE,AIXA,Equity,GR,STK,EUR,IBIS,
+BC8 GR Equity,83,Bechtle AG,BC8,Equity,GR,STK,EUR,IBIS,
+DB1 GR Equity,301,Deutsche Boerse AG,DB1,Equity,GR,STK,EUR,IBIS,
+ELG GR Equity,-52,Elmos Semiconductor SE,ELG,Equity,GR,STK,EUR,IBIS,
+FTK GR Equity,-5339,flatexDEGIRO AG,FTK,Equity,GR,STK,EUR,IBIS,
+GFT GR Equity,409,GFT Technologies SE,GFT,Equity,GR,STK,EUR,IBIS,
+IFX GR Equity,1679,Infineon Technologies AG,IFX,Equity,GR,STK,EUR,IBIS,
+SAP GR Equity,324,SAP SE,SAP,Equity,GR,STK,EUR,IBIS,
+SMHN GR Equity,-209,SUESS MicroTec SE,SMHN,Equity,GR,STK,EUR,IBIS,
+TPE GR Equity,85,PVA TePla AG,TPE,Equity,GR,STK,EUR,IBIS,
+VBK GR Equity,583,Verbio SE,VBK,Equity,GR,STK,EUR,IBIS,
+GTT FP Equity,399,Gaztransport Et Technigaz SA,GTT,Equity,FP,STK,EUR,SBF,
+ITP FP Equity,-1081,Interparfums SA,ITP,Equity,FP,STK,EUR,SBF,
+MC FP Equity,-69,LVMH Moet Hennessy Louis Vuitton SE,MC,Equity,FP,STK,EUR,SBF,
+STMPA FP Equity,-16,STMicroelectronics NV,STMPA,Equity,FP,STK,EUR,SBF,
+TRI FP Equity,31,Trigano SA,TRI,Equity,FP,STK,EUR,SBF,
+VER AV Equity,-717,Verbund AG,VER,Equity,AV,STK,EUR,VSE,
+CCC LN Equity,643,Computacenter PLC,CCC,Equity,LN,STK,GBP,LSE,
+FOUR LN Equity,300,4imprint Group PLC,FOUR,Equity,LN,STK,GBP,LSE,
+GRG LN Equity,-1625,Greggs PLC,GRG,Equity,LN,STK,GBP,LSE,
+III LN Equity,605,3i Group PLC,III,Equity,LN,STK,GBP,LSE,
+NFG LN Equity,-4576,Next 15 Group PLC,NFG,Equity,LN,STK,GBP,LSE
+RNWH LN Equity,2031,Renew Holdings PLC,RNWH,Equity,LN,STK,GBP,LSE,
+YOU LN Equity,4314,YouGov PLC,YOU,Equity,LN,STK,GBP,LSE,
+2222 JP Equity,-2400,Kotobuki Spirits Co Ltd,2222,Equity,JP,STK,JPY,TSEJ,
+3088 JP Equity,-1700,MatsukiyoCocokara & Co,3088,Equity,JP,STK,JPY,TSEJ,
+3635 JP Equity,900,Koei Tecmo Holdings Co Ltd,3635,Equity,JP,STK,JPY,TSEJ,
+3774 JP Equity,400,Internet Initiative Japan Inc,3774,Equity,JP,STK,JPY,TSEJ,
+4063 JP Equity,100,Shin-Etsu Chemical Co Ltd,4063,Equity,JP,STK,JPY,TSEJ,
+4187 JP Equity,300,Osaka Organic Chemical Industry Ltd,4187,Equity,JP,STK,JPY,TSEJ,
+4812 JP Equity,300,Dentsu Soken Inc,4812,Equity,JP,STK,JPY,TSEJ,
+4971 JP Equity,400,MEC Co Ltd,4971,Equity,JP,STK,JPY,TSEJ,
+5384 JP Equity,100,Fujimi Inc,5384,Equity,JP,STK,JPY,TSEJ,
+6361 JP Equity,-500,Ebara Corp,6361,Equity,JP,STK,JPY,TSEJ,
+6407 JP Equity,1800,CKD Corp,6407,Equity,JP,STK,JPY,TSEJ,
+6432 JP Equity,100,Takeuchi Manufacturing Co Ltd,6432,Equity,JP,STK,JPY,TSEJ,
+6920 JP Equity,100,Lasertec Corp,6920,Equity,JP,STK,JPY,TSEJ,
+6951 JP Equity,200,Jeol Ltd,6951,Equity,JP,STK,JPY,TSEJ,
+6967 JP Equity,200,Shinko Electric Industries Co Ltd,6967,Equity,JP,STK,JPY,TSEJ,
+8035 JP Equity,-200,Tokyo Electron Ltd,8035,Equity,JP,STK,JPY,TSEJ,
+9697 JP Equity,200,Capcom Co Ltd,9697,Equity,JP,STK,JPY,TSEJ,
+9749 JP Equity,200,Fuji Soft Inc,9749,Equity,JP,STK,JPY,TSEJ,
+ACN US Equity,369,Accenture PLC,ACN,Equity,US,STK,USD,ISLAND,NYSE
+ADBE US Equity,41,Adobe Inc,ADBE,Equity,US,STK,USD,ISLAND,NYSE
+AGCO US Equity,138,AGCO Corp,AGCO,Equity,US,STK,USD,ISLAND,NYSE
+AMAT US Equity,-122,Applied Materials Inc,AMAT,Equity,US,STK,USD,ISLAND,NYSE
+AMP US Equity,-6,Ameriprise Financial Inc,AMP,Equity,US,STK,USD,ISLAND,NYSE
+AOS US Equity,-1718,A O Smith Corp,AOS,Equity,US,STK,USD,ISLAND,NYSE
+ARCB US Equity,-28,ArcBest Corp,ARCB,Equity,US,STK,USD,ISLAND,NYSE
+BCC US Equity,-971,Boise Cascade Co,BCC,Equity,US,STK,USD,ISLAND,NYSE
+BKNG US Equity,2,Booking Holdings Inc,BKNG,Equity,US,STK,USD,ISLAND,NYSE
+BLK US Equity,-4,BlackRock Inc,BLK,Equity,US,STK,USD,ISLAND,NYSE
+BX US Equity,24,Blackstone Inc,BX,Equity,US,STK,USD,ISLAND,NYSE
+CBOE US Equity,11,Cboe Global Markets Inc,CBOE,Equity,US,STK,USD,ISLAND,NYSE
+CELH US Equity,-2522,Celsius Holdings Inc,CELH,Equity,US,STK,USD,ISLAND,NYSE
+COR US Equity,14,Cencora Inc,COR,Equity,US,STK,USD,ISLAND,NYSE
+DHI US Equity,-8,DR Horton Inc,DHI,Equity,US,STK,USD,ISLAND,NYSE
+DOX US Equity,47,Amdocs Ltd,DOX,Equity,US,STK,USD,ISLAND,NYSE
+EME US Equity,-143,EMCOR Group Inc,EME,Equity,US,STK,USD,ISLAND,NYSE
+EVR US Equity,-51,Evercore Inc,EVR,Equity,US,STK,USD,ISLAND,NYSE
+FIX US Equity,-582,Comfort Systems USA Inc,FIX,Equity,US,STK,USD,ISLAND,NYSE
+GOOGL US Equity,84,Alphabet Inc,GOOGL,Equity,US,STK,USD,ISLAND,NYSE
+GWW US Equity,6,WW Grainger Inc,GWW,Equity,US,STK,USD,ISLAND,NYSE
+HUBB US Equity,-25,Hubbell Inc,HUBB,Equity,US,STK,USD,ISLAND,NYSE
+ITT US Equity,33,ITT Inc,ITT,Equity,US,STK,USD,ISLAND,NYSE
+KFRC US Equity,-67,Kforce Inc,KFRC,Equity,US,STK,USD,ISLAND,NYSE
+KLAC US Equity,-24,KLA Corp,KLAC,Equity,US,STK,USD,ISLAND,NYSE
+LEN US Equity,-25,Lennar Corp,LEN,Equity,US,STK,USD,ISLAND,NYSE
+LII US Equity,-24,Lennox International Inc,LII,Equity,US,STK,USD,ISLAND,NYSE
+LNG US Equity,900,Cheniere Energy Inc,LNG,Equity,US,STK,USD,ISLAND,NYSE
+LRCX US Equity,-14,Lam Research Corp,LRCX,Equity,US,STK,USD,ISLAND,NYSE
+LULU US Equity,12,Lululemon Athletica Inc,LULU,Equity,US,STK,USD,ISLAND,NYSE
+MATX US Equity,126,Matson Inc,MATX,Equity,US,STK,USD,ISLAND,NYSE
+MCK US Equity,-3,McKesson Corp,MCK,Equity,US,STK,USD,ISLAND,NYSE
+MOH US Equity,-24,Molina Healthcare Inc,MOH,Equity,US,STK,USD,ISLAND,NYSE
+MSFT US Equity,16,Microsoft Corp,MSFT,Equity,US,STK,USD,ISLAND,NYSE
+MTH US Equity,-21,Meritage Homes Corp,MTH,Equity,US,STK,USD,ISLAND,NYSE
+MYRG US Equity,-29,MYR Group Inc,MYRG,Equity,US,STK,USD,ISLAND,NYSE
+NBIX US Equity,1001,Neurocrine Biosciences Inc,NBIX,Equity,US,STK,USD,ISLAND,NYSE
+NSSC US Equity,-338,Napco Security Technologies Inc,NSSC,Equity,US,STK,USD,ISLAND,NYSE
+OC US Equity,22,Owens Corning,OC,Equity,US,STK,USD,ISLAND,NYSE
+OLN US Equity,-166,Olin Corp,OLN,Equity,US,STK,USD,ISLAND,NYSE
+PHM US Equity,-33,PulteGroup Inc,PHM,Equity,US,STK,USD,ISLAND,NYSE
+QCOM US Equity,-133,QUALCOMM Inc,QCOM,Equity,US,STK,USD,ISLAND,NYSE
+QLYS US Equity,111,Qualys Inc,QLYS,Equity,US,STK,USD,ISLAND,NYSE
+RJF US Equity,-37,Raymond James Financial Inc,RJF,Equity,US,STK,USD,ISLAND,NYSE
+RMBS US Equity,232,Rambus Inc,RMBS,Equity,US,STK,USD,ISLAND,NYSE
+ROCK US Equity,217,Gibraltar Industries Inc,ROCK,Equity,US,STK,USD,ISLAND,NYSE
+SAIA US Equity,-13,Saia Inc,SAIA,Equity,US,STK,USD,ISLAND,NYSE
+SNA US Equity,12,Snap-on Inc,SNA,Equity,US,STK,USD,ISLAND,NYSE
+SNPS US Equity,244,Synopsys Inc,SNPS,Equity,US,STK,USD,ISLAND,NYSE
+SPNS US Equity,-359,Sapiens International Corp NV,SPNS,Equity,US,STK,USD,ISLAND,NYSE
+TREX US Equity,1469,Trex Co Inc,TREX,Equity,US,STK,USD,ISLAND,NYSE
+UFPI US Equity,42,UFP Industries Inc,UFPI,Equity,US,STK,USD,ISLAND,NYSE
+ULTA US Equity,-266,Ulta Beauty Inc,ULTA,Equity,US,STK,USD,ISLAND,NYSE
+UNH US Equity,29,UnitedHealth Group Inc,UNH,Equity,US,STK,USD,ISLAND,NYSE
+VLO US Equity,-44,Valero Energy Corp,VLO,Equity,US,STK,USD,ISLAND,NYSE
+VRTX US Equity,20,Vertex Pharmaceuticals Inc,VRTX,Equity,US,STK,USD,ISLAND,NYSE
+WIRE US Equity,-581,Encore Wire Corp,WIRE,Equity,US,STK,USD,ISLAND,NYSE
+WSM US Equity,593,Williams-Sonoma Inc,WSM,Equity,US,STK,USD,ISLAND,NYSE
+WSO US Equity,348,Watsco Inc,WSO,Equity,US,STK,USD,ISLAND,NYSE

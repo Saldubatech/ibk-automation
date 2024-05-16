@@ -9,7 +9,8 @@ import unittest
 import tempfile
 
 expected_db_version = 1
-expected_tables = set(['DB_INFO', 'DELTA_NEUTRAL_CONTRACT', 'CONTRACT', 'COMBO_LEG', 'CONTRACT_DETAIL_TAG', 'CONTRACT_DETAILS', 'MOVEMENT'])
+expected_tables = {'DB_INFO', 'DELTA_NEUTRAL_CONTRACT', 'CONTRACT', 'COMBO_LEG', 'CONTRACT_DETAIL_TAG',
+                   'CONTRACT_DETAILS', 'MOVEMENT'}
 
 
 class TestModel(unittest.TestCase):
@@ -33,13 +34,13 @@ class TestModel(unittest.TestCase):
       temp = tempfile.NamedTemporaryFile()
       temp.close()
       local_config = DbConfig({
-          'path': temp.name,
-          'schemas': 'salduba/ib_tws_proxy/backing_db/schema',
-          'seed_data': 'salduba/ib_tws_proxy/backing_db/seed-data',
-          'expected_version': "0",
-          'target_version': "1",
-          'version_date': "2024-02-01 00:00:00.000"
-          }
+        'path': temp.name,
+        'schemas': 'salduba/ib_tws_proxy/backing_db/schema',
+        'seed_data': 'salduba/ib_tws_proxy/backing_db/seed-data',
+        'expected_version': "0",
+        'target_version': "1",
+        'version_date': "2024-02-01 00:00:00.000"
+      }
       )
       print(f"\n\t#### Using file: {temp.name}")
       db = TradingDB(local_config)
@@ -79,7 +80,7 @@ class TestModel(unittest.TestCase):
     probe = ContractRecord(str(uuid4()), int(datetime.datetime.now().timestamp()*1000), *probe_tuple)
     probe_values = probe.values()
 
-    assert contractCompanion.db_version == 1, "Incorrect Db Configured {:%d}".format(expected_db_version)
+    assert contractCompanion.db_version == 1, f"Incorrect Db Configured {expected_db_version:%d}"
     with self.__local_db__() as db:
       with db.cursor() as crs_inserter:
         tbls = crs_inserter.execute(

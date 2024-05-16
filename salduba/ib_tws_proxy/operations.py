@@ -1,3 +1,4 @@
+import time
 from typing import Optional, Callable
 from enum import StrEnum
 import datetime
@@ -60,17 +61,18 @@ class Operation:
 
 
 class OperationsTracker:
-  def __init__(self, logLevel: int = logging.INFO) -> None:
+  max_idle = 3000 # msecs
+  def __init__(self, logLevel: int = logging.DEBUG) -> None:
     self.pending: dict[int, Operation] = {}
     self.success: list[Operation] = []
     self.errors: list[Operation] = []
     self.started = False
+    self.requests_complete = False
     self._opId: int = -1  # Unique Id for each request, -1 means not initialized
     #    self._lock = threading.Lock()
     _logger.setLevel(logLevel)
 
   def _unsafeIsStarted(self) -> bool:
-    self.dump(_logger.debug)
     return self.started and (len(self.success) + len(self.errors) + len(self.pending) > 0)
 
   def isInitialized(self) -> bool:
@@ -81,18 +83,24 @@ class OperationsTracker:
     return r
 
   def dump(self, lg: Callable[[str], None]) -> None:
+    lg(f"From: {current_fn_name(2)}:{current_fn_name(1)}")
     lg(f"Is Started: {self.started}")
     lg(f"Success: {len(self.success)}")
     lg(f"Errors: {len(self.errors)}")
     lg(f"Pending: {len(self.pending)}")
 
   def isIdle(self) -> bool:
-    r = self._unsafeIsStarted() and len(self.pending) == 0
+    r = (self.requests_complete
+         and self._unsafeIsStarted()
+         and len(self.pending) == 0)
+#         and  elapsed > OperationsTracker.max_idle)
     return r
 
   def start(self) -> None:
     self.started = True
 
+  def requestsComplete(self) -> None:
+    self.requests_complete = True
   def syncOpId(self, newValue: int) -> None:
     self._opId = newValue
 
@@ -151,7 +159,7 @@ class OperationsTracker:
       op = self.pending[error.opId]
       op.error = error
       self.errors.append(op)
-      _logger.info(f"ERROR {error.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
+      _logger.error(f"ERROR {error.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
       del self.pending[error.opId]
     else:
       raise Exception(f"Response for unknown request: {error}")

@@ -30,7 +30,8 @@ class TestDb(unittest.TestCase):
         assert self.db.connection_depth == 0
         assert not self.db.conn
 
-    def __local_db__(self) -> TradingDB:
+    @staticmethod
+    def __local_db__() -> TradingDB:
         temp = tempfile.NamedTemporaryFile()
         temp.close()
         local_config = DbConfig({

@@ -13,64 +13,14 @@ from salduba.ib_tws_proxy.backing_db.record import RecordMeta, Record
 _logger = logging.getLogger(__name__)
 
 
-class Schema:
-  """
-  @startuml (id=SCHEMA)
-  hide spot
-  
-  title
-  Backing DB Schema
-  end title
-  
-  entity Contract {
-    * id: uuid
-    * at: datetime
-    * status: EnumStr
-    * connId: int
-    * symbol: str
-    * sec_type: str
-    last_trade_date_or_contract_month: str
-    * strike: float
-    right: str
-    multiplier: str
-    * exchange: str
-    * primary_exchange: str
-    * currency: str
-    local_symbol: str
-    trading_class: str
-    include_expired: bool
-    sec_id_type: str
-    sec_id: str
-    * description: str
-    issuer_id: str    
-  }
-  
-  entity Movement {
-    * id: uuid
-    * contract: FK
-    * at: datetime
-    * batch: str
-    * ref: str
-    * trade: int
-    * currency: EnumStr
-    * money: int
-    override_exchange: str
-  }
-  
-  Movement::contract }o-|| Contract::id
-  @enduml
-  """
-
-
 class DbConfig:
-  def __init__(self, cfg_dict: dict[str, str], logLevel: int = logging.INFO):
+  def __init__(self, cfg_dict: dict[str, str]):
     self.storage = cfg_dict['path']
     self.schema_dir = cfg_dict['schemas']
     self.seed_dir = cfg_dict['seed_data']
     self.expected_version = int(cfg_dict['expected_version'])
     self.target_version = int(cfg_dict['target_version'])
     self.version_date = cfg_dict['version_date']
-    _logger.setLevel(logLevel)
     # if not os.path.isfile(self.storage):
     #   raise Exception(f"{self.storage} file does not exist")
     # elif not os.path.exists(self.schema_dir):
@@ -105,18 +55,21 @@ class ConnectionCursor:
                excinst: Optional[BaseException],
                exctb: Optional[TracebackType]) -> bool:
     assert self.cursor
+    rs = True
     if self.nesting == 0:
       if not exctype:
         _logger.debug("\tCOMMITTING")
         self.connection.commit()
+        rs = True
       else:
         _logger.error(f"\tROLLING BACK because of: {excinst}\n\t{exctb}")
         for line in traceback.format_exception(excinst):
           _logger.error(line)
         self.connection.rollback()
+        rs = False
     self.cursor.close()
     self.cursor = None
-    return False
+    return rs
 
 
 class DbVersion:
@@ -152,7 +105,7 @@ class TradingDB:
   def __enter__(self) -> 'TradingDB':
     return self.connect()
 
-  def __exit__(self, *args) -> None:
+  def __exit__(self, *args) -> None:  # type: ignore
     self.disconnect()
 
   def cursor(self) -> ConnectionCursor:
@@ -163,7 +116,6 @@ class TradingDB:
     _logger.debug("Entering Configure")
     rs = None
     dbV = self.version()
-    current_v = 0
     if dbV:
       _logger.debug(f"VERSION AT: {dbV.version}")
       current_v = dbV.version
@@ -180,14 +132,18 @@ class TradingDB:
   def version(self, v: Optional[int] = None) -> Optional[DbVersion]:
     with self as db:
       with db.cursor() as crs:
-        tbls = crs.execute("SELECT name From sqlite_master where name = 'db_info'").fetchone()
-        if not tbls:
+        tables = crs.execute("SELECT name From sqlite_master where name = 'db_info'").fetchone()
+        if not tables:
           rs: Optional[tuple[int, int, int, bool]] = None
         elif v:
-          rs = crs.execute(f"select version, version_time, at, current from db_info where current = TRUE and version = {v}").fetchone()
+          rs = crs.execute(f"""
+                    select
+                      version, version_time, at, current from db_info
+                    where current = TRUE and version = {v}
+                    """).fetchone()
         else:
           rs = crs.execute('select version, version_time, at, current from db_info where current = TRUE').fetchone()
-        return DbVersion(rs[0], rs[1], rs[2], rs[3]) if rs else None
+    return DbVersion(rs[0], rs[1], rs[2], rs[3]) if rs else None
 
   def validate(self, expected_version: int, strict: bool = True) -> bool:
     rs = False
@@ -206,18 +162,18 @@ class TradingDB:
 
   def ensure_version(self, v: Optional[int], strict: bool = False) -> Optional[DbVersion]:
     with self as db:
-      with db.cursor() as crs:
+      with db.cursor() as _:
         current_v = db.version()
-        if strict:
-          if current_v and v and current_v.version == v:
-            return current_v
-          else:
-            return None
-        else:
-          if current_v and (not v or current_v.version >= v):
-            return current_v
-          else:
-            return db._upgrade_from(current_v, v)
+    if strict:
+      if current_v and v and current_v.version == v:
+        return current_v
+      else:
+        return None
+    else:
+      if current_v and (not v or current_v.version >= v):
+        return current_v
+      else:
+        return db._upgrade_from(current_v, v)
 
   def _update_version_in_cursor(self, cursor: sql.Cursor, v: int) -> Optional[DbVersion]:
     _logger.debug(f"Upgrading with target: {v}")
@@ -240,13 +196,17 @@ class TradingDB:
 
   def _upgrade_from(self,  current_v: Optional[DbVersion], to: Optional[int] = None) -> Optional[DbVersion]:
     schemas: list[str] = os.listdir(self.config.schema_dir)
+    _logger.debug(f"Schemas: {schemas}")
     seeds: list[str] = os.listdir(self.config.seed_dir)
+    _logger.debug(f"Seeds: {seeds}")
     schemas.remove('meta.sql')
     seeds.remove('meta.sql')
     unified = sorted(set(schemas + seeds))
     current_name = "v{:04d}.sql".format(current_v.version) if current_v else 'a'
     till_name = "v{:04d}.sql".format(to) if to else 'z'
-    upgrades = sorted([vn for vn in unified if (not current_name or vn > current_name) and (not till_name or vn <= till_name)])
+    upgrades = sorted(
+      [vn for vn in unified if (not current_name or vn > current_name) and (not till_name or vn <= till_name)]
+    )
     version = None
     _logger.info(f"Running Upgrades: {upgrades}")
     with self as db:
@@ -291,14 +251,14 @@ class Repo(Generic[M, R]):
     with self.db as db:
       with db.cursor() as crs:
         crs.executemany(self.record.value_inserter, [r.values() for r in records])
-  
+
   def select_raw(self, *conditions: str) -> list[tuple[Any]]:
     results = []
     with self.db as db:
       with db.cursor() as crs:
         results = crs.execute(self.record.selector + ' where ' + ' and '.join(conditions) + ';').fetchall()
     return results
-  
+
   def select(self, *conditions: str) -> list[R]:
     results = self.select_raw(*conditions)
     return [self.hydrator(r) for r in results]

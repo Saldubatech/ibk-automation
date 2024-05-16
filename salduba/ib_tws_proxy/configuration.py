@@ -41,11 +41,11 @@ class Configuration:
       except yaml.YAMLError as exc:
         logging.warn(f"Could not read configuration file: '{config_path}' because of {exc}, using default")
 
-    self.host = self.config['tws_server']['host']
+    self.host: str = self.config['tws_server']['host']
 
     port = self.config['tws_server']['port']
     if isinstance(port, int):
-      self.port = port
+      self.port: int = port
     elif port.isdigit():
       self.port = int(port)
     else:
@@ -53,7 +53,7 @@ class Configuration:
 
     clId = self.config['client'][self.app_id]
     if isinstance(clId, int):
-      self.clientId = clId
+      self.clientId: int = clId
     elif clId.isdigit():
       self.clientId = int(clId)
     else:
@@ -62,9 +62,10 @@ class Configuration:
     self.logLevel: int = logging.getLevelNamesMapping()[self.config['logging']['level']]
     self.movements_path = self.config['inputs']['movements_path']
     self.batch = self.config['inputs']['batch']
-    self.unconfirmed_csv_path = self.config['outputs']['unconfirmed_csv_path']
     self.not_found_symbols_csv_path = self.config['outputs']['not_found_symbols_csv_path']
-    self.dbConfig: DbConfig = DbConfig(self.config['trading_db'], logLevel=self.logLevel)
+    self.dbConfig: DbConfig = DbConfig(self.config['trading_db'])
+    # self.updater_config = UpdaterConfig(self.config, logLevel=self.logLevel)
+    self.unconfirmed_csv_path = self.config['outputs']['unconfirmed_csv_path']
     self.search_delay = float(self.config['tws_server']['search-delay'])
 
   def __repr__(self) -> str:

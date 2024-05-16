@@ -1,4 +1,4 @@
-from salduba.update_symbols import update_symbols
+from corvino.update_symbols import update_symbols
 
 if __name__ == "__main__":
   print('Executing')

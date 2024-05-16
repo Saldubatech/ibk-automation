@@ -3,12 +3,16 @@ logging:
 tws_server:
   host: 127.0.0.1
   port: 7497
+  search-delay: 0.5
 client:
   stand-alone: 0
   update-conid-db: 1
 inputs:
-  movements_path: data/movements.csv
+  movements_path: data/cervino_rebalance_v2.csv
   batch: movements_batch
+outputs:
+  unconfirmed_csv_path: data/unconfirmed_contracts.csv
+  not_found_symbols_csv_path: data/symbols_not_found.csv
 trading_db:
   path: data/trading.db
   schemas: ib_tws_proxy/backing_db/schema

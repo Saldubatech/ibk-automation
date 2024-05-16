@@ -1,7 +1,61 @@
-from typing import Any
+from typing import Any, Self
 from enum import StrEnum
 
 from salduba.ib_tws_proxy.backing_db.record import RecordMeta, Record
+
+
+class Schema:
+  """
+  @startuml (id=SCHEMA)
+  hide spot
+
+  title
+  Backing DB Schema V1
+  end title
+
+  entity Contract {
+    * id: uuid
+    * at: datetime
+    * status: EnumStr
+    * connId: int
+    * symbol: str
+    * sec_type: str
+    last_trade_date_or_contract_month: str
+    * strike: float
+    right: str
+    multiplier: str
+    * exchange: str
+    * primary_exchange: str
+    * currency: str
+    local_symbol: str
+    trading_class: str
+    include_expired: bool
+    sec_id_type: str
+    sec_id: str
+    * description: str
+    issuer_id: str
+  }
+
+  entity Movement {
+    * id: uuid
+    * contract: FK
+    * at: datetime
+    * batch: str
+    * ticker: str
+    * trade: float (?)
+    * nombre: str
+    * symbol: str
+    * raw_type: str
+    * raw_country: str
+    * ibk_type: EnumStr
+    * currency, EnumStr
+    * exchange: str
+    * exchange2: str
+  }
+
+  Movement::contract }o-|| Contract::id
+  @enduml
+  """
 
 
 db_version = 1
@@ -19,12 +73,12 @@ deltaNeutralCompanion = RecordMeta(
 
 class DeltaNeutralContractRecord(Record):
 
-  @staticmethod
-  def hydrate(*argsv: Any) -> 'DeltaNeutralContractRecord':  # type: ignore
-    return DeltaNeutralContractRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
+  @classmethod
+  def hydrate(cls, *argsv: Any) -> Self:  # type: ignore
+    return cls(argsv[0], argsv[1], *argsv[2:])  # type: ignore
 
-  def __init__(self, id: str, at: int, *argsv: list[Any]) -> None:
-    super().__init__(id, at, deltaNeutralCompanion, *argsv)
+  def __init__(self, rid: str, at: int, *argsv) -> None:
+    super().__init__(rid, at, deltaNeutralCompanion, *argsv)
 
 
 class ContractRecordStatus(StrEnum):
@@ -61,7 +115,6 @@ class ContractRecordStatus(StrEnum):
 contractCompanion = RecordMeta(
   'CONTRACT',
   [
-    'alias',
     'expires_on',
     'status',
     'conid',
@@ -90,16 +143,22 @@ contractCompanion = RecordMeta(
 class ContractRecord(Record):
 
   expiresAfterClause = "(expires_on is null or expires_on > ?)"
+  symbolClause = "(UPPER(symbol) = ?)"
+  secTypeClause = "(sec_type = ?)"
+  conidClause = "(conid = ?)"
+  currencyClause = "(currency = ?)"
+
+  exchangeClause = "(exchange = ?)"
   aliasClause = "(UPPER(alias) = ?)"
   descriptionClause = "(UPPER(description) = ?)"
   statusClause = "(status = ?)"
 
-  @staticmethod
-  def hydrate(*argsv: Any) -> 'ContractRecord':  # type: ignore
-    return ContractRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
+  @classmethod
+  def hydrate(cls, *argsv: Any) -> Self:  # type: ignore
+    return cls(argsv[0], argsv[1], *argsv[2:])  # type: ignore
 
-  def __init__(self, id: str, at: int, *argsv: Any) -> None:
-    super().__init__(id, at, contractCompanion, *argsv)
+  def __init__(self, rid: str, at: int, *argsv: Any) -> None:
+    super().__init__(rid, at, contractCompanion, *argsv)
 
 
 comboLegCompanion = RecordMeta(
@@ -124,8 +183,8 @@ class ComboLegRecord(Record):
   def hydrate(*argsv) -> 'ComboLegRecord':  # type: ignore
     return ComboLegRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
 
-  def __init__(self, id: str, at: int, *argsv: list[Any]) -> None:
-    super().__init__(id, at, comboLegCompanion, *argsv)
+  def __init__(self, rid: str, at: int, *argsv: list[Any]) -> None:
+    super().__init__(rid, at, comboLegCompanion, *argsv)
 
 
 contractDetailTagCompanion = RecordMeta(
@@ -144,31 +203,8 @@ class ContractDetailTagRecord(Record):
   def hydrate(*argsv) -> 'ContractDetailTagRecord':  # type: ignore
     return ContractDetailTagRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
 
-  def __init__(self, id: str, at: int, *argsv: list[Any]) -> None:
-    super().__init__(id, at, contractDetailTagCompanion, *argsv)
-
-
-movementCompanion = RecordMeta(
-  'MOVEMENT',
-  [
-    'batch',
-    'ref',
-    'trade',
-    'currency',
-    'money',
-    'override_exchange'
-  ],
-  db_version
-)
-
-
-class MovementRecord(Record):
-  @staticmethod
-  def hydrate(*argsv) -> 'MovementRecord':  # type: ignore
-    return MovementRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
-
-  def __init__(self, id: str, at: int, *argsv: list[Any]) -> None:
-    super().__init__(id, at, movementCompanion, *argsv)
+  def __init__(self, rid: str, at: int, *argsv: list[Any]) -> None:
+    super().__init__(rid, at, contractDetailTagCompanion, *argsv)
 
 
 contractDetailsCompanion = RecordMeta(
@@ -225,5 +261,5 @@ class ContractDetailsRecord(Record):
   def hydrate(*argsv) -> 'ContractDetailsRecord':  # type: ignore
     return ContractDetailsRecord(argsv[0], argsv[1], *argsv[2:])  # type: ignore
 
-  def __init__(self, id: str, at: int, *argsv: list[Any]) -> None:
-    super().__init__(id, at, contractDetailsCompanion, *argsv)
+  def __init__(self, rid: str, at: int, *argsv: list[Any]) -> None:
+    super().__init__(rid, at, contractDetailsCompanion, *argsv)

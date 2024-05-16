@@ -2,28 +2,9 @@ from typing import Any
 import textwrap
 from datetime import datetime
 
-from enum import Enum
+from enum import Enum, StrEnum
 
-
-class Currency(StrEnum):
-  EUR = 1
-  USD = 2
-
-
-class Exchange(StrEnum):
-  NASDAQ = 1
-  SMART = 2
-
-
-class SecType(StrEnum):
-  STK = 1
-  CASH = 2
-  FUT = 3
-
-
-class Action(StrEnum):
-  BUY = 1
-  SELL = 2
+from ibapi.order import Order
 
 
 class OrderLabels(object):

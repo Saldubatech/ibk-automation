@@ -56,7 +56,6 @@ CREATE TABLE DELTA_NEUTRAL_CONTRACT(
 -- See: https://interactivebrokers.github.io/tws-api/classIBApi_1_1Contract.html
 CREATE TABLE CONTRACT (
   id varchar(255) primary key,
-  alias varchar(255) not null,
   at timestamp not null,
   expires_on timestamp,
   status varchar(50) not null,
@@ -159,10 +158,18 @@ CREATE TABLE CONTRACT_DETAILS(
 CREATE TABLE MOVEMENT(
   id varchar(255) primary key,
   at timestamp not null,
+  status varchar(255) not null,
+  server_status varchar(255),
   batch varchar(255) not null,
-  ref varchar(255) not null,
+  ref int not null,
+  ticker varchar(255) not null,
   trade bigint not null,
+  nombre varchar(255) not null,
+  symbol varchar(255) not null,
+  raw_type varchar(255) not null,
+  raw_country varchar(255) not null,
+  ibk_type varchar(255) not null,
   currency varchar(255) not null,
-  money bigint not null,
-  override_exchange varchar(255)
+  exchange varchar(255) not null,
+  exchange2 varchar(255)
 );
