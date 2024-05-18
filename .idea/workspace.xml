@@ -5,10 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8547a1c4-49f8-456c-a40d-6dcbcc85ed18" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/persistence/movement_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/persistence/movement_record.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +60,7 @@
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/jmp/code/salduba/ibk-automation&quot;,
     &quot;scala_project_settings_configurable.last_selected_tab_index&quot;: &quot;0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.projectsettings.compiler.javacompiler&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Python&quot;
   }
 }</component>
   <component name="RunManager" selected="Python tests.pytest for tests.salduba.corvino.test_verify_contracts.test_lookup_contracts">
