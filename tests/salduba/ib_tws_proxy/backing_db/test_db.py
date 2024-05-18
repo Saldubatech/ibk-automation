@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import unittest
 import tempfile
+import unittest
 
-from salduba.ib_tws_proxy.backing_db.db import TradingDB, DbConfig
+from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
 
 
 class TestDb(unittest.TestCase):
     """Test Basic DB Access"""
+
     config = DbConfig(
         {
-            'path': 'tests/resources/test_db.db',
-            'schemas': 'salduba/ib_tws_proxy/backing_db/schema',
-            'seed_data': 'salduba/ib_tws_proxy/backing_db/seed-data',
-            'expected_version': "0",
-            'target_version': "1",
-            'version_date': "2024-02-01 00:00:00.000"
+            "path": "tests/resources/test_db.db",
+            "schemas": "salduba/ib_tws_proxy/backing_db/schema",
+            "seed_data": "salduba/ib_tws_proxy/backing_db/seed-data",
+            "expected_version": "0",
+            "target_version": "1",
+            "version_date": "2024-02-01 00:00:00.000",
         }
     )
 
     def __init__(self, *args, **kwargs) -> None:  # type: ignore
-        super().__init__(*args, **kwargs)  # type: ignore
+        super().__init__(*args, **kwargs)
         self.db = TradingDB(TestDb.config)
 
     def test_db_connection(self) -> None:
@@ -34,13 +35,14 @@ class TestDb(unittest.TestCase):
     def __local_db__() -> TradingDB:
         temp = tempfile.NamedTemporaryFile()
         temp.close()
-        local_config = DbConfig({
-            'path': temp.name,
-            'schemas': 'salduba/ib_tws_proxy/backing_db/schema',
-            'seed_data': 'salduba/ib_tws_proxy/backing_db/seed-data',
-            'expected_version': "0",
-            'target_version': "1",
-            'version_date': "2024-02-01 00:00:00.000"
+        local_config = DbConfig(
+            {
+                "path": temp.name,
+                "schemas": "salduba/ib_tws_proxy/backing_db/schema",
+                "seed_data": "salduba/ib_tws_proxy/backing_db/seed-data",
+                "expected_version": "0",
+                "target_version": "1",
+                "version_date": "2024-02-01 00:00:00.000",
             }
         )
         return TradingDB(local_config)
@@ -57,5 +59,5 @@ class TestDb(unittest.TestCase):
             assert v and v.version == 1, f"Version is {v}"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

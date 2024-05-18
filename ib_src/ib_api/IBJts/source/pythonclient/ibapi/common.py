@@ -3,14 +3,13 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
 
-import sys
-import ibapi
 import math
-
+import sys
 from decimal import Decimal
+
+import ibapi
 from ibapi.enum_implem import Enum
 from ibapi.object_implem import Object
-
 
 NO_VALID_ID = -1
 MAX_MSG_LEN = 0xFFFFFF # 16Mb - 1byte
@@ -64,8 +63,8 @@ class BarData(Object):
         self.barCount = 0
 
     def __str__(self):
-        return "Date: %s, Open: %s, High: %s, Low: %s, Close: %s, Volume: %s, WAP: %s, BarCount: %s" % (self.date, ibapi.utils.floatMaxString(self.open), 
-            ibapi.utils.floatMaxString(self.high), ibapi.utils.floatMaxString(self.low), ibapi.utils.floatMaxString(self.close), 
+        return "Date: %s, Open: %s, High: %s, Low: %s, Close: %s, Volume: %s, WAP: %s, BarCount: %s" % (self.date, ibapi.utils.floatMaxString(self.open),
+            ibapi.utils.floatMaxString(self.high), ibapi.utils.floatMaxString(self.low), ibapi.utils.floatMaxString(self.close),
             ibapi.utils.decimalMaxString(self.volume), ibapi.utils.decimalMaxString(self.wap), ibapi.utils.intMaxString(self.barCount))
 
 
@@ -82,9 +81,9 @@ class RealTimeBar(Object):
         self.count = count
 
     def __str__(self):
-        return "Time: %s, Open: %s, High: %s, Low: %s, Close: %s, Volume: %s, WAP: %s, Count: %s" % (ibapi.utils.intMaxString(self.time), 
-            ibapi.utils.floatMaxString(self.open), ibapi.utils.floatMaxString(self.high), ibapi.utils.floatMaxString(self.low), 
-            ibapi.utils.floatMaxString(self.close), ibapi.utils.decimalMaxString(self.volume), ibapi.utils.decimalMaxString(self.wap), 
+        return "Time: %s, Open: %s, High: %s, Low: %s, Close: %s, Volume: %s, WAP: %s, Count: %s" % (ibapi.utils.intMaxString(self.time),
+            ibapi.utils.floatMaxString(self.open), ibapi.utils.floatMaxString(self.high), ibapi.utils.floatMaxString(self.low),
+            ibapi.utils.floatMaxString(self.close), ibapi.utils.decimalMaxString(self.volume), ibapi.utils.decimalMaxString(self.wap),
             ibapi.utils.intMaxString(self.count))
 
 
@@ -119,7 +118,7 @@ class DepthMktDataDescription(Object):
             aggGroup = self.aggGroup
         else:
             aggGroup = ""
-        return "Exchange: %s, SecType: %s, ListingExchange: %s, ServiceDataType: %s, AggGroup: %s, " % (self.exchange, self.secType, 
+        return "Exchange: %s, SecType: %s, ListingExchange: %s, ServiceDataType: %s, AggGroup: %s, " % (self.exchange, self.secType,
             self.listingExch,self.serviceDataType, ibapi.utils.intMaxString(aggGroup))
 
 
@@ -199,8 +198,8 @@ class HistoricalTickBidAsk(Object):
         self.sizeAsk = UNSET_DECIMAL
 
     def __str__(self):
-        return "Time: %s, TickAttriBidAsk: %s, PriceBid: %s, PriceAsk: %s, SizeBid: %s, SizeAsk: %s" % (ibapi.utils.intMaxString(self.time), self.tickAttribBidAsk, 
-            ibapi.utils.floatMaxString(self.priceBid), ibapi.utils.floatMaxString(self.priceAsk), 
+        return "Time: %s, TickAttriBidAsk: %s, PriceBid: %s, PriceAsk: %s, SizeBid: %s, SizeAsk: %s" % (ibapi.utils.intMaxString(self.time), self.tickAttribBidAsk,
+            ibapi.utils.floatMaxString(self.priceBid), ibapi.utils.floatMaxString(self.priceAsk),
             ibapi.utils.decimalMaxString(self.sizeBid), ibapi.utils.decimalMaxString(self.sizeAsk))
 
 
@@ -214,7 +213,7 @@ class HistoricalTickLast(Object):
         self.specialConditions = ""
 
     def __str__(self):
-        return "Time: %s, TickAttribLast: %s, Price: %s, Size: %s, Exchange: %s, SpecialConditions: %s" % (ibapi.utils.intMaxString(self.time), self.tickAttribLast, 
+        return "Time: %s, TickAttribLast: %s, Price: %s, Size: %s, Exchange: %s, SpecialConditions: %s" % (ibapi.utils.intMaxString(self.time), self.tickAttribLast,
             ibapi.utils.floatMaxString(self.price), ibapi.utils.decimalMaxString(self.size), self.exchange, self.specialConditions)
 
 class HistoricalSession(Object):
@@ -238,6 +237,5 @@ class WshEventData(Object):
         self.totalLimit = UNSET_INTEGER
 
     def __str__(self):
-        return "WshEventData. ConId: %s, Filter: %s, Fill Watchlist: %d, Fill Portfolio: %d, Fill Competitors: %d" % (ibapi.utils.intMaxString(self.conId), 
+        return "WshEventData. ConId: %s, Filter: %s, Fill Watchlist: %d, Fill Portfolio: %d, Fill Competitors: %d" % (ibapi.utils.intMaxString(self.conId),
             self.filter, self.fillWatchlist, self.fillPortfolio, self.fillCompetitors)
-

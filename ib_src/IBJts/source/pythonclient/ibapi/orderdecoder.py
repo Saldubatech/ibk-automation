@@ -3,34 +3,34 @@ Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is su
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
 import logging
-from _decimal import Decimal
 
+from _decimal import Decimal
 from ibapi import order_condition
 from ibapi.const import UNSET_DOUBLE
+from ibapi.contract import ComboLeg
 from ibapi.object_implem import Object
 from ibapi.order import OrderComboLeg
-from ibapi.contract import ComboLeg
 from ibapi.server_versions import (
+    MIN_CLIENT_VER,
+    MIN_SERVER_VER_AUTO_PRICE_FOR_HEDGE,
+    MIN_SERVER_VER_CASH_QTY,
+    MIN_SERVER_VER_D_PEG_ORDERS,
+    MIN_SERVER_VER_DURATION,
     MIN_SERVER_VER_FA_PROFILE_DESUPPORT,
     MIN_SERVER_VER_MODELS_SUPPORT,
+    MIN_SERVER_VER_ORDER_CONTAINER,
+    MIN_SERVER_VER_PEGBEST_PEGMID_OFFSETS,
+    MIN_SERVER_VER_PEGGED_TO_BENCHMARK,
+    MIN_SERVER_VER_POST_TO_ATS,
+    MIN_SERVER_VER_PRICE_MGMT_ALGO,
+    MIN_SERVER_VER_SOFT_DOLLAR_TIER,
     MIN_SERVER_VER_SSHORTX_OLD,
     MIN_SERVER_VER_WHAT_IF_EXT_FIELDS,
-    MIN_SERVER_VER_PEGGED_TO_BENCHMARK,
-    MIN_SERVER_VER_SOFT_DOLLAR_TIER,
-    MIN_SERVER_VER_CASH_QTY,
-    MIN_SERVER_VER_AUTO_PRICE_FOR_HEDGE,
-    MIN_SERVER_VER_ORDER_CONTAINER,
-    MIN_SERVER_VER_D_PEG_ORDERS,
-    MIN_CLIENT_VER,
-    MIN_SERVER_VER_PRICE_MGMT_ALGO,
-    MIN_SERVER_VER_DURATION,
-    MIN_SERVER_VER_POST_TO_ATS,
-    MIN_SERVER_VER_PEGBEST_PEGMID_OFFSETS,
 )
-from ibapi.tag_value import TagValue
-from ibapi.utils import decode, SHOW_UNSET, isPegBenchOrder
-from ibapi.wrapper import DeltaNeutralContract
 from ibapi.softdollartier import SoftDollarTier
+from ibapi.tag_value import TagValue
+from ibapi.utils import SHOW_UNSET, decode, isPegBenchOrder
+from ibapi.wrapper import DeltaNeutralContract
 
 logger = logging.getLogger(__name__)
 

@@ -2,11 +2,12 @@
 Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
+import sys
+
 # from distutils.core import setup
 from setuptools import setup
-from ib_src.IBJts.source.pythonclient.ibapi import get_version_string
 
-import sys
+from ib_src.IBJts.source.pythonclient.ibapi import get_version_string
 
 if sys.version_info < (3, 1):
     sys.exit("Only Python 3.1 and greater is supported")

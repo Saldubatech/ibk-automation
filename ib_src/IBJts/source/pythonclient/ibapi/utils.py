@@ -3,20 +3,12 @@ Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is su
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
 
-import sys
-import logging
 import inspect
-
+import logging
+import sys
 from decimal import Decimal
 
-from ibapi.const import (
-    UNSET_INTEGER,
-    UNSET_DOUBLE,
-    UNSET_LONG,
-    UNSET_DECIMAL,
-    DOUBLE_INFINITY,
-    INFINITY_STR,
-)
+from ibapi.const import DOUBLE_INFINITY, INFINITY_STR, UNSET_DECIMAL, UNSET_DOUBLE, UNSET_INTEGER, UNSET_LONG
 
 """
 Collection of misc tools

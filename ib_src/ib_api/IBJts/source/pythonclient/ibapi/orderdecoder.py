@@ -4,14 +4,14 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 from ibapi import order_condition
-from ibapi.object_implem import Object
-from ibapi.utils import * # @UnusedWildImport
-from ibapi.server_versions import * # @UnusedWildImport
-from ibapi.order import OrderComboLeg
 from ibapi.contract import ComboLeg
-from ibapi.tag_value import TagValue
-from ibapi.wrapper import DeltaNeutralContract
+from ibapi.object_implem import Object
+from ibapi.order import OrderComboLeg
+from ibapi.server_versions import *  # @UnusedWildImport
 from ibapi.softdollartier import SoftDollarTier
+from ibapi.tag_value import TagValue
+from ibapi.utils import *  # @UnusedWildImport
+from ibapi.wrapper import DeltaNeutralContract
 
 logger = logging.getLogger(__name__)
 
@@ -65,10 +65,10 @@ class OrderDecoder(Object):
 
     def decodeTIF(self, fields):
         self.order.tif = decode(str, fields)
-        
+
     def decodeOcaGroup(self, fields):
         self.order.ocaGroup = decode(str, fields)
-        
+
     def decodeAccount(self, fields):
         self.order.account = decode(str, fields)
 
@@ -80,10 +80,10 @@ class OrderDecoder(Object):
 
     def decodeOrderRef(self, fields):
         self.order.orderRef = decode(str, fields)
-        
+
     def decodeClientId(self, fields):
         self.order.clientId = decode(int, fields)
-        
+
     def decodePermId(self, fields):
         self.order.permId = decode(int, fields)
 
@@ -98,7 +98,7 @@ class OrderDecoder(Object):
 
     def decodeGoodAfterTime(self, fields):
         self.order.goodAfterTime = decode(str, fields)
-        
+
     def skipSharesAllocation(self, fields):
         _sharesAllocation = decode(str, fields) # deprecated
 
@@ -117,10 +117,10 @@ class OrderDecoder(Object):
 
     def decodeRule80A(self, fields):
         self.order.rule80A = decode(str, fields)
-        
+
     def decodePercentOffset(self, fields):
         self.order.percentOffset = decode(float, fields, SHOW_UNSET)
-        
+
     def decodeSettlingFirm(self, fields):
         self.order.settlingFirm = decode(str, fields)
 
@@ -158,7 +158,7 @@ class OrderDecoder(Object):
 
     def decodeMinQty(self, fields):
         self.order.minQty = decode(int, fields, SHOW_UNSET)
-        
+
     def decodeOcaType(self, fields):
         self.order.ocaType = decode(int, fields)
 
@@ -170,10 +170,10 @@ class OrderDecoder(Object):
 
     def skipNbboPriceCap(self, fields):
         _nbboPriceCap = decode(float, fields, SHOW_UNSET) # deprecated
-        
+
     def decodeParentId(self, fields):
         self.order.parentId = decode(int, fields)
-                
+
     def decodeTriggerMethod(self, fields):
         self.order.triggerMethod = decode(int, fields)
 
@@ -209,7 +209,7 @@ class OrderDecoder(Object):
     def decodeBasisPoints(self, fields):
         self.order.basisPoints = decode(float, fields, SHOW_UNSET)
         self.order.basisPointsType = decode(int, fields, SHOW_UNSET)
-        
+
     def decodeComboLegs(self, fields):
         self.contract.comboLegsDescrip = decode(str, fields)
 
@@ -288,7 +288,7 @@ class OrderDecoder(Object):
     def decodeNotHeld(self, fields):
         if self.version >= 22:
             self.order.notHeld = decode(bool, fields)
-            
+
     def decodeDeltaNeutral(self, fields):
         if self.version >= 20:
             deltaNeutralContractPresent = decode(bool, fields)
@@ -297,7 +297,7 @@ class OrderDecoder(Object):
                 self.contract.deltaNeutralContract.conId = decode(int, fields)
                 self.contract.deltaNeutralContract.delta = decode(float, fields)
                 self.contract.deltaNeutralContract.price = decode(float, fields)
-            
+
     def decodeAlgoParams(self, fields):
         if self.version >= 21:
             self.order.algoStrategy = decode(str, fields)
@@ -343,7 +343,7 @@ class OrderDecoder(Object):
         if self.version >= 34:
             self.order.randomizeSize = decode(bool, fields)
             self.order.randomizePrice = decode(bool, fields)
-        
+
     def decodePegToBenchParams(self, fields):
         if self.serverVersion >= MIN_SERVER_VER_PEGGED_TO_BENCHMARK:
             if self.order.orderType == "PEG BENCH":
@@ -352,7 +352,7 @@ class OrderDecoder(Object):
                 self.order.peggedChangeAmount = decode(float, fields)
                 self.order.referenceChangeAmount = decode(float, fields)
                 self.order.referenceExchangeId = decode(str, fields)
-        
+
     def decodeConditions(self, fields):
         if self.serverVersion >= MIN_SERVER_VER_PEGGED_TO_BENCHMARK:
             conditionsSize = decode(int, fields)
@@ -366,8 +366,8 @@ class OrderDecoder(Object):
 
                 self.order.conditionsIgnoreRth = decode(bool, fields)
                 self.order.conditionsCancelOrder = decode(bool, fields)
-        
-            
+
+
     def decodeAdjustedOrderParams(self, fields):
         if self.serverVersion >= MIN_SERVER_VER_PEGGED_TO_BENCHMARK:
             self.order.adjustedOrderType = decode(str, fields)
@@ -377,11 +377,11 @@ class OrderDecoder(Object):
             self.order.adjustedStopLimitPrice = decode(float, fields)
             self.order.adjustedTrailingAmount = decode(float, fields)
             self.order.adjustableTrailingUnit = decode(int, fields)
-            
+
     def decodeStopPriceAndLmtPriceOffset(self, fields):
             self.order.trailStopPrice = decode(float, fields)
             self.order.lmtPriceOffset = decode(float, fields)
-            
+
     def decodeSoftDollarTier(self, fields):
         if self.serverVersion >= MIN_SERVER_VER_SOFT_DOLLAR_TIER:
             name = decode(str, fields)
@@ -439,11 +439,11 @@ class OrderDecoder(Object):
     def decodeUsePriceMgmtAlgo(self, fields):
         if self.serverVersion >= MIN_SERVER_VER_PRICE_MGMT_ALGO:
             self.order.usePriceMgmtAlgo = decode(bool, fields)
-            
+
     def decodeDuration(self, fields):
         if self.serverVersion >= MIN_SERVER_VER_DURATION:
             self.order.duration = decode(int, fields, SHOW_UNSET)
-            
+
     def decodePostToAts(self, fields):
         if self.serverVersion >= MIN_SERVER_VER_POST_TO_ATS:
             self.order.postToAts = decode(int, fields, SHOW_UNSET)

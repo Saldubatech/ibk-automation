@@ -10,18 +10,18 @@ It will call the corresponding method from the EWrapper so that customer's code
 (eg: class derived from EWrapper) can make further use of the data.
 """
 
-from ibapi.message import IN
-from ibapi.wrapper import * # @UnusedWildImport
+from ibapi.common import *  # @UnusedWildImport
 from ibapi.contract import ContractDescription
-from ibapi.server_versions import * # @UnusedWildImport
-from ibapi.utils import * # @UnusedWildImport
-from ibapi.softdollartier import SoftDollarTier
-from ibapi.ticktype import * # @UnusedWildImport
-from ibapi.tag_value import TagValue
-from ibapi.scanner import ScanData
 from ibapi.errors import BAD_MESSAGE
-from ibapi.common import * # @UnusedWildImport
+from ibapi.message import IN
 from ibapi.orderdecoder import OrderDecoder
+from ibapi.scanner import ScanData
+from ibapi.server_versions import *  # @UnusedWildImport
+from ibapi.softdollartier import SoftDollarTier
+from ibapi.tag_value import TagValue
+from ibapi.ticktype import *  # @UnusedWildImport
+from ibapi.utils import *  # @UnusedWildImport
+from ibapi.wrapper import *  # @UnusedWildImport
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ class Decoder(Object):
     def processOpenOrder(self, fields):
 
         next(fields)
-        
+
         order = Order()
         contract = Contract()
         orderState = OrderState()
@@ -138,7 +138,7 @@ class Decoder(Object):
         else:
             version = self.serverVersion
 
-        
+
         OrderDecoder.__init__(self, contract, order, orderState, version, self.serverVersion)
 
         # read orderId
@@ -803,7 +803,7 @@ class Decoder(Object):
                 derivSecType = decode(str, fields)
                 conDesc.derivativeSecTypes.append(derivSecType)
             contractDescriptions.append(conDesc)
-            
+
             if self.serverVersion >= MIN_SERVER_VER_BOND_ISSUERID:
                 conDesc.contract.description = decode(str, fields)
                 conDesc.contract.issuerId = decode(str, fields)
@@ -1137,7 +1137,7 @@ class Decoder(Object):
 
     def processCompletedOrderMsg(self, fields):
         next(fields)
-        
+
         order = Order()
         contract = Contract()
         orderState = OrderState()
@@ -1216,7 +1216,7 @@ class Decoder(Object):
         next(fields)
 
         self.wrapper.completedOrdersEnd()
-        
+
     def processReplaceFAEndMsg(self, fields):
         next(fields)
         reqId = decode(int, fields)
@@ -1281,11 +1281,11 @@ class Decoder(Object):
     def readLastTradeDate(self, fields, contract: ContractDetails, isBond: bool):
         lastTradeDateOrContractMonth = decode(str, fields)
         if lastTradeDateOrContractMonth is not None:
-            if '-' in lastTradeDateOrContractMonth: 
+            if '-' in lastTradeDateOrContractMonth:
                 splitted = lastTradeDateOrContractMonth.split('-')
             else:
                 splitted = lastTradeDateOrContractMonth.split()
-                
+
             if len(splitted) > 0:
                 if isBond:
                     contract.maturity = splitted[0]
@@ -1476,6 +1476,3 @@ class Decoder(Object):
         IN.HISTORICAL_SCHEDULE: HandleInfo(proc=processHistoricalSchedule),
         IN.USER_INFO: HandleInfo(proc=processUserInfo)
 }
-
-
-

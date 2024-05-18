@@ -5,14 +5,13 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 This module has tools for implementing the IB low level messaging.
 """
 
-import struct
 import logging
+import struct
 import sys
 
-from ibapi.const import UNSET_INTEGER, UNSET_DOUBLE, DOUBLE_INFINITY, INFINITY_STR
-from ibapi.utils import ClientException
-from ibapi.utils import isAsciiPrintable
+from ibapi.const import DOUBLE_INFINITY, INFINITY_STR, UNSET_DOUBLE, UNSET_INTEGER
 from ibapi.errors import INVALID_SYMBOL
+from ibapi.utils import ClientException, isAsciiPrintable
 
 logger = logging.getLogger(__name__)
 

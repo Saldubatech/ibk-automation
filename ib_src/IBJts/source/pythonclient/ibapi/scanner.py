@@ -4,8 +4,8 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 
+from ibapi.const import UNSET_DOUBLE, UNSET_INTEGER
 from ibapi.object_implem import Object
-from ibapi.const import UNSET_INTEGER, UNSET_DOUBLE
 
 
 class ScanData(Object):

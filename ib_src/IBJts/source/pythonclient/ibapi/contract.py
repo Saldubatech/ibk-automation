@@ -3,12 +3,11 @@ Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is su
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
 
-from ibapi.object_implem import Object
-from ibapi.const import UNSET_DECIMAL
-from ibapi.utils import intMaxString
-from ibapi.utils import floatMaxString
-from ibapi.utils import decimalMaxString
 from enum import Enum
+
+from ibapi.const import UNSET_DECIMAL
+from ibapi.object_implem import Object
+from ibapi.utils import decimalMaxString, floatMaxString, intMaxString
 
 """
 SAME_POS    = open/close leg value is same as combo
@@ -243,7 +242,7 @@ class ContractDescription(Object):
 
 class FundAssetType(Enum):
     NoneItem = ("None", "None")
-    Others = ("000", "Others"), 
+    Others = ("000", "Others"),
     MoneyMarket = ("001", "Money Market")
     FixedIncome = ("002", "Fixed Income")
     MultiAsset = ("003", "Multi-asset")
@@ -271,4 +270,3 @@ def getEnumTypeName(cls, valueIn):
         if item == valueIn:
             return item.value[1]
     return listOfValues(cls)[0].value[1]
-

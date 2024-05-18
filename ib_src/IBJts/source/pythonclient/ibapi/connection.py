@@ -8,13 +8,13 @@ Just a thin wrapper around a socket.
 It allows us to keep some other info along with it.
 """
 
-import socket
-import threading
 import logging
+import socket
 import sys
-from ibapi.errors import FAIL_CREATE_SOCK
-from ibapi.errors import CONNECT_FAIL
+import threading
+
 from ibapi.const import NO_VALID_ID
+from ibapi.errors import CONNECT_FAIL, FAIL_CREATE_SOCK
 
 # TODO: support SSL !!
 

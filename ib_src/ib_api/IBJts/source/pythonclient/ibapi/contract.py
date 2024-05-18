@@ -11,12 +11,9 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 	UNKNOWN_POS = unknown
 """
 
-from ibapi.object_implem import Object
 from ibapi.common import UNSET_DECIMAL
-from ibapi.utils import intMaxString
-from ibapi.utils import floatMaxString
-from ibapi.utils import decimalMaxString
-
+from ibapi.object_implem import Object
+from ibapi.utils import decimalMaxString, floatMaxString, intMaxString
 
 (SAME_POS, OPEN_POS, CLOSE_POS, UNKNOWN_POS) = range(4)
 
@@ -207,7 +204,7 @@ class ContractDetails(Object):
             decimalMaxString(self.minSize),
             decimalMaxString(self.sizeIncrement),
             decimalMaxString(self.suggestedSizeIncrement)))
-            
+
         return s
 
 
@@ -215,5 +212,3 @@ class ContractDescription(Object):
     def __init__(self):
         self.contract = Contract()
         self.derivativeSecTypes = None   # type: list of strings
-
-

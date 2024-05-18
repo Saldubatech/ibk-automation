@@ -9,14 +9,13 @@ This module has tools for implementing the IB low level messaging.
 """
 
 
-import struct
 import logging
+import struct
 import sys
 
-from ibapi.common import UNSET_INTEGER, UNSET_DOUBLE, DOUBLE_INFINITY, INFINITY_STR
-from ibapi.utils import ClientException
-from ibapi.utils import isAsciiPrintable
+from ibapi.common import DOUBLE_INFINITY, INFINITY_STR, UNSET_DOUBLE, UNSET_INTEGER
 from ibapi.errors import INVALID_SYMBOL
+from ibapi.utils import ClientException, isAsciiPrintable
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ def make_field_handle_empty(val) -> str:
 
     if UNSET_INTEGER == val or UNSET_DOUBLE == val:
         val = ""
-        
+
     if DOUBLE_INFINITY == val:
         val = INFINITY_STR
 
@@ -80,6 +79,3 @@ def read_fields(buf:bytes) -> tuple:
     fields = buf.split(b"\0")
 
     return tuple(fields[0:-1])   #last one is empty; this may slow dow things though, TODO
-
-
-

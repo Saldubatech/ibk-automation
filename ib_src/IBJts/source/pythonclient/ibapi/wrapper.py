@@ -18,35 +18,33 @@ server and client.
 import logging
 from decimal import Decimal
 
+from ibapi.commission_report import CommissionReport
 from ibapi.common import (
-    TickerId,
-    TickAttrib,
-    OrderId,
-    FaDataType,
     BarData,
-    SetOfString,
-    SetOfFloat,
-    ListOfFamilyCode,
+    FaDataType,
+    HistogramData,
     ListOfContractDescription,
     ListOfDepthExchanges,
-    SmartComponentMap,
-    ListOfNewsProviders,
-    HistogramData,
-    ListOfPriceIncrements,
+    ListOfFamilyCode,
+    ListOfHistoricalSessions,
     ListOfHistoricalTick,
     ListOfHistoricalTickBidAsk,
     ListOfHistoricalTickLast,
-    TickAttribLast,
+    ListOfNewsProviders,
+    ListOfPriceIncrements,
+    OrderId,
+    SetOfFloat,
+    SetOfString,
+    SmartComponentMap,
+    TickAttrib,
     TickAttribBidAsk,
-    ListOfHistoricalSessions,
+    TickAttribLast,
+    TickerId,
 )
-
 from ibapi.contract import Contract, ContractDetails, DeltaNeutralContract
+from ibapi.execution import Execution
 from ibapi.order import Order
 from ibapi.order_state import OrderState
-from ibapi.execution import Execution
-
-from ibapi.commission_report import CommissionReport
 from ibapi.ticktype import TickType
 from ibapi.utils import current_fn_name, log_
 

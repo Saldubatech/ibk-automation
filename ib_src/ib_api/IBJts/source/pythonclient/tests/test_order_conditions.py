@@ -8,7 +8,6 @@ import unittest
 from ibapi.order_condition import *
 
 
-
 class ConditionOrderTestCase(unittest.TestCase):
     conds = [
         VolumeCondition(8314, "SMART", True, 1000000).And(),
@@ -27,4 +26,4 @@ class ConditionOrderTestCase(unittest.TestCase):
 
 if "__main__" == __name__:
     unittest.main()
- 
+

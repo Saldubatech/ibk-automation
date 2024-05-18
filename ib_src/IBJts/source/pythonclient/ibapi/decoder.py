@@ -12,20 +12,18 @@ It will call the corresponding method from the EWrapper so that customer's code
 (eg: class derived from EWrapper) can make further use of the data.
 """
 
-from ibapi.message import IN
-from ibapi.wrapper import *  # @UnusedWildImport
-from ibapi.contract import ContractDescription
-from ibapi.server_versions import *  # @UnusedWildImport
-from ibapi.utils import *  # @UnusedWildImport
-from ibapi.softdollartier import SoftDollarTier
-from ibapi.ticktype import *  # @UnusedWildImport
-from ibapi.tag_value import TagValue
-from ibapi.scanner import ScanData
-from ibapi.errors import BAD_MESSAGE
 from ibapi.common import *  # @UnusedWildImport
+from ibapi.contract import ContractDescription, FundAssetType, FundDistributionPolicyIndicator
+from ibapi.errors import BAD_MESSAGE
+from ibapi.message import IN
 from ibapi.orderdecoder import OrderDecoder
-from ibapi.contract import FundDistributionPolicyIndicator
-from ibapi.contract import FundAssetType
+from ibapi.scanner import ScanData
+from ibapi.server_versions import *  # @UnusedWildImport
+from ibapi.softdollartier import SoftDollarTier
+from ibapi.tag_value import TagValue
+from ibapi.ticktype import *  # @UnusedWildImport
+from ibapi.utils import *  # @UnusedWildImport
+from ibapi.wrapper import *  # @UnusedWildImport
 
 logger = logging.getLogger(__name__)
 

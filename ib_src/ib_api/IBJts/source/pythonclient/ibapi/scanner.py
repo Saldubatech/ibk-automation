@@ -4,8 +4,8 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 
+from ibapi.common import UNSET_DOUBLE, UNSET_INTEGER
 from ibapi.object_implem import Object
-from ibapi.common import UNSET_INTEGER, UNSET_DOUBLE
 
 
 class ScanData(Object):
@@ -18,7 +18,7 @@ class ScanData(Object):
         self.legsStr = legsStr
 
     def __str__(self):
-        return "Rank: %d, Symbol: %s, SecType: %s, Currency: %s, Distance: %s, Benchmark: %s, Projection: %s, Legs String: %s" % (self.rank, 
+        return "Rank: %d, Symbol: %s, SecType: %s, Currency: %s, Distance: %s, Benchmark: %s, Projection: %s, Legs String: %s" % (self.rank,
             self.contract.symbol, self.contract.secType, self.contract.currency, self.distance,
             self.benchmark, self.projection, self.legsStr)
 
@@ -44,7 +44,7 @@ class ScannerSubscription(Object):
         self.maturityDateAbove =  ""
         self.maturityDateBelow =  ""
         self.couponRateAbove = UNSET_DOUBLE
-        self.couponRateBelow = UNSET_DOUBLE 
+        self.couponRateBelow = UNSET_DOUBLE
         self.excludeConvertible = False
         self.averageOptionVolumeAbove = UNSET_INTEGER
         self.scannerSettingPairs =  ""
@@ -53,4 +53,3 @@ class ScannerSubscription(Object):
     def __str__(self):
         s = "Instrument: %s, LocationCode: %s, ScanCode: %s" % (self.instrument, self.locationCode, self.scanCode)
         return s
-

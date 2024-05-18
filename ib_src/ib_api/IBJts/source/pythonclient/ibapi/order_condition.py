@@ -6,11 +6,11 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 
 from ibapi import comm
 from ibapi.common import UNSET_DOUBLE
-from ibapi.object_implem import Object
 from ibapi.enum_implem import Enum
+from ibapi.object_implem import Object
 from ibapi.utils import decode
 
-#TODO: add support for Rebate, P/L, ShortableShares conditions 
+#TODO: add support for Rebate, P/L, ShortableShares conditions
 
 
 class OrderCondition(Object):
@@ -42,7 +42,7 @@ class OrderCondition(Object):
 
     def make_fields(self):
         return [comm.make_field("a" if self.isConjunctionConnection else "o")]
- 
+
     def __str__(self):
         return "<AND>" if self.isConjunctionConnection else "<OR>"
 
@@ -63,14 +63,14 @@ class ExecutionCondition(OrderCondition):
     def make_fields(self):
         flds = OrderCondition.make_fields(self) + \
             [comm.make_field(self.secType),
-            comm.make_field(self.exchange), 
+            comm.make_field(self.exchange),
             comm.make_field(self.symbol)]
         return flds
- 
+
     def __str__(self):
         return "trade occurs for " + self.symbol + " symbol on " + \
             self.exchange + " exchange for " + self.secType + " security type"
-        
+
 
 class OperatorCondition(OrderCondition):
     def __init__(self, condType=None, isMore=None):
@@ -98,7 +98,7 @@ class OperatorCondition(OrderCondition):
     def __str__(self):
         sb = ">= " if self.isMore else "<= "
         return " %s %s" % (sb, self.valueToString())
- 
+
 
 class MarginCondition(OperatorCondition):
     def __init__(self, isMore=None, percent=None):
@@ -117,11 +117,11 @@ class MarginCondition(OperatorCondition):
 
     def setValueFromString(self, text: str) -> None:
         self.percent = float(text)
- 
+
     def __str__(self):
         return "the margin cushion percent %s " % (
             OperatorCondition.__str__(self))
- 
+
 
 class ContractCondition(OperatorCondition):
     def __init__(self, condType=None, conId=None, exch=None, isMore=None):
@@ -141,9 +141,9 @@ class ContractCondition(OperatorCondition):
         return flds
 
     def __str__(self):
-        return "%s on %s is %s " % (self.conId, self.exchange, 
+        return "%s on %s is %s " % (self.conId, self.exchange,
             OperatorCondition.__str__(self))
- 
+
 
 class TimeCondition(OperatorCondition):
     def __init__(self, isMore=None, time=None):
@@ -162,11 +162,11 @@ class TimeCondition(OperatorCondition):
 
     def setValueFromString(self, text: str) -> None:
         self.time = text
- 
-    def __str__(self):
-        return "time is %s " % (OperatorCondition.__str__(self))  
 
-                          
+    def __str__(self):
+        return "time is %s " % (OperatorCondition.__str__(self))
+
+
 class PriceCondition(ContractCondition):
     TriggerMethodEnum = Enum(
           "Default", # = 0,
@@ -178,10 +178,10 @@ class PriceCondition(ContractCondition):
           "N/A2",
           "LastBidAsk", #= 7,
           "MidPoint") #= 8
-     
-    def __init__(self, triggerMethod=None, conId=None, exch=None, isMore=None, 
+
+    def __init__(self, triggerMethod=None, conId=None, exch=None, isMore=None,
                  price=None):
-        ContractCondition.__init__(self, OrderCondition.Price, conId, exch, 
+        ContractCondition.__init__(self, OrderCondition.Price, conId, exch,
                                    isMore)
         self.price = price
         self.triggerMethod = triggerMethod
@@ -200,10 +200,10 @@ class PriceCondition(ContractCondition):
 
     def setValueFromString(self, text: str) -> None:
         self.price = float(text)
- 
+
     def __str__(self):
         return "%s price of %s " % (
-            PriceCondition.TriggerMethodEnum.to_str(self.triggerMethod), 
+            PriceCondition.TriggerMethodEnum.to_str(self.triggerMethod),
             ContractCondition.__str__(self))
 
 
@@ -230,11 +230,11 @@ class PercentChangeCondition(ContractCondition):
     def __str__(self):
         return "percent change of %s " % (
             ContractCondition.__str__(self))
-  
+
 
 class VolumeCondition(ContractCondition):
     def __init__(self, conId=None, exch=None, isMore=None, volume=None):
-        ContractCondition.__init__(self, OrderCondition.Volume, conId, exch, 
+        ContractCondition.__init__(self, OrderCondition.Volume, conId, exch,
                                    isMore)
         self.volume = volume
 
@@ -254,7 +254,7 @@ class VolumeCondition(ContractCondition):
     def __str__(self):
         return "volume of %s " % (
             ContractCondition.__str__(self))
- 
+
 
 def Create(condType):
     cond = None

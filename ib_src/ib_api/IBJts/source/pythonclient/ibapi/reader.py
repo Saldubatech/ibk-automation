@@ -16,7 +16,6 @@ from threading import Thread
 
 from ibapi import comm
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -51,4 +50,3 @@ class EReader(Thread):
             logger.debug("EReader thread finished")
         except:
             logger.exception('unhandled exception in EReader thread')
-

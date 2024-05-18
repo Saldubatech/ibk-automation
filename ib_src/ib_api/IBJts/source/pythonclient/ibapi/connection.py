@@ -10,14 +10,13 @@ It allows us to keep some other info along with it.
 """
 
 
-import socket
-import threading
 import logging
+import socket
 import sys
-from ibapi.errors import FAIL_CREATE_SOCK
-from ibapi.errors import CONNECT_FAIL
-from ibapi.common import NO_VALID_ID
+import threading
 
+from ibapi.common import NO_VALID_ID
+from ibapi.errors import CONNECT_FAIL, FAIL_CREATE_SOCK
 
 #TODO: support SSL !!
 
@@ -105,7 +104,7 @@ class Connection:
             self.disconnect()
             buf = b""
         except OSError:
-            # Thrown if the socket was closed (ex: disconnected at end of script) 
+            # Thrown if the socket was closed (ex: disconnected at end of script)
             # while waiting for self.socket.recv() to timeout.
             logger.debug("Socket is broken or closed.")
 
@@ -124,4 +123,3 @@ class Connection:
                 cont = False
 
         return allbuf
-

@@ -4,8 +4,8 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 from ibapi.object_implem import Object
-from ibapi.tag_value import TagValue
 from ibapi.order import Order
+from ibapi.tag_value import TagValue
 
 
 class AvailableAlgoParams(Object):

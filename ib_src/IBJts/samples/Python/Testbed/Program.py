@@ -4,40 +4,34 @@ Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 import argparse
-import datetime
 import collections
+import datetime
 import inspect
-
 import logging
-import time
 import os.path
-
-from ibapi import wrapper
-from ibapi.client import EClient
-from ibapi.utils import longMaxString
-from ibapi.utils import iswrapper
-
-# types
-from ibapi.common import * # @UnusedWildImport
-from ibapi.order_condition import * # @UnusedWildImport
-from ibapi.contract import * # @UnusedWildImport
-from ibapi.order import * # @UnusedWildImport
-from ibapi.order_state import * # @UnusedWildImport
-from ibapi.execution import Execution
-from ibapi.execution import ExecutionFilter
-from ibapi.commission_report import CommissionReport
-from ibapi.ticktype import * # @UnusedWildImport
-from ibapi.tag_value import TagValue
-
-from ibapi.account_summary_tags import *
+import time
+from decimal import Decimal
 
 from ContractSamples import ContractSamples
-from samples.OrderSamples import OrderSamples
-from samples.AvailableAlgoParams import AvailableAlgoParams
-from samples.ScannerSubscriptionSamples import ScannerSubscriptionSamples
 from FaAllocationSamples import FaAllocationSamples
+from ibapi import wrapper
+from ibapi.account_summary_tags import *
+from ibapi.client import EClient
+from ibapi.commission_report import CommissionReport
+# types
+from ibapi.common import *  # @UnusedWildImport
+from ibapi.contract import *  # @UnusedWildImport
+from ibapi.execution import Execution, ExecutionFilter
+from ibapi.order import *  # @UnusedWildImport
+from ibapi.order_condition import *  # @UnusedWildImport
+from ibapi.order_state import *  # @UnusedWildImport
 from ibapi.scanner import ScanData
-from decimal import Decimal
+from ibapi.tag_value import TagValue
+from ibapi.ticktype import *  # @UnusedWildImport
+from ibapi.utils import iswrapper, longMaxString
+from samples.AvailableAlgoParams import AvailableAlgoParams
+from samples.OrderSamples import OrderSamples
+from samples.ScannerSubscriptionSamples import ScannerSubscriptionSamples
 
 
 def SetupLogger():
@@ -77,7 +71,7 @@ def printinstance(inst:Object):
                                    floatMaxString(value) if type(value) is float else
                                    intMaxString(value) if type(value) is int else
                                    getEnumTypeName(FundAssetType, value) if type(value) is FundAssetType else
-                                   getEnumTypeName(FundDistributionPolicyIndicator, value) if type(value) is FundDistributionPolicyIndicator else  
+                                   getEnumTypeName(FundDistributionPolicyIndicator, value) if type(value) is FundDistributionPolicyIndicator else
                                    value) for key, value in attrs.items()))
 
 class Activity(Object):
@@ -285,7 +279,7 @@ class TestApp(TestWrapper, TestClient):
             #self.tickByTickOperations_req()
             #self.whatIfOrderOperations()
             #self.wshCalendarOperations()
-            
+
             print("Executing requests ... finished")
 
     def keyboardInterrupt(self):
@@ -342,10 +336,10 @@ class TestApp(TestWrapper, TestClient):
     def openOrder(self, orderId: OrderId, contract: Contract, order: Order,
                   orderState: OrderState):
         super().openOrder(orderId, contract, order, orderState)
-        print("OpenOrder. PermId:", intMaxString(order.permId), "ClientId:", intMaxString(order.clientId), " OrderId:", intMaxString(orderId), 
+        print("OpenOrder. PermId:", intMaxString(order.permId), "ClientId:", intMaxString(order.clientId), " OrderId:", intMaxString(orderId),
               "Account:", order.account, "Symbol:", contract.symbol, "SecType:", contract.secType,
               "Exchange:", contract.exchange, "Action:", order.action, "OrderType:", order.orderType,
-              "TotalQty:", decimalMaxString(order.totalQuantity), "CashQty:", floatMaxString(order.cashQty), 
+              "TotalQty:", decimalMaxString(order.totalQuantity), "CashQty:", floatMaxString(order.cashQty),
               "LmtPrice:", floatMaxString(order.lmtPrice), "AuxPrice:", floatMaxString(order.auxPrice), "Status:", orderState.status,
               "MinTradeQty:", intMaxString(order.minTradeQty), "MinCompeteSize:", intMaxString(order.minCompeteSize),
               "competeAgainstBestOffset:", "UpToMid" if order.competeAgainstBestOffset == COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID else floatMaxString(order.competeAgainstBestOffset),
@@ -508,7 +502,7 @@ class TestApp(TestWrapper, TestClient):
         # ! [managedaccounts]
 
         self.account = accountsList.split(",")[0]
-        
+
         if self.nextValidOrderId is not None:
             self.start()
 
@@ -663,7 +657,7 @@ class TestApp(TestWrapper, TestClient):
     @printWhenExecuting
     def tickDataOperations_req(self):
         self.reqMarketDataType(MarketDataTypeEnum.DELAYED_FROZEN)
-        
+
         # Requesting real time market data
 
         # ! [reqmktdata]
@@ -704,7 +698,7 @@ class TestApp(TestWrapper, TestClient):
         # Requesting data for an option contract will return the greek values
         self.reqMktData(1013, ContractSamples.OptionWithLocalSymbol(), "", False, False, [])
         self.reqMktData(1014, ContractSamples.FuturesOnOptions(), "", False, False, [])
-        
+
         # ! [reqoptiondatagenticks]
 
         # ! [reqfuturesopeninterest]
@@ -718,12 +712,12 @@ class TestApp(TestWrapper, TestClient):
         # ! [reqavgoptvolume]
         self.reqMktData(1017, ContractSamples.USStockAtSmart(), "mdoff,105", False, False, [])
         # ! [reqavgoptvolume]
-        
+
         # ! [reqsmartcomponents]
         # Requests description of map of single letter exchange codes to full exchange names
         self.reqSmartComponents(1018, "a6")
         # ! [reqsmartcomponents]
-        
+
         # ! [reqetfticks]
         self.reqMktData(1019, ContractSamples.etf(), "mdoff,576,577,578,623,614", False, False, [])
         # ! [reqetfticks]
@@ -731,7 +725,7 @@ class TestApp(TestWrapper, TestClient):
         # ! [reqetfticks]
         self.reqMktData(1020, ContractSamples.StockWithIPOPrice(), "mdoff,586", False, False, [])
         # ! [reqetfticks]
-        
+
         # ! [yieldbidask]
         self.reqMktData(1021, ContractSamples.Bond(), "", False, False, [])
         # ! [yieldbidask]
@@ -745,24 +739,24 @@ class TestApp(TestWrapper, TestClient):
         # ! [cancelmktdata]
 
         self.cancelMktData(1004)
-        
+
         self.cancelMktData(1005)
         self.cancelMktData(1006)
         self.cancelMktData(1007)
         self.cancelMktData(1008)
-        
+
         self.cancelMktData(1009)
         self.cancelMktData(1010)
         self.cancelMktData(1011)
         self.cancelMktData(1012)
-        
+
         self.cancelMktData(1013)
         self.cancelMktData(1014)
-        
+
         self.cancelMktData(1015)
-        
+
         self.cancelMktData(1016)
-        
+
         self.cancelMktData(1017)
 
         self.cancelMktData(1019)
@@ -875,7 +869,7 @@ class TestApp(TestWrapper, TestClient):
         self.cancelTickByTickData(19007)
         self.cancelTickByTickData(19008)
         # ! [canceltickbytickwithhist]
-        
+
     @iswrapper
     # ! [orderbound]
     def orderBound(self, orderId: int, apiClientId: int, apiOrderId: int):
@@ -1018,7 +1012,7 @@ class TestApp(TestWrapper, TestClient):
         # ! [cancelHeadTimestamp]
         self.cancelHeadTimeStamp(4101)
         # ! [cancelHeadTimestamp]
-        
+
         # Canceling historical data requests
         # ! [cancelhistoricaldata]
         self.cancelHistoricalData(4102)
@@ -1312,7 +1306,7 @@ class TestApp(TestWrapper, TestClient):
         # ! [reqcomplexscanner]
         AAPLConIDTag = [TagValue("underConID", "265598")]
         self.reqScannerSubscription(7003, ScannerSubscriptionSamples.ComplexOrdersAndTrades(), [], AAPLConIDTag) # requires TWS v975+
-        
+
         # ! [reqcomplexscanner]
 
 
@@ -1387,7 +1381,7 @@ class TestApp(TestWrapper, TestClient):
         # ! [reqfundamentaldata]
         self.reqFundamentalData(8001, ContractSamples.USStock(), "ReportsFinSummary", [])
         # ! [reqfundamentaldata]
-        
+
         # ! [fundamentalexamples]
         self.reqFundamentalData(8002, ContractSamples.USStock(), "ReportSnapshot", []) # for company overview
         self.reqFundamentalData(8003, ContractSamples.USStock(), "ReportRatios", []) # for financial ratios
@@ -1850,24 +1844,24 @@ class TestApp(TestWrapper, TestClient):
         # Attached TRAIL adjusted can only be attached to LMT parent orders.
         # self.placeOrder(self.nextOrderId(), ContractSamples.EuropeanStock(), OrderSamples.AttachAdjustableToTrailAmount(lmtParent, 34, 32, 33, 0.008))
         self.algoSamples()
-        
+
         self.ocaSample()
 
         # Request the day's executions
         # ! [reqexecutions]
         self.reqExecutions(10001, ExecutionFilter())
         # ! [reqexecutions]
-        
+
         # Requesting completed orders
         # ! [reqcompletedorders]
         self.reqCompletedOrders(False)
         # ! [reqcompletedorders]
-        
+
         # Placing crypto order
         # ! [cryptoplaceorder]
         self.placeOrder(self.nextOrderId(), ContractSamples.CryptoContract(), OrderSamples.LimitOrder("BUY", Decimal("0.00001234"), 3370))
         # ! [cryptoplaceorder]
-        
+
 
         # Placing limit order with manual order time
         # ! [place_order_with_manual_order_time]
@@ -1894,12 +1888,12 @@ class TestApp(TestWrapper, TestClient):
             # ! [cancelorder]
             self.cancelOrder(self.simplePlaceOid, "")
             # ! [cancelorder]
-            
+
         # Cancel all orders for all accounts
         # ! [reqglobalcancel]
         self.reqGlobalCancel()
         # ! [reqglobalcancel]
-         
+
         # Cancel limit order with manual order cancel time
         if self.simplePlaceOid is not None:
             # ! [cancel_order_with_manual_order_time]
@@ -1927,7 +1921,7 @@ class TestApp(TestWrapper, TestClient):
         self.reqMarketRule(26)
         self.reqMarketRule(239)
         # ! [reqmarketrule]
-        
+
     def ibkratsSample(self):
         # ! [ibkratssubmit]
         ibkratsOrder = OrderSamples.LimitIBKRATS("BUY", 100, 330)
@@ -1967,10 +1961,10 @@ class TestApp(TestWrapper, TestClient):
     def completedOrder(self, contract: Contract, order: Order,
                   orderState: OrderState):
         super().completedOrder(contract, order, orderState)
-        print("CompletedOrder. PermId:", intMaxString(order.permId), "ParentPermId:", longMaxString(order.parentPermId), "Account:", order.account, 
-              "Symbol:", contract.symbol, "SecType:", contract.secType, "Exchange:", contract.exchange, 
-              "Action:", order.action, "OrderType:", order.orderType, "TotalQty:", decimalMaxString(order.totalQuantity), 
-              "CashQty:", floatMaxString(order.cashQty), "FilledQty:", decimalMaxString(order.filledQuantity), 
+        print("CompletedOrder. PermId:", intMaxString(order.permId), "ParentPermId:", longMaxString(order.parentPermId), "Account:", order.account,
+              "Symbol:", contract.symbol, "SecType:", contract.secType, "Exchange:", contract.exchange,
+              "Action:", order.action, "OrderType:", order.orderType, "TotalQty:", decimalMaxString(order.totalQuantity),
+              "CashQty:", floatMaxString(order.cashQty), "FilledQty:", decimalMaxString(order.filledQuantity),
               "LmtPrice:", floatMaxString(order.lmtPrice), "AuxPrice:", floatMaxString(order.auxPrice), "Status:", orderState.status,
               "Completed time:", orderState.completedTime, "Completed Status:" + orderState.completedStatus,
               "MinTradeQty:", intMaxString(order.minTradeQty), "MinCompeteSize:", intMaxString(order.minCompeteSize),

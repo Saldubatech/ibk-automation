@@ -3,8 +3,9 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
 
-import unittest
 import struct
+import unittest
+
 from ibapi import comm
 
 
@@ -25,7 +26,7 @@ class CommTestCase(unittest.TestCase):
 
         self.assertEqual(size, len(text), "msg size not good")
         self.assertEqual(msg[4:].decode(), text, "msg payload not good")
- 
+
 
     def test_make_field(self):
         text = "ABCD"
@@ -52,15 +53,15 @@ class CommTestCase(unittest.TestCase):
         text2 = "123"
 
         msg = comm.make_msg(comm.make_field(text1) + comm.make_field(text2))
-                
+
         (size, text, rest) = comm.read_msg(msg)
         fields = comm.read_fields(text)
 
         self.assertEqual(len(fields), 2, "incorrect number of fields")
-        self.assertEqual(fields[0].decode(), text1)        
-        self.assertEqual(fields[1].decode(), text2)        
+        self.assertEqual(fields[0].decode(), text1)
+        self.assertEqual(fields[1].decode(), text2)
 
 
 if "__main__" == __name__:
     unittest.main()
-        
+

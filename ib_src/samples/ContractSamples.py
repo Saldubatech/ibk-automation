@@ -3,12 +3,12 @@ Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is su
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
 
-from ibapi.contract import * # @UnusedWildImport
+from ibapi.contract import *  # @UnusedWildImport
 
 
 class ContractSamples:
 
-    """ Usually, the easiest way to define a Stock/CASH contract is through 
+    """ Usually, the easiest way to define a Stock/CASH contract is through
     these four attributes.  """
 
     @staticmethod
@@ -126,7 +126,7 @@ class ContractSamples:
             contract.currency = "USD"
             #! [commoditycontract]
             return contract
-    
+
 
     @staticmethod
     def USStock():
@@ -152,7 +152,7 @@ class ContractSamples:
         #! [stkcontractwithprimary]
         return contract
 
-            
+
     @staticmethod
     def USStockAtSmart():
         contract = Contract()
@@ -203,9 +203,9 @@ class ContractSamples:
         return contract
 
 
-    """ Option contracts require far more information since there are many 
-    contracts having the exact same attributes such as symbol, currency, 
-    strike, etc. This can be overcome by adding more details such as the 
+    """ Option contracts require far more information since there are many
+    contracts having the exact same attributes such as symbol, currency,
+    strike, etc. This can be overcome by adding more details such as the
     trading class"""
 
     @staticmethod
@@ -240,7 +240,7 @@ class ContractSamples:
         #! [optcontract_localsymbol]
         return contract
 
-    """ Dutch Warrants (IOPTs) can be defined using the local symbol or conid 
+    """ Dutch Warrants (IOPTs) can be defined using the local symbol or conid
     """
 
     @staticmethod
@@ -356,9 +356,9 @@ class ContractSamples:
 
 
     """ Or their conId (EUR.uSD sample).
-    Note: passing a contract containing the conId can cause problems if one of 
-    the other provided attributes does not match 100% with what is in IB's 
-    database. This is particularly important for contracts such as Bonds which 
+    Note: passing a contract containing the conId can cause problems if one of
+    the other provided attributes does not match 100% with what is in IB's
+    database. This is particularly important for contracts such as Bonds which
     may change their description from one day to another.
     If the conId is provided, it is best not to give too much information as
     in the example below. """
@@ -509,7 +509,7 @@ class ContractSamples:
     def InterCmdtyFuturesContract():
         #! [intcmdfutcontract]
         contract = Contract()
-        contract.symbol = "COL.WTI" #symbol is 'local symbol' of intercommodity spread. 
+        contract.symbol = "COL.WTI" #symbol is 'local symbol' of intercommodity spread.
         contract.secType = "BAG"
         contract.currency = "USD"
         contract.exchange = "IPE"
@@ -705,7 +705,7 @@ class ContractSamples:
         contract.exchange = "SMART"
         # ! [ByFIGI]
         return contract
-        
+
     @staticmethod
     def ByIssuerId():
         # ! [ByIssuerId]
@@ -732,4 +732,3 @@ def Test():
 
 if "__main__" == __name__:
     Test()
-

@@ -3,34 +3,33 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
  and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
 """
 
-import sys
-import socket
-import struct
+import argparse
 import array
 import datetime
 import inspect
-import time
-import argparse
-
 import os.path
+import socket
+import struct
+import sys
+import time
 
-from ibapi.wrapper import EWrapper
 import ibapi.decoder
 import ibapi.wrapper
-from ibapi.common import *
-from ibapi.ticktype import TickType, TickTypeEnum
-from ibapi.comm import *
-from ibapi.message import IN, OUT
 from ibapi.client import EClient
+from ibapi.comm import *
+from ibapi.common import *
 from ibapi.connection import Connection
-from ibapi.reader import EReader
-from ibapi.utils import *
-from ibapi.execution import ExecutionFilter
-from ibapi.scanner import ScannerSubscription
-from ibapi.order_condition import *
 from ibapi.contract import *
+from ibapi.execution import ExecutionFilter
+from ibapi.message import IN, OUT
 from ibapi.order import *
+from ibapi.order_condition import *
 from ibapi.order_state import *
+from ibapi.reader import EReader
+from ibapi.scanner import ScannerSubscription
+from ibapi.ticktype import TickType, TickTypeEnum
+from ibapi.utils import *
+from ibapi.wrapper import EWrapper
 
 #import pdb; pdb.set_trace()
 #import code; code.interact(local=locals())
@@ -64,7 +63,7 @@ class TestApp(EClient, EWrapper):
 
     def cancelOneOrder(self):
         pass
- 
+
     def nextOrderId(self):
         id = self.nextValidOrderId
         self.nextValidOrderId += 1
@@ -81,7 +80,7 @@ class TestApp(EClient, EWrapper):
         print(current_fn_name(), vars())
 
     @iswrapper
-    def openOrder(self, orderId:OrderId, contract:Contract, order:Order, 
+    def openOrder(self, orderId:OrderId, contract:Contract, order:Order,
                   orderState:OrderState):
         super().openOrder(orderId, contract, order, orderState)
         print(current_fn_name(), vars())
@@ -96,8 +95,8 @@ class TestApp(EClient, EWrapper):
 
     @iswrapper
     def orderStatus(self, orderId:OrderId , status:str, filled:float,
-                    remaining:float, avgFillPrice:float, permId:int, 
-                    parentId:int, lastFillPrice:float, clientId:int, 
+                    remaining:float, avgFillPrice:float, permId:int,
+                    parentId:int, lastFillPrice:float, clientId:int,
                     whyHeld:str):
         super().orderStatus(orderId, status, filled, remaining,
             avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld)
@@ -122,7 +121,7 @@ def main():
     cmdLineParser = argparse.ArgumentParser("api tests")
     #cmdLineParser.add_option("-c", action="store_true", dest="use_cache", default = False, help = "use the cache")
     #cmdLineParser.add_option("-f", action="store", type="string", dest="file", default="", help="the input file")
-    cmdLineParser.add_argument("-p", "--port", action="store", type=int, 
+    cmdLineParser.add_argument("-p", "--port", action="store", type=int,
         dest="port", default = 4005, help="The TCP port to use")
     args = cmdLineParser.parse_args()
     print("Using args", args)
@@ -130,25 +129,25 @@ def main():
     import logging
     logging.debug("Using args %s", args)
     #print(args)
-                                                                                                                                           
+
     logging.debug("now is %s", datetime.datetime.now())
     logging.getLogger().setLevel(logging.ERROR)
 
     #enable logging when member vars are assigned
-    import utils 
+    import utils
     from order import Order
     Order.__setattr__ = utils.setattr_log
-    from contract import Contract,DeltaNeutralContract
+    from contract import Contract, DeltaNeutralContract
     Contract.__setattr__ = utils.setattr_log
     DeltaNeutralContract.__setattr__ = utils.setattr_log
     from tag_value import TagValue
     TagValue.__setattr__ = utils.setattr_log
-    TimeCondition.__setattr__ = utils.setattr_log 
-    ExecutionCondition.__setattr__ = utils.setattr_log  
-    MarginCondition.__setattr__ = utils.setattr_log  
-    PriceCondition.__setattr__ = utils.setattr_log 
-    PercentChangeCondition.__setattr__ = utils.setattr_log 
-    VolumeCondition.__setattr__ = utils.setattr_log 
+    TimeCondition.__setattr__ = utils.setattr_log
+    ExecutionCondition.__setattr__ = utils.setattr_log
+    MarginCondition.__setattr__ = utils.setattr_log
+    PriceCondition.__setattr__ = utils.setattr_log
+    PercentChangeCondition.__setattr__ = utils.setattr_log
+    VolumeCondition.__setattr__ = utils.setattr_log
 
     #from inspect import signature as sig
     #import code; code.interact(local=dict(globals(), **locals()))
@@ -159,15 +158,15 @@ def main():
 
     app.reqCurrentTime()
     app.reqManagedAccts()
-    app.reqAccountSummary(reqId = 2, groupName = "All", 
+    app.reqAccountSummary(reqId = 2, groupName = "All",
                                  tags = "NetLiquidation")
 
     app.reqAllOpenOrders()
 
     contract = Contract()
     contract.symbol = "AMD"
-    contract.secType = "STK"   
-    contract.currency = "USD"  
+    contract.secType = "STK"
+    contract.currency = "USD"
     contract.exchange = "SMART"
     #app.reqMarketDataType(1)
     #app.reqMktData(1001, contract, "", snapshot=True)
@@ -185,9 +184,9 @@ def main():
     #app.requestFA(FaDataTypeEnum.GROUPS)
 
     #app.reqHistoricalData(5001, contract, "20161215 16:00:00", "2 D",
-    #                             "1 hour", "TRADES", 0, 1, []) 
+    #                             "1 hour", "TRADES", 0, 1, [])
     #app.cancelHistoricalData(5001)
-                                 
+
     #app.reqFundamentalData(6001, contract, "ReportSnapshot")
     #app.cancelFundamentalData(6001)
     #app.queryDisplayGroups(7001)
@@ -227,5 +226,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

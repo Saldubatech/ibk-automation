@@ -17,7 +17,6 @@ from ibapi.ticktype import TickType, TickTypeEnum
 from ibapi.utils import *
 from ibapi.wrapper import EWrapper
 
-
 # import pdb; pdb.set_trace()
 # import code; code.interact(local=locals())
 # import code; code.interact(local=dict(globals(), **locals()))

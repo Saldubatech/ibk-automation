@@ -4,6 +4,7 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 import unittest
+
 from ibapi.account_summary_tags import AccountSummaryTags
 
 
@@ -22,4 +23,4 @@ class AccountSummaryTagsTestCase(unittest.TestCase):
 
 if "__main__" == __name__:
     unittest.main()
-              
+

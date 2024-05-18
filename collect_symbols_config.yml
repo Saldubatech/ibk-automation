@@ -1,0 +1,22 @@
+logging:
+  level: INFO
+tws_server:
+  host: 127.0.0.1
+  port: 7497
+  search-delay: 0.5
+client:
+  stand-alone: 0
+  update-conid-db: 1
+inputs:
+  movements_path: data/movements.csv
+  batch: movements_batch
+outputs:
+  unconfirmed_csv_path: data/unconfirmed_contracts.csv
+  not_found_symbols_csv_path: data/symbols_not_found.csv
+trading_db:
+  path: data/trading.db
+  schemas: salduba/ib_tws_proxy/backing_db/schema
+  seed_data: salduba/ib_tws_proxy/backing_db/seed-data
+  expected_version: 0
+  target_version: 1
+  version_date: "2024-02-01 00:00:00.000"

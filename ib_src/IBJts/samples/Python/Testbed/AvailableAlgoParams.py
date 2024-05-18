@@ -4,8 +4,8 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 from ibapi.object_implem import Object
-from ibapi.tag_value import TagValue
 from ibapi.order import Order
+from ibapi.tag_value import TagValue
 
 
 class AvailableAlgoParams(Object):
@@ -289,9 +289,9 @@ class AvailableAlgoParams(Object):
 
     # ! [qbalgo_strobe_params]
     @staticmethod
-    def FillQBAlgoInLineParams(baseOrder: Order, startTime: str, 
-                               endTime: str, duration: float, 
-                               benchmark: str, percentVolume: float, 
+    def FillQBAlgoInLineParams(baseOrder: Order, startTime: str,
+                               endTime: str, duration: float,
+                               benchmark: str, percentVolume: float,
                                noCleanUp: bool):
         # must be direct-routed to "QBALGO"
         baseOrder.algoStrategy = "STROBE"
@@ -300,7 +300,7 @@ class AvailableAlgoParams(Object):
         baseOrder.algoParams.append(TagValue("EndTime", endTime))
         #This example uses endTime instead of duration
         #baseOrder.algoParams.append(TagValue("Duration", str(duration)))
-        baseOrder.algoParams.append(TagValue("Benchmark", benchmark)) 
+        baseOrder.algoParams.append(TagValue("Benchmark", benchmark))
         baseOrder.algoParams.append(TagValue("PercentVolume", str(percentVolume)))
         baseOrder.algoParams.append(TagValue("NoCleanUp", int(noCleanUp)))
     # ! [qbalgo_strobe_params]

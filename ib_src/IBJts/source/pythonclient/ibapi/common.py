@@ -4,10 +4,10 @@ Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 
-from ibapi.const import UNSET_INTEGER, UNSET_DECIMAL
+from ibapi.const import UNSET_DECIMAL, UNSET_INTEGER
 from ibapi.enum_implem import Enum
 from ibapi.object_implem import Object
-from ibapi.utils import floatMaxString, decimalMaxString, intMaxString
+from ibapi.utils import decimalMaxString, floatMaxString, intMaxString
 
 TickerId = int
 OrderId = int

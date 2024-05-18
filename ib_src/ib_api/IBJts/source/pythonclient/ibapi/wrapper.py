@@ -19,15 +19,14 @@ server and client.
 
 """
 
-from ibapi.common import * # @UnusedWildImport
-from ibapi.utils import * # @UnusedWildImport
-from ibapi.contract import (Contract, ContractDetails, DeltaNeutralContract)
+from ibapi.commission_report import CommissionReport
+from ibapi.common import *  # @UnusedWildImport
+from ibapi.contract import Contract, ContractDetails, DeltaNeutralContract
+from ibapi.execution import Execution
 from ibapi.order import Order
 from ibapi.order_state import OrderState
-from ibapi.execution import Execution
-from ibapi.ticktype import * # @UnusedWildImport
-from ibapi.commission_report import CommissionReport
-
+from ibapi.ticktype import *  # @UnusedWildImport
+from ibapi.utils import *  # @UnusedWildImport
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +52,7 @@ class EWrapper:
         self.logAnswer(current_fn_name(), vars())
         if advancedOrderRejectJson:
             logger.error("ERROR %s %s %s %s", reqId, errorCode, errorString, advancedOrderRejectJson)
-        else: 
+        else:
             logger.error("ERROR %s %s %s", reqId, errorCode, errorString)
 
     def winError(self, text:str, lastError:int):
@@ -699,7 +698,7 @@ class EWrapper:
     def orderBound(self, reqId: int, apiClientId: int, apiOrderId: int):
         """returns orderBound notification"""
         self.logAnswer(current_fn_name(), vars())
-        
+
     def completedOrder(self, contract:Contract, order:Order, orderState:OrderState):
         """This function is called to feed in completed orders.
 

@@ -4,8 +4,7 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 from ibapi.object_implem import Object
-from ibapi.utils import intMaxString
-from ibapi.utils import floatMaxString
+from ibapi.utils import floatMaxString, intMaxString
 
 
 class CommissionReport(Object):

@@ -3,7 +3,7 @@ version: 1
 formatters:
   simple:  # Define a formatter named "simple"
     # https://docs.python.org/3/library/logging.html#logrecord-attributes
-    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"  # Message format string
+    format: "[%(threadName)s] %(asctime)s - %(module)s - %(levelname)s - %(message)s"  # Message format string
 
 handlers:
   console:  # Define a handler named "console"
@@ -15,15 +15,22 @@ loggers:
   root:  # Configure the root logger
     level: INFO  # Set the root logger level (DEBUG)
     handlers: [console]  # Use the "console" handler for the root logger
-  my_logger:
-    level: DEBUG  # Set the logging level for the "my_logger" logger (DEBUG)
-    handlers: [console]
   model_test:
     level: DEBUG  # Set the logging level for the "my_logger" logger (DEBUG)
     handlers: [console]
+  ibapi:
+    level: WARNING
   salduba.ib_tws_proxy.backing_db.repo:
     level: WARNING
     handlers: [console]
   salduba.ib_tws_proxy.backing_db.db:
     level: WARNING
     handlers: [console]
+  salduba.ib_tws_proxy.base_proxy.tws_proxy:
+    level: WARNING
+  salduba.ib_tws_proxy.contracts:
+    level: INFO
+  salduba.ib_tws_proxy.orders:
+    level: DEBUG
+  salduba.corvino.services.app:
+    level: DEBUG

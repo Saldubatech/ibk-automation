@@ -10,7 +10,6 @@ TickType type
 
 from ibapi.enum_implem import Enum
 
-
 # TickType
 TickType = int
 TickTypeEnum = Enum("BID_SIZE",

@@ -1,5 +1,6 @@
 import math
 import sys
+
 from _decimal import Decimal
 
 NO_VALID_ID = -1

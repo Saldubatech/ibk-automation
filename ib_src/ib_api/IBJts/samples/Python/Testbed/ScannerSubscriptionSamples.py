@@ -4,7 +4,7 @@ Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is su
 """
 
 
-from ibapi.object_implem import Object 
+from ibapi.object_implem import Object
 from ibapi.scanner import ScannerSubscription
 
 
@@ -70,8 +70,8 @@ def Test():
     print(ScannerSubscriptionSamples.TopPercentGainersIbis())
     print(ScannerSubscriptionSamples.MostActiveFutSoffex())
     print(ScannerSubscriptionSamples.HighOptVolumePCRatioUSIndexes())
-    
- 
+
+
 if "__main__" == __name__:
     Test()
- 
+

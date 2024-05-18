@@ -1,0 +1,108 @@
+from typing import Optional
+import logging
+import time
+
+from ibapi.contract import ContractDetails, Contract
+
+from salduba.ib_tws_proxy.backing_db.model import deltaNeutralCompanion, ContractRecordStatus, contractCompanion
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo, ContractKey
+from salduba.ib_tws_proxy.operations import ErrorResponse, SuccessResponse
+from salduba.ib_tws_proxy.proxy_base import ProxyBase
+from salduba.ib_tws_proxy.domain.enumerations import Exchange, Currency, SecType
+from salduba.util.time import millis_epoch
+
+
+class ContractUpdater(ProxyBase):
+  _logger = logging.getLogger(f"ContractUpdater")
+
+  def __init__(self,
+               contractsRepo: ContractRepo,
+               dncRepo: DeltaNeutralContractRepo,
+               targets: list[ContractKey]
+               ) -> None:
+    ProxyBase.__init__(self)
+    self.contractsRepo = contractsRepo
+    self.deltaNeutralContractsRepo = dncRepo
+    self.targets = targets
+    self.requested: dict[int, tuple[ContractKey, list[ContractDetails]]] = {}
+    self.refresh_required: list[ContractKey] = [ck for ck in self.targets if not self.isContractKnown(ck, millis_epoch())]
+
+  def isContractKnown(self, ck: ContractKey, at: int) -> bool:
+    return self.contractsRepo.findNominalContract(
+      ck.symbol,
+      ck.secType,
+      ck.exchange,
+      ck.exchange,
+      ck.currency,
+      at
+    ) is not None
+
+  def doIt(self) -> None:
+    ContractUpdater._logger.info(f"Checking {len(self.targets)} movements")
+    if self.isActive():
+      self.fetchNextContractDetails()
+    else:
+      ContractUpdater._logger.warning("Proxy Not Active...")
+
+  def fetchNextContractDetails(self) -> None:
+    if self.refresh_required:
+      ContractUpdater._logger.debug(f"Pending: {len(self.refresh_required)}")
+      oid: Optional[int] = self.tracker.nextOpId()
+      if oid:
+        ck = self.refresh_required.pop(0)
+        self.requested[oid] = (ck, [])
+        ContractUpdater._logger.info(f"> Requesting {ck.symbol} from Server, to-go: {len(self.refresh_required)}")
+        self.reqContractDetails(oid, ck.contractPattern())
+        # self.reqMatchingSymbols(oid, name)
+        # time.sleep(self.config.search_delay)
+    else:
+      ContractUpdater._logger.info("No more pending")
+      if self.tracker.isIdle():
+        ContractUpdater._logger.info("Found tracker Idle")
+        self.wrap_up()
+        self.stop("Tracker is Idle")
+
+
+  def contractDetails(self, reqId: int, contractDetails: ContractDetails) -> None:
+    super().contractDetails(reqId, contractDetails)
+    pendingEntry: Optional[tuple[ContractKey, list[ContractDetails]]] = self.requested.get(reqId)
+    if not pendingEntry:
+      ContractUpdater._logger.error(f"Received ContractDetails for not pending request for {reqId}")
+      raise Exception(f"Received ContractDetails for noo pending request for {reqId}")
+    else:
+      ContractUpdater._logger.info(f"Received ContractDetails for {reqId} with Symbol: {contractDetails.contract.symbol}")
+      d = contractDetails.contract
+      ContractUpdater._logger.debug(f"Processing Contract: {d}")
+      if not d.exchange:
+        d.exchange = d.primaryExchange
+      pendingEntry[1].append(d)
+
+  def contractDetailsEnd(self, reqId: int) -> None:
+    super().contractDetailsEnd(reqId)
+    pendingEntry: Optional[tuple[ContractKey, list[ContractDetails]]] = self.requested.get(reqId)
+    if not pendingEntry:
+      ContractUpdater._logger.error(f"Received ContractDetailsEnd for no pending request for {reqId}")
+      raise Exception(f"Received ContractDetailsEnd for noo pending request for {reqId}")
+    elif not pendingEntry[1]:
+      ContractUpdater._logger.error(f"Received ContractDetailsEnd for request without previous ContractDetails {reqId}")
+      del self.requested[reqId]
+      self.tracker.error(
+        ErrorResponse(
+          reqId,
+          8888,
+          f"No Contract Details Received for {pendingEntry[0].symbol}",
+          ""))
+    else:
+      records = [_contractRecordDict(cd, millis_epoch(), self.config.contract_shelf_life) for cd in pendingEntry[1]]
+      for r in records:
+        if len(records) == 1:
+          r[0]['status'] = ContractRecordStatus.NOMINAL
+        else:
+          r[0]['status'] = ContractRecordStatus.UNCONFIRMED
+        with self.db as db_handle:
+          with db_handle.cursor():
+            if r[1]:
+              self.deltaNeutralContractsRepo.insert_raw([[r[1][f] for f in deltaNeutralCompanion.all_fields]])
+            self.contractsRepo.insert_raw([[r[0][f] for f in contractCompanion.all_fields]])
+      del self.requested[reqId]
+      self.tracker.complete(SuccessResponse(reqId))

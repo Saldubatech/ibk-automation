@@ -1,0 +1,55 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  ci:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        name: Checkout Code
+        uses: actions/checkout@v4
+      - id: install-python
+        name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - id: install-poetry
+        name: Install Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 1.8.3
+          poetry-plugins: poetry-types
+      - id: configure-poetry
+        name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create true --local
+          poetry config virtualenvs.in-project true --local
+          # poetry self add poetry-types -- Not needed as prev step installs them.
+      - id: setup-venv-cache
+        name: Setup Venv Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+      - id: install-project
+        name: Install Project
+        run: |
+          poetry types update
+          poetry check
+          poetry install
+      - name: CheckQuality
+        run: |
+          poetry run pre-commit run --all-files
+          poetry run mypy --strict .
+          poetry run pytest -v
+      - name: Build
+        run: poetry build
