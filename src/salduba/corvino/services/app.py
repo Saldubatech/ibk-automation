@@ -1,7 +1,7 @@
 import datetime
 import logging
 from decimal import Decimal
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 from uuid import uuid4
 
 import pandas as pd
@@ -209,7 +209,7 @@ class CorvinoApp:
         self,
         df: pd.DataFrame,
         output_file: Optional[str] = "missing_contracts.csv",
-    ) -> Optional[pd.Series[Any]]:
+    ) -> Optional[pd.DataFrame]:
         # TODO This is an n+1 Query that should be optimized.
         df["is_missing"] = df.apply(
             lambda r: self.contract_repo.findNominalContract(
@@ -223,7 +223,7 @@ class CorvinoApp:
             is None,
             axis=1,
         )
-        missing: pd.Series[Any] = df[df["is_missing"] is True]  # [['Symbol', 'IbkType', 'Exchange', 'Currency']]
+        missing: pd.DataFrame = df[df["is_missing"] == True]  # noQa: E712
         if output_file and len(missing) > 0:
             missing.to_csv(output_file)
         return missing if len(missing) > 0 else None
@@ -232,7 +232,7 @@ class CorvinoApp:
         self,
         datafile_path: str,
         output_file: Optional[str] = "missing_contracts.csv",
-    ) -> Optional[pd.Series[Any]]:
+    ) -> Optional[pd.DataFrame]:
         df = InputParser.read_csv(datafile_path)
         return self.verify_contracts_for_dataframe(df, output_file)
 
@@ -241,10 +241,10 @@ class CorvinoApp:
         inputDF: pd.DataFrame,
         output_file: Optional[str] = "missing_contracts.csv",
         ttl: int = ninety_days,
-    ) -> Optional[pd.Series[Any]]:
+    ) -> Optional[pd.DataFrame]:
         nowT = datetime.datetime.now()
         _logger.debug(f"Looking for {len(inputDF)} contracts at {nowT}")
-        missing: Optional[pd.Series[Any]] = self.verify_contracts_for_dataframe(inputDF, output_file)
+        missing: Optional[pd.DataFrame] = self.verify_contracts_for_dataframe(inputDF, output_file)
         if missing is not None and len(missing) > 0:
             _logger.debug(f"Found {len(missing)} contracts to refresh at {nowT}")
             targets = missing.apply(
@@ -289,7 +289,7 @@ class CorvinoApp:
                 DeltaNeutralContractRecord(
                     str(uuid4()),
                     nowT,
-                    (nowT + ttl),
+                    (nowT + ttl),   # type: ignore
                     dnc.conId,
                     dnc.delta,
                     dnc.price,
@@ -332,7 +332,7 @@ class CorvinoApp:
         self,
         batch: str,
         at: int,
-        r: pd.Series[Any],
+        r: pd.Series,  # type: ignore
         overrideExchange: Optional[Exchange] = None,
     ) -> Tuple[Movement, Contract]:
         contractRecord: Optional[ContractRecord] = self.contract_repo.findNominalContract(

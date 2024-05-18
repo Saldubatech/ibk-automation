@@ -45,7 +45,7 @@ class MovementRecord(Record):
     def hydrate(cls, *argsv) -> Self:  # type: ignore
         return cls(argsv[0], argsv[1], *argsv[2:])
 
-    def __init__(self, rid: str, at: int, *args: *Any) -> None:
+    def __init__(self, rid: str, at: int, *args: list[Any]) -> None:
         super().__init__(rid, at, movementCompanion, *args)
 
 
