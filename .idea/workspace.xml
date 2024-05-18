@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8547a1c4-49f8-456c-a40d-6dcbcc85ed18" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backup_idea/ibk-automation.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/py.typed" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.flake8" beforeDir="false" afterPath="$PROJECT_DIR$/.flake8" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/csv-editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/csv-editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/git_toolbox_prj.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ibk-automation.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ibk-automation.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mypy.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.pre-commit-config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.pre-commit-config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/update_contracts.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "jmpicnic"
+  }
+}]]></component>
+  <component name="GitToolBoxStore">
+    <option name="projectConfigVersion" value="5" />
+  </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Saldubatech/ibk-automation.git",
+    "accountId": "d9e7ca17-d952-44e5-a317-f4ba796d1615"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="2gd5g8ud0fuNiFCNxOt1Y9jChXt" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_0_version.executor": "Run",
+    "Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_db_connection.executor": "Run",
+    "Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_ensure_version.executor": "Run",
+    "Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_model.test_contract_record.executor": "Run",
+    "Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_model.test_db_init.executor": "Run",
+    "Python tests.pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_a_bunch.executor": "Run",
+    "Python tests.pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract.executor": "Run",
+    "Python tests.pytest in test_parse_input.py.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.google.cloudcode.ide_session_index": "20240517_0000",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/Users/jmp/code/salduba/ibk-automation",
+    "scala_project_settings_configurable.last_selected_tab_index": "0",
+    "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler"
+  }
+}]]></component>
+  <component name="RunManager" selected="Python tests.pytest in test_parse_input.py">
+    <configuration name="pytest for salduba.ib_tws_proxy.backing_db.test_model.test_contract_record" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;salduba.ib_tws_proxy.backing_db.test_model.test_contract_record&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest for salduba.ib_tws_proxy.backing_db.test_model.test_db_init" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;salduba.ib_tws_proxy.backing_db.test_model.test_db_init&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_a_bunch" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_a_bunch&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest in test_parse_input.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python tests.pytest in test_parse_input.py" />
+        <item itemvalue="Python tests.pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_a_bunch" />
+        <item itemvalue="Python tests.pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract" />
+        <item itemvalue="Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_model.test_contract_record" />
+        <item itemvalue="Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_model.test_db_init" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-0509580d9d50-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.14494.241" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8547a1c4-49f8-456c-a40d-6dcbcc85ed18" name="Changes" comment="" />
+      <created>1697234970304</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1697234970304</updated>
+    </task>
+    <servers />
+  </component>
+</project>

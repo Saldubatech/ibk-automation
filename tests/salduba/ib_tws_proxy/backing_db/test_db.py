@@ -1,63 +1,69 @@
 # -*- coding: utf-8 -*-
 
 import tempfile
-import unittest
+from typing import Optional, Callable
+import pytest
 
 from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
+from salduba.util.files import resolveDir
 
 
-class TestDb(unittest.TestCase):
-    """Test Basic DB Access"""
+config = DbConfig(
+  {
+    "path": "tests/resources/test_db.db",
+    "schemas": "salduba/ib_tws_proxy/backing_db/schema",
+    "seed_data": "salduba/ib_tws_proxy/backing_db/seed-data",
+    "expected_version": "0",
+    "target_version": "1",
+    "version_date": "2024-02-01 00:00:00.000",
+  }
+)
 
-    config = DbConfig(
-        {
-            "path": "tests/resources/test_db.db",
-            "schemas": "salduba/ib_tws_proxy/backing_db/schema",
-            "seed_data": "salduba/ib_tws_proxy/backing_db/seed-data",
-            "expected_version": "0",
-            "target_version": "1",
-            "version_date": "2024-02-01 00:00:00.000",
-        }
-    )
-
-    def __init__(self, *args, **kwargs) -> None:  # type: ignore
-        super().__init__(*args, **kwargs)
-        self.db = TradingDB(TestDb.config)
-
-    def test_db_connection(self) -> None:
-        with self.db as db:
-            assert db.conn
-            assert db.connection_depth == 1
-        assert self.db.connection_depth == 0
-        assert not self.db.conn
-
-    @staticmethod
-    def __local_db__() -> TradingDB:
-        temp = tempfile.NamedTemporaryFile()
-        temp.close()
-        local_config = DbConfig(
-            {
-                "path": temp.name,
-                "schemas": "salduba/ib_tws_proxy/backing_db/schema",
-                "seed_data": "salduba/ib_tws_proxy/backing_db/seed-data",
-                "expected_version": "0",
-                "target_version": "1",
-                "version_date": "2024-02-01 00:00:00.000",
-            }
-        )
-        return TradingDB(local_config)
-
-    def test_0_version(self) -> None:
-        with self.__local_db__() as local_db:
-            assert not local_db.version()
-            assert not local_db.validate(0)
-            assert not local_db.ensure_version(0, True)
-
-    def test_ensure_version(self) -> None:
-        with self.__local_db__() as local_db:
-            v = local_db.ensure_version(1)
-            assert v and v.version == 1, f"Version is {v}"
+local_db: Optional[TradingDB] = None
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.fixture
+def setup_db() -> TradingDB:
+  return new_db()
+
+
+def new_db() -> TradingDB:
+  temp = tempfile.NamedTemporaryFile()
+  temp.close()
+  schemata = resolveDir("salduba/ib_tws_proxy/backing_db/schema")
+  seed_data = resolveDir("salduba/ib_tws_proxy/backing_db/seed-data")
+  if not schemata or not seed_data:
+    raise Exception("Schema or Seed Data directories not found")
+  local_config = DbConfig(
+    {
+      "path": temp.name,
+      "schemas": schemata,
+      "seed_data": seed_data,
+      "expected_version": "0",
+      "target_version": "1",
+      "version_date": "2024-02-01 00:00:00.000",
+    }
+  )
+  return TradingDB(local_config)
+
+
+def test_db_connection(setup_db: TradingDB) -> None:
+  with setup_db as db:
+    assert db.conn
+    assert db.connection_depth == 1
+  assert setup_db.connection_depth == 0
+  assert not setup_db.conn
+
+
+def test_0_version() -> None:
+  with new_db() as local_db:
+    assert not local_db.version()
+    validation_0 = local_db.validate(0)
+    assert not validation_0
+    assert not local_db.ensure_version(0, True)
+
+
+def test_ensure_version(setup_db: TradingDB) -> None:
+  with setup_db as db:
+    v = db.ensure_version(1)
+    assert v and v.version == 1, f"Version is {v}"
