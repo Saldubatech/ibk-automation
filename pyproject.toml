@@ -56,7 +56,10 @@ build-backend = "poetry.core.masonry.api"
 corvino_cli = "salduba.corvino.commands.cli:cli"
 
 [tool.pytest.ini_options]
-addopts = "--cov=salduba"
+addopts = ["--cov=salduba", "--strict-markers"]
+markers = [
+  "tws: marks tests as requiring the tws software running in the local machine (deselect with '-m \"not tws\"')"
+]
 
 [tool.mypy]
 strict=true

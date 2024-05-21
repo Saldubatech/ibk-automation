@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Tuple
 
 from ibapi.order import Order
 
@@ -129,17 +129,20 @@ def test_order_record() -> None:
   assert probe == underTest.__dict__
 
 
-def test_to_order() -> Order:
-  underTest = OrderRecord.from_dict(str(probe['rid']), int(str(probe['at'])), probe)
-  assert probe == underTest.__dict__
-  order = underTest.toOrder()
+def test_to_order() -> None:
+  orderRecord, order = record_to_order()
   from_order = {}
-  from_probe = {}
+  from_record = {}
   for f in OrderRecord.own_fields():
     from_order[f] = getattr(order, f)
-    from_probe[f] = probe[f]
-  assert from_order == from_probe
-  return order
+    from_record[f] = orderRecord.__dict__[f]
+  assert from_order == from_record
+
+
+def record_to_order() -> Tuple[OrderRecord, Order]:
+  underTest: OrderRecord = OrderRecord.from_dict(str(probe['rid']), int(str(probe['at'])), probe)
+  order = underTest.toOrder()
+  return underTest, order
 
 
 def test_order_all_fields() -> None:
@@ -150,7 +153,7 @@ def test_order_all_fields() -> None:
 
 
 def test_from_order() -> None:
-  order: Order = test_to_order()
+  _, order = record_to_order()
   recovered: OrderRecord = OrderRecord.newFromOrder(str(probe['rid']), int(str(probe['at'])), order)
   assert recovered.rid == probe['rid']
   assert recovered.at == probe['at']

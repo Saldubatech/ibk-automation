@@ -8,8 +8,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8dd4e2ac-03bb-4946-a003-3eda0021e7fb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.editorconfig" beforeDir="false" afterPath="$PROJECT_DIR$/.editorconfig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/orders/test_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/orders/test_order_record.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,26 +59,44 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;com.google.cloudcode.ide_session_index&quot;: &quot;20240520_0000&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/jmp/code/salduba/ibk-automation/src/salduba/util&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;scala_project_settings_configurable.last_selected_tab_index&quot;: &quot;0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.EditorConfig&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.pytest for test_verify_contracts.test_lookup_contracts.executor": "Run",
+    "Python tests.pytest in tests.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.google.cloudcode.ide_session_index": "20240520_0000",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/Users/jmp/code/salduba/ibk-automation/src/salduba/util",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "scala_project_settings_configurable.last_selected_tab_index": "0",
+    "settings.editor.selected.configurable": "preferences.sourceCode"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/salduba/util" />
       <recent name="$PROJECT_DIR$/src/salduba/corvino/commands" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.pytest for test_verify_contracts.test_lookup_contracts">
+    <configuration name="pytest for test_verify_contracts.test_lookup_contracts" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/salduba/corvino" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_verify_contracts.test_lookup_contracts&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="ibk-automation" />
       <option name="ENV_FILES" value="" />
@@ -92,6 +116,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest for test_verify_contracts.test_lookup_contracts" />
         <item itemvalue="Python tests.pytest in tests" />
       </list>
     </recent_temporary>

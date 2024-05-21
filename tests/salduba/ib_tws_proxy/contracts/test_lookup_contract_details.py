@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
+import pytest
 from ibapi.contract import Contract, ContractDetails
 
 from salduba.ib_tws_proxy.contracts.lookup_contract_details import LookupContractDetails
@@ -41,6 +42,7 @@ def _postprocessor(contract: Contract, details: list[dict[str, ContractDetails]]
   _logger.debug(msg)
 
 
+@pytest.mark.tws
 def test_one_contract() -> None:
   logging.info("Test Just One")
   probe = buildContract("ACN", "STK", "NASDAQ", "USD")
@@ -58,9 +60,10 @@ def test_one_contract() -> None:
   assert errors is not None and len(errors) == 0, f"Got errors: {errors}"
 
 
+@pytest.mark.tws
 def test_a_bunch() -> None:
   logging.info("Test A Bunch")
-  bunch: pd.DataFrame = pd.read_csv("salduba/ib_tws_proxy/contracts/sample_contracts.csv", index_col="Ticker")
+  bunch: pd.DataFrame = pd.read_csv("tests/salduba/ib_tws_proxy/contracts/sample_contracts.csv", index_col="Ticker")
   bunchProbe = [buildContract(r.Symbol, r.IBKType, r.Exchange, r.Currency) for r in bunch.itertuples()]  # type: ignore
   for c in bunchProbe[0:10]:
     _logger.debug(f"\t####{c}")

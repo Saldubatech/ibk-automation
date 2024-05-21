@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
+import pytest
 
 from salduba.corvino.parse_input import InputParser
 from salduba.corvino.persistence.movement_record import MovementRepo
@@ -82,6 +83,7 @@ def test_on_empty_db() -> None:
   assert (len(result) if result is not None else 0) == len(results)
 
 
+@pytest.mark.tws
 def test_lookup_contracts() -> None:
   db, dnc_repo, contract_repo, order_repo, movement_repo = all_repos()
   _logger.info(f"DB at: {db.config.storage}")

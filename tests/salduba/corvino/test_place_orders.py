@@ -59,6 +59,7 @@ def setup_db() -> TradingDB:
   return db
 
 
+@pytest.mark.tws
 def test_place_orders(setup_db: TradingDB) -> None:
   probeFile = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
   probe_all: pd.DataFrame = InputParser.read_csv(probeFile)

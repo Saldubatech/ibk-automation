@@ -227,7 +227,7 @@ class CorvinoApp:
   ) -> Optional[pd.DataFrame]:
     # TODO This is an n+1 Query that should be optimized.
     nowT = datetime.datetime.now()
-    df["is_missing"] = df.apply(
+    df.loc[:, "is_missing"] = df.apply(
       lambda r: self._findNContract(r, millis_epoch(nowT)) is None,
       axis=1,
     )

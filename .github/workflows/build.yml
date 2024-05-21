@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
   push:
 
+
 permissions:
   contents: write
   pages: write
@@ -40,16 +41,13 @@ jobs:
           path: |
             ./.venv
           key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
-      - id: install-project
-        name: Install Project
-        run: |
-          poetry types update
-          poetry check
-          poetry install
       - name: CheckQuality
         run: |
           poetry run pre-commit run --all-files
           poetry run mypy --strict .
-          poetry run pytest -v
-      - name: Build
-        run: poetry build
+          poetry run pytest -v -m "not tws" tests
+      - id: build
+        name: Build
+        run: |
+          poetry check
+          poetry build
