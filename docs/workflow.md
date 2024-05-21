@@ -10,6 +10,7 @@ title: Corvino Workflow
 ## Overall Workflow
 
 ```plantuml
+
 @startuml (id=OVERALL)
 
 
@@ -46,7 +47,7 @@ partition #lightGrey "Update Contracts" {
          :write results;
        else (no)
          #pink:record error\nfor report;
-       endif      
+       endif
     end split
   endif
   :write results_report|
