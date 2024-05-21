@@ -10,12 +10,6 @@
     <list default="true" id="8dd4e2ac-03bb-4946-a003-3eda0021e7fb" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/orders/test_order_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/orders/test_order_record.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

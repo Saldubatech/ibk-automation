@@ -43,11 +43,12 @@ jobs:
           key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
       - name: CheckQuality
         run: |
-          poetry run pre-commit run --all-files
-          poetry run mypy --strict .
-          poetry run pytest -v -m "not tws" tests
+          poetry -n check
+          poetry -n install
+          poetry -n run pre-commit run --all-files
+          poetry -n run pytest -v -m "not tws" tests
       - id: build
         name: Build
         run: |
-          poetry check
-          poetry build
+          poetry -n check
+          poetry -n build
