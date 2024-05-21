@@ -4,9 +4,9 @@ import os
 from salduba.corvino.parse_input import InputParser, split_ticker
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
 from salduba.util.logging import init_logging
-from salduba.util.tests import testRoot
+from salduba.util.tests import findTestsRoot
 
-_maybeTr = testRoot()
+_maybeTr = findTestsRoot()
 _tr = _maybeTr if _maybeTr else "./"
 init_logging(os.path.join(_tr, "resources/logging.yaml"))
 _logger = logging.getLogger(__name__)

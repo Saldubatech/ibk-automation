@@ -3,8 +3,6 @@ import os
 import tempfile
 from typing import Tuple
 
-import pandas as pd
-
 from salduba.corvino.parse_input import InputParser
 from salduba.corvino.persistence.movement_record import MovementRepo
 from salduba.corvino.services.app import CorvinoApp
@@ -16,7 +14,7 @@ from salduba.util.logging import init_logging
 from salduba.util.tests import findTestsRoot
 
 _maybeTr = findTestsRoot()
-_tr = _maybeTr if _maybeTr else "./"
+_tr = "tests"
 init_logging(os.path.join(_tr, "resources/logging.yaml"))
 _logger = logging.getLogger(__name__)
 
@@ -56,33 +54,8 @@ def all_repos() -> Tuple[TradingDB, DeltaNeutralContractRepo, ContractRepo, Orde
   return db, dnc_repo, contract_repo, order_repo, movement_repo
 
 
-def test_on_empty_db() -> None:
-  db, dnc_repo, contract_repo, order_repo, movement_repo = all_repos()
-  probe = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
-  underTest = CorvinoApp(
-    contract_repo,
-    dnc_repo,
-    movement_repo,
-    order_repo,
-    appFamily=100,
-    host="localhost",
-    port=7497,
-  )
-
-  tmp_file = tempfile.NamedTemporaryFile()
-  tmp_file.close()
-  output_file_path = tmp_file.name
-  _logger.info(f"Output file at: {output_file_path}")
-  result = underTest.verify_contracts_for_csv_file(probe, output_file_path)
-  probeDF = pd.read_csv(probe)
-  results = pd.read_csv(output_file_path)
-  assert len(probeDF) == len(results)
-  assert (len(result) if result is not None else 0) == len(results)
-
-
 def test_lookup_contracts() -> None:
-  db, dnc_repo, contract_repo, order_repo, movement_repo = all_repos()
-  _logger.info(f"DB at: {db.config.storage}")
+  _, dnc_repo, contract_repo, order_repo, movement_repo = all_repos()
   probeFile = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
   probe = InputParser.read_csv(probeFile)
   underTest = CorvinoApp(
@@ -99,6 +72,11 @@ def test_lookup_contracts() -> None:
   tmp_file.close()
   output_file_path = tmp_file.name
   _logger.info(f"Output file at: {output_file_path}")
-  result = underTest.lookup_contracts(probe[0:10], output_file=output_file_path, ttl=10000)
+  result = underTest.lookup_contracts(probe, output_file=output_file_path, ttl=10000)
   # probeDF = pd.read_csv(probeFile)
-  assert result is None or len(result) == 0, f"All Contracts should have been found. Not found[{len(result)}]: {result}"
+  assert result is None, f"All Contracts should have been found. Not found[{len(result)}]: {result}"
+
+
+if __name__ == "__main__":
+  print("RUNNING LOOKUP CONTRACTS")
+  test_lookup_contracts()

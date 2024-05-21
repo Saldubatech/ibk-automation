@@ -1,15 +1,14 @@
 import logging
 import os
-from typing import Any
 
 import pandas as pd
 from ibapi.contract import Contract, ContractDetails
 
 from salduba.ib_tws_proxy.contracts.lookup_contract_details import LookupContractDetails
 from salduba.util.logging import init_logging
-from salduba.util.tests import testRoot
+from salduba.util.tests import findTestsRoot
 
-_maybeTr = testRoot()
+_maybeTr = findTestsRoot()
 _tr = _maybeTr if _maybeTr else "./"
 init_logging(os.path.join(_tr, "resources/logging.yaml"))
 _logger = logging.getLogger(__name__)
@@ -55,24 +54,29 @@ def test_one_contract() -> None:
       search_delay=0.1,
   )
   underTest.activate()
+  errors = underTest.wait_for_me()
+  assert errors is not None and len(errors) == 0, f"Got errors: {errors}"
 
 
 def test_a_bunch() -> None:
   logging.info("Test A Bunch")
   print(f"#### At: {os.getcwd()}")
-  bunch = pd.read_csv("salduba/ib_tws_proxy/contracts/sample_contracts.csv", index_col="Ticker")
+  bunch: pd.DataFrame = pd.read_csv("salduba/ib_tws_proxy/contracts/sample_contracts.csv", index_col="Ticker")
   bunchProbe = [buildContract(r.Symbol, r.IBKType, r.Exchange, r.Currency) for r in bunch.itertuples()]  # type: ignore
   print(f"###: Bunch({len(bunchProbe)})")
   for c in bunchProbe[0:10]:
     _logger.debug(f"\t####{c}")
-    underTest = LookupContractDetails(
-        bunchProbe[0:10],
-        _postprocessor,
-        host,
-        port,
-        appId,
-        15,
-        "q",
-        0.1,
-    )
-    underTest.activate()
+  underTest = LookupContractDetails(
+      bunchProbe[0:10],
+      _postprocessor,
+      host,
+      port,
+      appId,
+      15,
+      "q",
+      0.1,
+  )
+  underTest.activate()
+  errors = underTest.wait_for_me()
+  assert not errors, f"Got errors: {errors}"
+  assert errors is not None and len(errors) == 0, f"Got errors: {errors}"

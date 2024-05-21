@@ -1,54 +1,43 @@
+import dataclasses
+import dataclasses as dc
 import logging
+from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, Optional, Self, Tuple
 
 _logger = logging.getLogger(__name__)
 
 
-class RecordMeta:
-    common_fields: list[str] = ["id", "at"]
-
-    def __init__(self, table: str, own_fields: list[str], db_version: int):
-        self.db_version = db_version
-        self.table = table
-        self.own_fields = own_fields
-        self.all_fields = RecordMeta.common_fields + own_fields
-        self.counter = "Select count(id) from " + table
-        self.selector = "select " + ", ".join(self.all_fields) + " from " + table
-        self.inserter = "Insert into " + table + " (" + ", ".join(self.all_fields) + ") "
-        self.value_inserter = self.inserter + "values (" + ", ".join(["?"] * len(self.all_fields)) + ");"
-        _logger.info(f"Table[{table}] Value Inserter = {self.value_inserter}")
-        self.updater = "Update " + table + " set " + ", ".join([f"{k} = ?" for k in self.all_fields])
-        self.byIdDeleter = "Delete from {} where id == ?".format(self.table)
-
-
+@dataclass
 class Record:
-    def __init__(self, rid: str, at: int, companion: RecordMeta, *args: list[Any]) -> None:
-        self.id: str = rid
-        self.at: int = at
-        self.companion: RecordMeta = companion
-        for field, value in zip(companion.own_fields, args):
-            self.__dict__[field] = value
+  rid: str
+  at: int
 
-    @classmethod
-    def hydrate(cls, *argsv) -> Self:  # type: ignore
-        return cls(argsv[0], argsv[1], *argsv[2:])
+  @classmethod
+  def hydrate(cls, *args) -> Self:  # type: ignore
+    return cls(*args)
 
-    @classmethod
-    def from_dict(cls, rid: str, at: int, companion: RecordMeta, d: dict[str, Any]) -> Self:
-        return cls(rid, at, *[d[k] for k in companion.own_fields])
+  @classmethod
+  def fields(cls: type[Self]) -> list[str]:
+    return [f.name for f in dc.fields(cls)]
 
-    def values(self) -> Tuple[Any, ...]:
-        return tuple(Record.caster(self.__dict__[f]) for f in self.companion.all_fields)
+  @classmethod
+  def own_fields(cls: type[Self]) -> list[str]:
+    return cls.fields()[2:]
 
-    @staticmethod
-    def caster(v: Optional[Any]) -> Optional[Any]:
-        if v is None:
-            return None
-        elif isinstance(v, Decimal):
-            return float(v)
-        else:
-            return v
+  @staticmethod
+  def caster(v: Optional[Any]) -> Optional[Any]:
+    if v is None:
+      return None
+    elif isinstance(v, Decimal):
+      return float(v)
+    else:
+      return v
 
-    def __repr__(self) -> str:
-        return str(self.__dict__)
+  @classmethod
+  def from_dict(cls, rid: str, at: int, d: dict[str, Any]) -> Self:
+    v = [rid, at] + [d[k] for k in cls.own_fields()]
+    return cls.hydrate(*v)
+
+  def values(self) -> Tuple[Any, ...]:
+    return tuple(Record.caster(self.__dict__[f]) for f in self.fields())

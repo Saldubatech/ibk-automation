@@ -1,43 +1,11 @@
 import uuid
-from enum import StrEnum
 from typing import Optional, Self
 
 import pandas as pd
 
-from salduba.corvino.persistence.movement_record import MovementRecord, MovementRepo
+from salduba.corvino.persistence.movement_record import MovementRecord, MovementRepo, MovementStatus
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
 from salduba.util.time import millis_epoch
-
-
-class MovementStatus(StrEnum):
-    NEW = "New"
-    SUBMITTED = "Submitted"
-    CONFIRMED = "Confirmed"
-    IN_PROGRESS = "In Progress"
-    COMPLETED = "Completed"
-    CANCELLED = "Cancelled"
-    API_ERROR = "Error"
-
-    @classmethod
-    def fromIbk(cls, ibk_order_status: str) -> "MovementStatus":
-        # https://interactivebrokers.github.io/tws-api/interfaceIBApi_1_1EWrapper.html#a27ec36f07dff982f50968c8a8887d676
-        match ibk_order_status:
-            case "PendingSubmit":
-                return MovementStatus.SUBMITTED
-            case "PendingCancel":
-                return MovementStatus.CONFIRMED
-            case "PreSubmitted":
-                return MovementStatus.CONFIRMED
-            case "Submitted":
-                return MovementStatus.CONFIRMED
-            case "Cancelled":
-                return MovementStatus.CANCELLED
-            case "Filled":
-                return MovementStatus.COMPLETED
-            case "Inactive":
-                return MovementStatus.CANCELLED
-            case _:
-                return MovementStatus.API_ERROR
 
 
 class Movement:
@@ -73,8 +41,8 @@ class Movement:
         name: str,
         symbol: str,
         raw_type: str,
-        country: Country,
         ibk_type: SecType,
+        country: Country,
         currency: Currency,
         exchange: Exchange,
         exchange2: Optional[Exchange],
@@ -99,20 +67,20 @@ class Movement:
     @classmethod
     def fromRecord(cls, r: MovementRecord) -> Self:
         rs = cls(
-            r.status,  # type: ignore
-            r.batch,  # type: ignore
-            r.ticker,  # type: ignore
-            r.trade,  # type: ignore
-            r.nombre,  # type: ignore
-            r.symbol,  # type: ignore
-            r.raw_type,  # type: ignore
-            r.country,  # type: ignore
-            r.ibk_type,  # type: ignore
-            r.currency,  # type: ignore
-            r.exchange,  # type: ignore
-            r.exchange2,  # type: ignore
-            r.contract_fk,  # type: ignore
-            r.order_fk,  # type: ignore
+            r.status,
+            r.batch,
+            r.ticker,
+            r.trade,
+            r.nombre,
+            r.symbol,
+            r.raw_type,
+            r.ibk_type,
+            r.country,
+            r.currency,
+            r.exchange,
+            r.exchange2,
+            r.contract_fk,
+            r.order_fk
         )
         return rs
 
@@ -142,8 +110,8 @@ class Movement:
             self.name,
             self.symbol,
             self.raw_type,
-            self.country,
             self.ibk_type,
+            self.country,
             self.currency,
             self.exchange,
             self.exchange2,
@@ -171,5 +139,5 @@ class MovementBatch:
         movRecords = repo.forBatch(batch)
         return cls(
             batch,
-            {r.nombre.upper(): Movement.fromRecord(r) for r in movRecords},  # type: ignore
+            {r.nombre.upper(): Movement.fromRecord(r) for r in movRecords}
         )

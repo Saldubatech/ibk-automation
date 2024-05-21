@@ -4,10 +4,49 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8547a1c4-49f8-456c-a40d-6dcbcc85ed18" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+    <list default="true" id="1f5f81f2-06c5-4f4b-90d4-0796d6aed4d2" name="Changes" comment="Clean pre-commit hooks">
+      <change afterPath="$PROJECT_DIR$/.idea/git_toolbox_prj.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/runner.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db_init.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/orders/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/orders/test_order_record.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/csv-editor.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ibk-automation.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ibk-automation.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.pre-commit-config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.pre-commit-config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scratch.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scratch.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/movements.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/movements.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/persistence/movement_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/persistence/movement_record.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/model.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/record.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/record.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/repo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/repo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/schema/v0001.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/schema/v0001.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/base_proxy/tws_proxy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/base_proxy/tws_proxy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/contract_repo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/contract_repo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/lookup_contract_details.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/operations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/orders/OrderRepo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/orders/OrderRepo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/orders/placing_orders.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/orders/placing_orders.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/util/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/util/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/resources/logging.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/tests/resources/logging.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/errors_empty_db.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/model_test.py.obsolete" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,38 +72,40 @@
   }
 }</component>
   <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 4
 }</component>
-  <component name="ProjectId" id="2gd5g8ud0fuNiFCNxOt1Y9jChXt" />
+  <component name="ProjectId" id="2gk8VNSAhuNL0ZtXafA4qDpCgET" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;Python tests.pytest for salduba.corvino.test_verify_contracts.test_lookup_contracts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for salduba.corvino.test_verify_contracts.test_on_empty_db.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_0_version.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_db_connection.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_ensure_version.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_model.test_contract_record.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_model.test_db_init.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_a_bunch.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for salduba.corvino.test_place_orders.test_place_orders.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for salduba.ib_tws_proxy.orders.test_order_record.test_from_order.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for salduba.ib_tws_proxy.orders.test_order_record.test_order_all_fields.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for salduba.ib_tws_proxy.orders.test_order_record.test_order_record.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for salduba.ib_tws_proxy.orders.test_order_record.test_to_order.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest for tests.salduba.corvino.test_verify_contracts.test_lookup_contracts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for tests.salduba.ib_tws_proxy.orders.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_lookup_contract_details.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_order_record.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_parse_input.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_place_orders.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.pytest in test_verify_contracts.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;com.google.cloudcode.ide_session_index&quot;: &quot;20240517_0000&quot;,
+    &quot;com.google.cloudcode.ide_session_index&quot;: &quot;20240520_0001&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/jmp/code/salduba/ibk-automation&quot;,
     &quot;scala_project_settings_configurable.last_selected_tab_index&quot;: &quot;0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Python&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.grazie&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python tests.pytest for tests.salduba.corvino.test_verify_contracts.test_lookup_contracts">
-    <configuration name="pytest for salduba.corvino.test_verify_contracts.test_lookup_contracts" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python tests.pytest in test_lookup_contract_details.py">
+    <configuration name="pytest for salduba.corvino.test_place_orders.test_place_orders" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="ibk-automation" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -77,11 +118,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;salduba.corvino.test_verify_contracts.test_lookup_contracts&quot;" />
+      <option name="_new_target" value="&quot;salduba.corvino.test_place_orders.test_place_orders&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for salduba.corvino.test_verify_contracts.test_on_empty_db" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="ibk-automation" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -94,11 +135,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;salduba.corvino.test_verify_contracts.test_on_empty_db&quot;" />
+      <option name="_new_target" value="&quot;salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for tests.salduba.corvino.test_verify_contracts.test_lookup_contracts" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for tests.salduba.ib_tws_proxy.orders" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="ibk-automation" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -111,11 +152,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.salduba.corvino.test_verify_contracts.test_lookup_contracts&quot;" />
+      <option name="_new_target" value="&quot;tests.salduba.ib_tws_proxy.orders&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in test_parse_input.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest in test_lookup_contract_details.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="ibk-automation" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -128,11 +169,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in test_verify_contracts.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="ibk-automation" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -145,17 +186,17 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest for tests.salduba.corvino.test_verify_contracts.test_lookup_contracts" />
-        <item itemvalue="Python tests.pytest in test_verify_contracts.py" />
-        <item itemvalue="Python tests.pytest for salduba.corvino.test_verify_contracts.test_on_empty_db" />
-        <item itemvalue="Python tests.pytest for salduba.corvino.test_verify_contracts.test_lookup_contracts" />
-        <item itemvalue="Python tests.pytest in test_parse_input.py" />
+        <item itemvalue="Python tests.pytest in test_lookup_contract_details.py" />
+        <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.pytest for salduba.ib_tws_proxy.contracts.test_lookup_contract_details.test_one_contract" />
+        <item itemvalue="Python tests.pytest for tests.salduba.ib_tws_proxy.orders" />
+        <item itemvalue="Python tests.pytest for salduba.corvino.test_place_orders.test_place_orders" />
       </list>
     </recent_temporary>
   </component>
@@ -169,12 +210,17 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="8547a1c4-49f8-456c-a40d-6dcbcc85ed18" name="Changes" comment="" />
+      <changelist id="1f5f81f2-06c5-4f4b-90d4-0796d6aed4d2" name="Changes" comment="" />
       <created>1697234970304</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1697234970304</updated>
     </task>
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Refactored Records, unit tests of services." />
+    <MESSAGE value="Clean pre-commit hooks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Clean pre-commit hooks" />
   </component>
 </project>

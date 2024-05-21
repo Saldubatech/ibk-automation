@@ -4,4 +4,7 @@
     <option name="sdkName" value="Poetry (ibk-automation)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Poetry (ibk-automation)" project-jdk-type="Python SDK" />
+  <component name="PyCharmProfessionalAdvertiser">
+    <option name="shown" value="true" />
+  </component>
 </project>

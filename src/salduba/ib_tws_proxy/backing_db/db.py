@@ -4,11 +4,7 @@ import re
 import sqlite3 as sql
 import traceback
 from types import TracebackType
-from typing import Any, Callable, Generic, Iterable, Optional, Type, TypeVar
-
-import pandas as pd
-
-from salduba.ib_tws_proxy.backing_db.record import Record, RecordMeta
+from typing import Optional, Type
 
 _logger = logging.getLogger(__name__)
 
@@ -240,39 +236,3 @@ class TradingDB:
                                 crs.executescript(seed)
                         version = self._update_version_in_cursor(crs, v)
         return version
-
-
-M = TypeVar("M", bound=RecordMeta)
-R = TypeVar("R", bound=Record)
-
-
-class Repo(Generic[M, R]):
-    def __init__(
-        self,
-        db: TradingDB,
-        record: RecordMeta,
-        hydrator: Callable[[Iterable[Any]], R],
-    ) -> None:
-        self.db = db
-        self.record = record
-        self.hydrator = hydrator
-
-    def insert(self, records: list[R]) -> None:
-        with self.db as db:
-            with db.cursor() as crs:
-                crs.executemany(self.record.value_inserter, [r.values() for r in records])
-
-    def select_raw(self, *conditions: str) -> list[tuple[Any]]:
-        results = []
-        with self.db as db:
-            with db.cursor() as crs:
-                results = crs.execute(self.record.selector + " where " + " and ".join(conditions) + ";").fetchall()
-        return results
-
-    def select(self, *conditions: str) -> list[R]:
-        results = self.select_raw(*conditions)
-        return [self.hydrator(r) for r in results]
-
-    def selectAsDataFrame(self, *conditions: str) -> pd.DataFrame:
-        results = self.select_raw(*conditions)
-        return pd.DataFrame(results, columns=self.record.all_fields)

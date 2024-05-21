@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-
 import tempfile
-from typing import Optional, Callable
+from typing import Optional
+
 import pytest
 
 from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
 from salduba.util.files import resolveDir
-
 
 config = DbConfig(
   {
@@ -56,11 +55,13 @@ def test_db_connection(setup_db: TradingDB) -> None:
 
 
 def test_0_version() -> None:
+  print("WHERE IS THE LOG?????????????????????????????????????????????????????????????????????????????????????")
   with new_db() as local_db:
     assert not local_db.version()
-    validation_0 = local_db.validate(0)
-    assert not validation_0
-    assert not local_db.ensure_version(0, True)
+    validation_1 = local_db.validate(1)
+    ensure_v0 = local_db.ensure_version(0, True)
+    assert not validation_1
+    assert not ensure_v0, f"Finding : {ensure_v0}"
 
 
 def test_ensure_version(setup_db: TradingDB) -> None:

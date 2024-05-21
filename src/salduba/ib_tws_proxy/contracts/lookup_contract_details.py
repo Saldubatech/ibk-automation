@@ -41,10 +41,10 @@ class LookupContractDetails(BaseProxy):
                         _logger.debug(f"Requesting Details for: {t}")
                         self.reqContractDetails(oid, t)
                         self.requestedContracts[oid] = t
-                    if self.search_delay:
-                        time.sleep(self.search_delay)
                 else:
                     _logger.error("Cannot generate OrderId")
+        if self.search_delay:
+            time.sleep(self.search_delay)
         return
 
     def contractDetails(self, reqId: int, contractDetails: ContractDetails) -> None:
@@ -68,5 +68,6 @@ class LookupContractDetails(BaseProxy):
             self.responseTracker.error(ErrorResponse(reqId, 8888, msg, ""))
             raise Exception(msg)
         else:
+            _logger.debug(f"Post Processing Contract: {contract.symbol}")
             self.postProcess(contract, receivedDetails)
             self.completeResponse(reqId)

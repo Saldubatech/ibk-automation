@@ -93,11 +93,11 @@ class PlaceOrders(BaseProxy):
                         if not order.orderId:
                             order.orderId = oid
                         _logger.info(
-                            f"Placing order[{oid} of type {order.orderType} for {contract.symbol} "
+                            f"Placing order[{oid} of type {order.orderType} for {contract.symbol}]"
                             f"with strategy: {order.algoStrategy}"
                         )
                         _logger.debug(f"Placing Order: {order.__dict__}")
-                        newRecord = OrderRecord.fromOrder(str(uuid4()), millis_epoch(nowT), order)
+                        newRecord = OrderRecord.newFromOrder(str(uuid4()), millis_epoch(nowT), order)
                         self.orderRepo.insert([newRecord])
                         self.placeOrder(oid, contract, order)
                         self.pendingOrders[oid] = (contract, newRecord)
@@ -239,7 +239,7 @@ class OrderMonitor(BaseProxy):
                                     clientId,
                                     whyHeld,
                                     mktCapPrice,
-                                    orderRecord.id,
+                                    orderRecord.rid,
                                 )
                             ]
                         )
