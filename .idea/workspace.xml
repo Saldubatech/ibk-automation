@@ -8,17 +8,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8dd4e2ac-03bb-4946-a003-3eda0021e7fb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.flake8" beforeDir="false" afterPath="$PROJECT_DIR$/.flake8" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.pre-commit-config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.pre-commit-config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MANIFEST.in" beforeDir="false" afterPath="$PROJECT_DIR$/MANIFEST.in" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/collect_symbols_config.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/configuration.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/movements.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/movements.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/workflow.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/workflow.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/configuration.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/ib_callback_types.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/minimal_records.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/resources/cervino_rebalance_v2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/tests/resources/cervino_rebalance_v2.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/sample_contracts.csv" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/sample_contracts.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
