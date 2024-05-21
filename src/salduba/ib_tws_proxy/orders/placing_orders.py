@@ -68,10 +68,9 @@ class PlaceOrders(BaseProxy):
         port: int,
         clientId: int,
         timeout: float = 15 * 60,
-        terminate: Optional[str] = "quit",
         delay: Optional[float] = None,
     ) -> None:
-        super().__init__(host, port, clientId, timeout=timeout, terminate=terminate)
+        super().__init__(host, port, clientId, timeout=timeout)
         self.orderRepo = orderRepo
         self.contractRepo = contractRepo
         self.targets: list[Tuple[Contract, Order]] = targets
@@ -175,10 +174,9 @@ class OrderMonitor(BaseProxy):
         clientId: int,
         tIo: Optional[TextIO] = sys.stdout,
         timeout: float = 15 * 60,
-        terminate: Optional[str] = "quit",
         delay: Optional[float] = None,
     ) -> None:
-        super().__init__(host, port, clientId, timeout=timeout, terminate=terminate)
+        super().__init__(host, port, clientId, timeout=timeout)
         self.order_repo = orderRepo
         self.contract_repo = contractRepo
         self.post_process = postProcess

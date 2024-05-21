@@ -19,10 +19,9 @@ class LookupContractDetails(BaseProxy):
         port: int,
         clientId: int,
         timeout: float = 15 * 60,
-        terminate: Optional[str] = "quit",
         search_delay: Optional[float] = None,
     ) -> None:
-        super().__init__(host, port, clientId, timeout=timeout, terminate=terminate)
+        super().__init__(host, port, clientId, timeout=timeout)
         self.targets = targets
         self.postProcess = postProcess
         self.search_delay = search_delay

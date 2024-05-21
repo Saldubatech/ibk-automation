@@ -1,0 +1,17 @@
+version: 1
+
+formatters:
+  simple:  # Define a formatter named "simple"
+    # https://docs.python.org/3/library/logging.html#logrecord-attributes
+    format: "[%(threadName)s] %(asctime)s - %(module)s - %(levelname)s - %(message)s"  # Message format string
+
+handlers:
+  console:  # Define a handler named "console"
+    class: logging.StreamHandler  # Use the StreamHandler class for console output
+    level: INFO  # Set the minimum logging level for this handler (DEBUG)
+    formatter: simple  # Use the "simple" formatter defined above
+
+loggers:
+  root:  # Configure the root logger
+    level: INFO  # Set the root logger level (DEBUG)
+    handlers: [console]  # Use the "console" handler for the root logger

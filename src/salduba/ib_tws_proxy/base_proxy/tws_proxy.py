@@ -149,14 +149,12 @@ class BaseProxy(ClientStub, Listener):
    port: int,
    clientId: int,
    tracker: Optional[OperationsTracker] = None,
-   timeout: float = 60,
-   terminate: Optional[str] = "quit",
+   timeout: float = 60
   ) -> None:
     _logger.debug(f"Will timeout at {timeout} seconds")
     self.accounts: list[str] = []
     Listener.__init__(self, OperationsTracker() if tracker is None else tracker)
     ClientStub.__init__(self, clientId=clientId, ib_wrapper=self)
-    self.terminate = terminate
     self._host = host
     self._port = port
     self._lock = threading.Lock()
@@ -168,17 +166,17 @@ class BaseProxy(ClientStub, Listener):
       target=self._commandActivator, name=f"{self.__class__.__name__}::Commander::{clientId}",
     )
     self._max_time_cleanup = threading.Timer(timeout, self.stop, args=["Time Exhausted"])
-    self._console_watcher = threading.Thread(
-     target=self._consoleWatcher, daemon=True, name=f"{self.__class__.__name__}::ConsoleWatcher::{clientId}",
-    )
+    # self._console_watcher = threading.Thread(
+    #  target=self._consoleWatcher, daemon=True, name=f"{self.__class__.__name__}::ConsoleWatcher::{clientId}",
+    # )
     # These to migrate to Response Tracker
     self._in_progress: dict[int, list[Any]] = {}
 
-  def _consoleWatcher(self) -> None:
-    lastInput = input("Command > ")
-    while lastInput != self.terminate:
-      lastInput = input("Command > ")
-    self.stop("Console Terminated")
+  # def _consoleWatcher(self) -> None:
+  #   lastInput = input("Command > ")
+  #   while lastInput != self.terminate:
+  #     lastInput = input("Command > ")
+  #   self.stop("Console Terminated")
 
   def activate(self) -> None:
     _logger.info(f"Connecting to {self._host}:{self._port} with ClientId: {self.clientId}")
@@ -186,8 +184,8 @@ class BaseProxy(ClientStub, Listener):
     _logger.info("serverVersion: %s connectionTime: %s" % (self.serverVersion(), self.twsConnectionTime()))
     self._listener.start()
     self._max_time_cleanup.start()
-    if self.terminate:
-      self._console_watcher.start()
+    # if self.terminate:
+    #   self._console_watcher.start()
 
   def wait_for_me(self) -> Optional[list[ErrorResponse]]:
     if not self.isActive():

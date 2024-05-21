@@ -10,7 +10,6 @@ from ibapi.order import Order
 from ibapi.order_state import OrderState
 
 from salduba.corvino.movements import Movement
-from salduba.corvino.parse_input import InputParser
 from salduba.corvino.persistence.movement_record import MovementRepo, MovementStatus
 from salduba.ib_tws_proxy.contracts.contract_repo import ContractKey, ContractRepo, DeltaNeutralContractRepo, contractFromRecord
 from salduba.ib_tws_proxy.contracts.lookup_contract_details import LookupContractDetails
@@ -198,7 +197,7 @@ class CorvinoApp:
     :param movements_repo:
     :param order_repo:
     :param appFamily: Each family will be multiplied by 100
-      and use the range from 0 to 99 for client Id of this application
+      and use the range from 0 to 99 for clientId of this application
     :param host:
     :param port:
     """
@@ -237,14 +236,6 @@ class CorvinoApp:
       missing.to_csv(output_file)
     return missing if len(missing) > 0 else None
 
-  def verify_contracts_for_csv_file(
-    self,
-    datafile_path: str,
-    output_file: Optional[str] = "missing_contracts.csv",
-  ) -> Optional[pd.DataFrame]:
-    df = InputParser.read_csv(datafile_path)
-    return self.verify_contracts_for_dataframe(df, output_file)
-
   @staticmethod
   def contract_pattern_for(r: dict[str, Any]) -> Contract:
     return ContractKey(
@@ -274,8 +265,7 @@ class CorvinoApp:
         host=self.host,
         port=self.port,
         clientId=self.app_family + 1,
-        timeout=len(targets) + 15,  # Allow one second per target
-        terminate="q",
+        timeout=len(targets) + 15,
         search_delay=0.1
       )
       updater.activate()
@@ -451,8 +441,7 @@ class CorvinoApp:
         host=self.host,
         port=self.port,
         clientId=self.app_family + 1,
-        timeout=len(movements) + 15,  # Allow 1 sec per order with a minimum of 15 to allow for startup.
-        terminate="q",
+        timeout=len(movements) + 15,
         delay=None,
       )
       ordering.activate()

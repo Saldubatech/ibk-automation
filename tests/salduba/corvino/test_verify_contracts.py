@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
@@ -17,7 +18,7 @@ from salduba.util.tests import findTestsRoot
 
 _maybeTr = findTestsRoot()
 _tr = _maybeTr if _maybeTr else "./"
-init_logging(os.path.join(_tr, "resources/logging.yaml"))
+init_logging(Path(os.path.join(_tr, "resources/logging.yaml")))
 _logger = logging.getLogger(__name__)
 
 
@@ -73,7 +74,8 @@ def test_on_empty_db() -> None:
   tmp_file.close()
   output_file_path = tmp_file.name
   _logger.info(f"Output file at: {output_file_path}")
-  result = underTest.verify_contracts_for_csv_file(probe, output_file_path)
+  df = InputParser.read_csv(probe)
+  result = underTest.verify_contracts_for_dataframe(df, output_file_path)
   probeDF = pd.read_csv(probe)
   results = pd.read_csv(output_file_path)
   assert len(probeDF) == len(results)

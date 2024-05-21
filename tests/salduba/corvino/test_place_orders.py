@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import tempfile
+from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
@@ -19,7 +20,7 @@ from salduba.util.tests import findTestsRoot
 
 _maybeTr = findTestsRoot()
 _tr = _maybeTr if _maybeTr else "./"
-init_logging(os.path.join(_tr, "resources/logging.yaml"))
+init_logging(Path(os.path.join(_tr, "resources/logging.yaml")))
 _logger = logging.getLogger(__name__)
 
 

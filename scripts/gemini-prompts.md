@@ -5,7 +5,7 @@
 Create a scala macro that given a Class that may be declared in any reachable compilation unit as its generic parameter generates a plantuml class diagram with:
 
 1. Properties for all fields that extend `AnyVal` or are Option[_] or Seq[_] of types that extend `AnyVal`
-2. Directed Composition links links to the corresponding class for any fields that are `Seq[_]`, `Map[_, _]` or any other collection of types not derived from AnyVal.
+2. Directed Composition links to the corresponding class for any fields that are `Seq[_]`, `Map[_, _]` or any other collection of types not derived from AnyVal.
 3. All links are labeled with the name of the field.
 
 ## Python parallel socket
@@ -23,7 +23,7 @@ A Python class that can send messages through a socket and wait for answers from
 
 Create a shipment class diagram in PlantUml to represent shipments of goods with the following:
 
-1. A shipment has heading information that identifies 
+1. A shipment has heading information that identifies
 
 
 ## Journalled Database
@@ -50,4 +50,3 @@ Using Python and the psycopg2 library, create a method to insert a new record wi
    1. insert the record based in the given parameters
    2. Find all records with `effectiveAt` greater than the parameter and that have the largest recordedAt value for a given `effectiveAt` Value.
    3. Insert a copy of this set of records with their given effectiveAt value in a single sql statement with values in order of `effectiveAt`
-

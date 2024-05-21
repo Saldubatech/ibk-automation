@@ -1,4 +1,4 @@
-Ticker,Trade,Nombre,Symbol,RawType,RawCountry,IBKType,Currency,Exchange,Exchange2
+Ticker,Trade,Nombre,Symbol,RawType,Country,IbkType,Currency,Exchange,Exchange2
 ABBN SW Equity,-19,ABB Ltd,ABBN,Equity,SW,STK,CHF,EBS,
 ALSN SW Equity,23,ALSO Holding AG,ALSN,Equity,SW,STK,CHF,EBS,
 COTN SW Equity,-2,Comet Holding AG,COTN,Equity,SW,STK,CHF,EBS,

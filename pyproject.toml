@@ -52,7 +52,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 # This is what defines what "top-level" scripts will be published.
-verify_contracts = "salduba.corvino.commands.verify_contracts:verify_contracts"
+corvino_cli = "salduba.corvino.commands.cli:cli"
 
 [tool.pytest.ini_options]
 addopts = "--cov=salduba"

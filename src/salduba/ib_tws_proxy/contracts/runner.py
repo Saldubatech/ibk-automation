@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+from pathlib import Path
 from typing import Tuple
 
 from salduba.corvino.parse_input import InputParser
@@ -15,7 +16,7 @@ from salduba.util.tests import findTestsRoot
 
 _maybeTr = findTestsRoot()
 _tr = "tests"
-init_logging(os.path.join(_tr, "resources/logging.yaml"))
+init_logging(Path(os.path.join(_tr, "resources/logging.yaml")))
 _logger = logging.getLogger(__name__)
 
 

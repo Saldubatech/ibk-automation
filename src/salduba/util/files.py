@@ -1,19 +1,20 @@
 import os.path
 import sys
+from pathlib import Path
 from typing import Optional
 
 
-def resolveFile(filename: str) -> Optional[str]:
-    for directory in sys.path:
-        path = os.path.join(directory, filename)
-        if os.path.isfile(path):
-            return path
-    return None
+def resolveFileInPath(filename: str) -> Optional[Path]:
+  for directory in sys.path:
+    path = Path(directory, filename)
+    if path.exists() and path.is_file():
+      return path
+  return None
 
 
 def resolveDir(dirname: str) -> Optional[str]:
-    for directory in sys.path:
-        path = os.path.join(directory, dirname)
-        if os.path.isdir(path):
-            return path
-    return None
+  for directory in sys.path:
+    path = os.path.join(directory, dirname)
+    if os.path.isdir(path):
+      return path
+  return None
