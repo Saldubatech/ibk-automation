@@ -8,35 +8,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8dd4e2ac-03bb-4946-a003-3eda0021e7fb" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/csv-editor.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/salduba/corvino/commands/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/salduba/corvino/commands/cli.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/salduba/corvino/commands/configuration.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/salduba/corvino/commands/corvino_logging.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/salduba/util/logging.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/salduba/util/sys/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/salduba/util/sys/paths.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/git_toolbox_prj.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ibk-automation.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ibk-automation.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/cervino_rebalance_v2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/cervino_rebalance_v2.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/movements.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/gemini-prompts.md" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/gemini-prompts.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/parse_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/parse_input.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/corvino/services/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/base_proxy/tws_proxy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/base_proxy/tws_proxy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/lookup_contract_details.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/contracts/runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/orders/placing_orders.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/orders/placing_orders.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/util/files.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/util/files.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/util/logging.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/util/logging.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_parse_input.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_place_orders.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/corvino/test_verify_contracts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -139,6 +113,20 @@
       <option name="presentableId" value="Default" />
       <updated>1697234970304</updated>
     </task>
+    <task id="LOCAL-00001" summary="First version of Commands Line Interface.">
+      <option name="closed" value="true" />
+      <created>1716326366575</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1716326366575</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="First version of Commands Line Interface." />
+    <option name="LAST_COMMIT_MESSAGE" value="First version of Commands Line Interface." />
   </component>
 </project>

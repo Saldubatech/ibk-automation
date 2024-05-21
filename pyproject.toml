@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "salduba_corvino"
-version = "0.1.0"
+version = "0.1.0.b"
 description = "Automated Trade Management for Corvino Fund"
 authors = ["Miguel Pinilla <miguel.pinilla@saldubatech.com>"]
 readme = ["README.md"]
@@ -17,7 +17,6 @@ exclude = ["ib_src"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-
 ibapi = "^9.81.1.post1"
 pandas = "^2.2.2"
 pyyaml = "^6.0.1"
@@ -26,6 +25,8 @@ pathlib = "^1.0.1"
 mergedeep = "^1.3.4"
 openpyxl = "^3.1.2"
 inflection = "^0.5.1"
+click = "^8.1.7"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 sphinx = "^7.3.7"
@@ -98,3 +99,5 @@ exclude = '''
                      # the root of the project
 )
 '''
+
+# Configuring Credentials: https://python-poetry.org/docs/repositories/#configuring-credentials
