@@ -20,17 +20,16 @@ loggers:
     handlers: [console]
   ibapi:
     level: WARNING
+  sqlite3:
+    level: DEBUG
   salduba.ib_tws_proxy.backing_db.repo:
-    level: WARNING
-    handlers: [console]
-  salduba.ib_tws_proxy.backing_db.db:
     level: WARNING
     handlers: [console]
   salduba.ib_tws_proxy.base_proxy.tws_proxy:
     level: INFO
   salduba.ib_tws_proxy.contracts:
     level: INFO
-  salduba.ib_tws_proxy.orders:
+  salduba.ib_tws_proxy.backing_db.db:
     level: DEBUG
   salduba.corvino.services.app:
     level: DEBUG

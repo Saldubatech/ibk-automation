@@ -65,8 +65,6 @@ def test_a_bunch() -> None:
   logging.info("Test A Bunch")
   bunch: pd.DataFrame = pd.read_csv("tests/salduba/ib_tws_proxy/contracts/sample_contracts.csv", index_col="Ticker")
   bunchProbe = [buildContract(r.Symbol, r.IBKType, r.Exchange, r.Currency) for r in bunch.itertuples()]  # type: ignore
-  for c in bunchProbe[0:10]:
-    _logger.debug(f"\t####{c}")
   underTest = LookupContractDetails(
       bunchProbe[0:10],
       _postprocessor,

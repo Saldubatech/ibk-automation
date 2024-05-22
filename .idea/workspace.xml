@@ -8,7 +8,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8dd4e2ac-03bb-4946-a003-3eda0021e7fb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ibk-automation.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ibk-automation.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/schema/meta.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/schema/meta.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/resources/logging.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/tests/resources/logging.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +61,9 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_ensure_version.executor": "Run",
+    "Python tests.pytest for test_db.test_0_version.executor": "Run",
+    "Python tests.pytest for test_db.test_ensure_version.executor": "Run",
     "Python tests.pytest for test_verify_contracts.test_lookup_contracts.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -63,7 +73,7 @@
     "last_opened_file_path": "/Users/jmp/code/salduba/ibk-automation/src/salduba/util",
     "run.code.analysis.last.selected.profile": "pProject Default",
     "scala_project_settings_configurable.last_selected_tab_index": "0",
-    "settings.editor.selected.configurable": "preferences.sourceCode"
+    "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -72,7 +82,58 @@
       <recent name="$PROJECT_DIR$/src/salduba/corvino/commands" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest for test_verify_contracts.test_lookup_contracts">
+  <component name="RunManager" selected="Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_ensure_version">
+    <configuration name="pytest for salduba.ib_tws_proxy.backing_db.test_db.test_ensure_version" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;salduba.ib_tws_proxy.backing_db.test_db.test_ensure_version&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest for test_db.test_0_version" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_db.test_0_version&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest for test_db.test_ensure_version" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ibk-automation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_db.test_ensure_version&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration name="pytest for test_verify_contracts.test_lookup_contracts" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="ibk-automation" />
       <option name="ENV_FILES" value="" />
@@ -109,8 +170,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest for test_verify_contracts.test_lookup_contracts" />
+        <item itemvalue="Python tests.pytest for salduba.ib_tws_proxy.backing_db.test_db.test_ensure_version" />
+        <item itemvalue="Python tests.pytest for test_db.test_ensure_version" />
+        <item itemvalue="Python tests.pytest for test_db.test_0_version" />
         <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.pytest for test_verify_contracts.test_lookup_contracts" />
       </list>
     </recent_temporary>
   </component>
