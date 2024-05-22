@@ -8,14 +8,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8dd4e2ac-03bb-4946-a003-3eda0021e7fb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ibk-automation.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ibk-automation.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/schema/meta.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/schema/meta.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/resources/logging.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/tests/resources/logging.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/backing_db/test_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/salduba/ib_tws_proxy/contracts/test_lookup_contract_details.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
