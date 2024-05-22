@@ -1,6 +1,13 @@
 [tool.poetry]
 name = "salduba_corvino"
-version = "0.1.0.b"
+# https://python-poetry.org/docs/cli/#version
+# https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers
+# [N!]N(.N)*[{a|b|rc}N][.postN][.devN] == "1.2.3a0.post3.dev10
+# YYYY.X.Y.... also allowed
+# Possible tools:
+#   - https://github.com/mtkennerly/poetry-dynamic-versioning
+#   - https://github.com/mtkennerly/dunamai
+version = "1.0.0a0.post2"
 description = "Automated Trade Management for Corvino Fund"
 authors = ["Miguel Pinilla <miguel.pinilla@saldubatech.com>"]
 readme = ["README.md"]

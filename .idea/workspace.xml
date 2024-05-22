@@ -8,7 +8,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8dd4e2ac-03bb-4946-a003-3eda0021e7fb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/seed-data/meta.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/salduba/ib_tws_proxy/backing_db/seed-data/meta.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
