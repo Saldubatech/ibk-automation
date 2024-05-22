@@ -21,7 +21,7 @@ jobs:
         name: Upgrade SQLite
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: dia doxygen doxygen-doc doxygen-gui doxygen-latex graphviz mscgen
+          packages: sqlite3
           version: 1.0
       - id: install-python
         name: Install Python
