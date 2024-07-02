@@ -18,7 +18,7 @@ TARGET        = *
 ALLFILES      =  *.rst **/*.rst *.md **/*.md
 ADDPREREQS    ?=
 
-.PHONY: sp-full-help sp-woke-install sp-pa11y-install sp-install sp-run sp-html \
+.PHONY: sp-full-help sp-woke-install sp-pa11y-install sp-install sp-run sp-html sp-latex \
         sp-epub sp-serve sp-clean sp-clean-doc sp-spelling sp-spellcheck sp-linkcheck sp-woke \
         sp-pa11y Makefile.sp sp-vale
 
@@ -73,6 +73,10 @@ sp-html: sp-install
 
 sp-epub: sp-install
 	. $(VENV); $(SPHINXBUILD) -b epub "$(SOURCEDIR)" "$(BUILDDIR)" -w $(SPHINXDIR)/warnings.txt $(SPHINXOPTS)
+
+sp-latex: sp-install
+	. $(VENV); $(SPHINXBUILD) -b latex "$(SOURCEDIR)" "$(BUILDDIR)" -w $(SPHINXDIR)/warnings.txt $(SPHINXOPTS)
+
 
 sp-serve: sp-html
 	cd "$(BUILDDIR)"; python3 -m http.server --bind 127.0.0.1 8000

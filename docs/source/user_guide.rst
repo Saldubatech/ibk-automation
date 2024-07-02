@@ -43,8 +43,6 @@ Once installed (with the Venv active if configured), the entry point command is:
     -db, --database TEXT   Path to the database to use
     --missing-output TEXT  Path to the output for missing contracts, it must be
                           a *.csv file
-    --movement-input TEXT  Path to the input file of movements, it must be a
-                          *.csv file
     --movement-sheet TEXT  If the input is a xlsx file with more than one sheet,
                           the name of the sheet with the Movements
     --help                 Show this message and exit.
@@ -74,6 +72,6 @@ Where ``<FILE>`` is the path to the csv of xlsx file.
 The file needs to have the columns:
 
 - **Ticker**: A String with the Symbol for the security, a two letter code for the country in which it should be traded and the type of Security to trade, which currently can only be `Equity`.
-- **Trade**: The desired trade in number of units (integer). Positive if it is to buy and negative if it is to sell.
+- **Trade**: The desired trade in number of units to trade (integer). Positive if it is to buy and negative if it is to sell.
 
 The rest of columns in the file will be ignored
