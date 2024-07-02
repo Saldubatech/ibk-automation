@@ -185,7 +185,8 @@ custom_extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.graphviz',
     'sphinx.ext.todo',
-    'sphinxcontrib.plantuml'
+    'sphinxcontrib.plantuml',
+    'sphinxcontrib.confluencebuilder'
     ]
 
 # Add custom required Python modules that must be added to the
@@ -196,6 +197,7 @@ custom_extensions = [
 # sphinx-notfound-page, sphinx-reredirects, sphinx-tabs, sphinxcontrib-jquery,
 # sphinxext-opengraph
 custom_required_modules = [
+    "sphinxcontrib-confluencebuilder",
     "matplotlib",
     "aiofiles",
     "alabaster",
@@ -327,3 +329,27 @@ rst_prolog = '''
 .. role:: center
    :class: align-center
 '''
+
+############################################################
+# Confluence Publisher Configuration
+# https://sphinxcontrib-confluencebuilder.readthedocs.io/en/stable/configuration/
+############################################################
+
+# Important to specify v1 for now. v2 is not mature enough for this
+confluence_editor = "v1"
+
+# This should be obtained from an Environment Variable or through "getpass"
+# confluence_publish_token = 'AbCdEfGhIjKlMnOpQrStUvWxY/z1234567890aBc'
+
+# confluence_publish = True
+# confluence_space_key = 'TEST'
+# confluence_ask_password = True
+# (for Confluence Cloud)
+# confluence_server_url = 'https://example.atlassian.net/wiki/'
+# confluence_server_user = 'myawesomeuser@example.com'
+# (or, for Confluence Server)
+# confluence_server_url = 'https://intranet-wiki.example.com/'
+# confluence_server_user = 'myawesomeuser'
+
+# confluence_parent_page = 'MyDocumentation'
+# confluence_publish_dryrun = True

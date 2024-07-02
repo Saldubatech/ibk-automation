@@ -1368,8 +1368,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -1573,8 +1573,8 @@ files = [
 annotated-types = ">=0.4.0"
 pydantic-core = "2.20.0"
 typing-extensions = [
-    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
     {version = ">=4.6.1", markers = "python_version < \"3.13\""},
+    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
 ]
 
 [package.extras]
@@ -2112,6 +2112,21 @@ files = [
 lint = ["docutils-stubs", "flake8", "mypy"]
 standalone = ["Sphinx (>=5)"]
 test = ["pytest"]
+
+[[package]]
+name = "sphinxcontrib-confluencebuilder"
+version = "2.5.2"
+description = "Sphinx extension to build Atlassian Confluence Storage Markup"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "sphinxcontrib_confluencebuilder-2.5.2-py3-none-any.whl", hash = "sha256:0042de54005868fcd03fd2efbd6fa20c61ca9d8f80b6734fdfd4250b61cacbeb"},
+    {file = "sphinxcontrib_confluencebuilder-2.5.2.tar.gz", hash = "sha256:1708e394c4c88400ffbf8220faeaab249c9b74faa93c6fbb38cb89c12a96a3ce"},
+]
+
+[package.dependencies]
+requests = ">=2.25.0"
+sphinx = ">=6.1"
 
 [[package]]
 name = "sphinxcontrib-devhelp"
@@ -2691,4 +2706,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "e0bb06ccdf3f73791760d3a24b9c93632c9c95d30356502b689d9c469cc29664"
+content-hash = "27eabff1269d452a9726dbb1ae87f10055fe2b2fe8d78f6f7c45453b36c5ac89"
