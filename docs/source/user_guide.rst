@@ -20,11 +20,11 @@ Installation
 
   % pip install salduba_corvino
 
-If from ``test-pypi``
+If looking for a version that is only in  ``test-pypi``
 
 .. code-block:: bash
 
-  % pip install --index-url https://test.pypi.org/simple/ salduba_corvino
+  % pip install --extra-index-url https://test.pypi.org/simple/ salduba_corvino==<version_identifier>
 
 Usage
 =======

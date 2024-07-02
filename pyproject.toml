@@ -7,7 +7,7 @@ name = "salduba_corvino"
 # Possible tools:
 #   - https://github.com/mtkennerly/poetry-dynamic-versioning
 #   - https://github.com/mtkennerly/dunamai
-version = "1.0.0a1" # "1.0.0a0.post2"
+version = "1.0.0a2" # "1.0.0a0.post2"
 description = "Automated Trade Management for Corvino Fund"
 authors = ["Miguel Pinilla <miguel.pinilla@saldubatech.com>"]
 readme = ["README.md"]
