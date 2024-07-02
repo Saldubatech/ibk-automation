@@ -76,7 +76,9 @@ def test_on_empty_db() -> None:
   output_file_path = tmp_file.name
   _logger.info(f"Output file at: {output_file_path}")
   df = InputParser.read_csv(probe)
+  assert df is not None
   result = underTest.verify_contracts_for_dataframe(df, output_file_path)
+  assert result is not None
   probeDF = pd.read_csv(probe)
   results = pd.read_csv(output_file_path)
   assert len(probeDF) == len(results)
@@ -89,6 +91,8 @@ def test_lookup_contracts() -> None:
   _logger.info(f"DB at: {db.config.storage}")
   probeFile = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
   probe = InputParser.read_csv(probeFile)
+  assert probe is not None
+
   underTest = CorvinoApp(
     contract_repo,
     dnc_repo,

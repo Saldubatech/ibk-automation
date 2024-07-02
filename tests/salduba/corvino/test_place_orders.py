@@ -3,7 +3,7 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 import pandas as pd
 import pytest
@@ -62,7 +62,7 @@ def setup_db() -> TradingDB:
 @pytest.mark.tws
 def test_place_orders(setup_db: TradingDB) -> None:
   probeFile = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
-  probe_all: pd.DataFrame = InputParser.read_csv(probeFile)
+  probe_all: Optional[pd.DataFrame] = InputParser.read_csv(probeFile)
   contract_repo, order_repo, movement_repo = repos(setup_db)
   underTest = CorvinoApp(
     contract_repo,
@@ -79,6 +79,7 @@ def test_place_orders(setup_db: TradingDB) -> None:
   output_file_path = tmp_file.name
   _logger.info(f"DB at {setup_db.config.storage}")
   _logger.info(f"Output file at: {output_file_path}")
+  assert probe_all is not None
   probe: pd.DataFrame = probe_all[0:2]
 
   missing_contracts = underTest.lookup_contracts(inputDF=probe, output_file=output_file_path, ttl=10000)

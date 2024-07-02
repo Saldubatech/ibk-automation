@@ -99,18 +99,11 @@ def require_csv_or_xlsx(param: click.Option, value: str) -> Optional[str]:
   callback=Configuration.output_path
 )
 @click.option(
-  "--movement-input",
-  type=str,
-  required=False,
-  help="Path to the input file of movements, it must be a *.csv file",
-  callback=Configuration.input_path
-)
-@click.option(
   "--movement-sheet",
   type=str,
   required=False,
   default='Movements',
-  help="If the input is a xlsx file with more than one sheet, the name of the sheet with the Movements",
+  help="If the input is a xlsx file with more than one sheet, the name of the sheet with the Movements\nDefault: 'Movements'",
   callback=Configuration.input_sheet
 )
 @click.pass_context
@@ -118,19 +111,18 @@ def cli(
     ctx: click.Context,
     database: str,
     missing_output: str,
-    movement_input: str,
     movement_sheet: str
     ) -> None:
   ctx.ensure_object(dict)
   ctx.obj['db_path'] = database
   ctx.obj['missing_output'] = missing_output
-  ctx.obj['movement_input'] = movement_input
-  ctx.obj['input_type'] = movement_input.split('.')[-1]
+#  ctx.obj['input_type'] = movement_input.split('.')[-1]
   ctx.obj['movement_sheet'] = movement_sheet
   ctx.obj['app'] = build_app(database)
 
 
-def read_from_input(input_type: str, input_file: str, sheet_name: str) -> pd.DataFrame:
+def read_from_input(input_file: str, sheet_name: str) -> pd.DataFrame:
+  input_type = input_file.split('.')[-1]
   try:
     if input_type == 'csv':
       df = InputParser.read_csv(input_file)
@@ -144,7 +136,7 @@ def read_from_input(input_type: str, input_file: str, sheet_name: str) -> pd.Dat
     raise click.FileError(input_file, msg)
   if df is None:
     msg = f"Invalid input file: {input_file}"
-    _logger.warning(msg)
+    _logger.error(msg)
     raise click.BadParameter(msg)
   elif df.empty:
     msg = f"No data in input file: {input_file}"
@@ -171,7 +163,7 @@ def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
   _logger.info(info_msg)
   _logger.debug(debug_msg)
   click.echo(info_msg)
-  df = read_from_input(ctx.obj['input_type'], input_movements_file, ctx.obj['movement_sheet'])
+  df: pd.DataFrame = read_from_input(input_movements_file, ctx.obj['movement_sheet'])
   result = app.verify_contracts_for_dataframe(df, missing_output_file)
   if result is not None and len(result) > 0:
     msg = f"Missing Contracts: {len(result)}"
@@ -183,7 +175,7 @@ def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
 @click.pass_context
 @click.argument(
   "input-movements-file",
-  required=False,
+  required=True,
   type=click.Path(exists=True),
   callback=Configuration.input_path
 )
@@ -199,7 +191,7 @@ def _do_lookup_contracts(ctx: click.Context, input_movements_file: str) -> pd.Da
   _logger.info(info_msg)
   _logger.debug(debug_msg)
   click.echo(info_msg)
-  df = read_from_input(ctx.obj['input_type'], input_movements_file, ctx.obj['movement_sheet'])
+  df = read_from_input(input_movements_file, ctx.obj['movement_sheet'])
   result = app.lookup_contracts(df, missing_output_file)
   if result is not None and len(result) > 0:
     msg = f"Cannot resolve some Contracts[{len(result)}]. See {missing_output_file} for details"
@@ -218,12 +210,12 @@ def _do_lookup_contracts(ctx: click.Context, input_movements_file: str) -> pd.Da
   "--batch",
   type=str,
   required=False,
-  help="The name of the batch to use for these orders",
+  help="The name of the batch to use for these orders, default: Date with seconds (Year-Month-Day:Hour:min:secs)",
   callback=Configuration.batch_name
 )
 @click.argument(
   "input-movements-file",
-  required=False,
+  required=True,
   type=click.Path(exists=True),
   callback=Configuration.input_path
 )

@@ -3,7 +3,7 @@
 # See https://mitelman.engineering/blog/python-best-practice/automating-python-best-practices-for-a-new-project
 default_language_version:
   python: python3.11
-exclude: ^(ib_src|.idea|data)/
+exclude: ^(ib_src|.idea|data|docs)/
 
 repos:
   -   repo: https://github.com/pre-commit/pre-commit-hooks

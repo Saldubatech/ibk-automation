@@ -1,2 +1,3 @@
-# ibk-automation
-Utilities to interface with the IBK TWS API.
+# Corvino Trade Automation
+
+A set of utilities to automate executing trade movements in the Corvino fund.
