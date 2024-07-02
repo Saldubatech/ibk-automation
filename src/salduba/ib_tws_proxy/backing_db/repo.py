@@ -35,6 +35,7 @@ class Repo(Generic[R]):
     self.updater_prefix = "Update " + record_table + " set "
     self.full_updater = self.updater_prefix + ", ".join([f"{k} = ?" for k in self.columns])
     self.byIdDeleter = "Delete from {} where id == ?".format(record_table)
+    self.before_or_at_clause = "('at' <= ?)"
 
   def insert_raw(self, records: Iterable[Sequence[R]]) -> None:
     if records:
@@ -54,6 +55,7 @@ class Repo(Generic[R]):
     parameters: list[Any],
     conditions: list[str] | None = None,
     sorting: list[Tuple[str, SortDirection]] | None = None,
+    limit: Optional[int] = None
   ) -> list[tuple[Any]]:
     results = []
     if conditions:
@@ -69,7 +71,10 @@ class Repo(Generic[R]):
     _logger.debug(f"with parameters: {parameters}")
     with self.db as db:
       with db.cursor() as crs:
-        results = crs.execute(query, parameters).fetchall()
+        if limit is None:
+          results = crs.execute(query, parameters).fetchall()
+        else:
+          results = crs.execute(query, parameters).fetchmany(limit)
     _logger.debug(f"Retrieved {len(results)} records")
     return results
 
@@ -98,6 +103,23 @@ class Repo(Generic[R]):
   ) -> list[R]:
     results = self.select_raw(parameters, conditions, sorting)
     return [self.recordType.hydrate(*r) for r in results]
+
+  def selectLast(
+    self,
+    parameters: list[Any],
+    conditions: list[str] | None = None,
+    sorting: list[Tuple[str, SortDirection]] | None = None,
+    at: Optional[int] = None
+  ) -> Optional[R]:
+    if at is None:
+      result = self.select_raw(parameters, conditions, [('at', SortDirection.DESC)], limit=1)
+    else:
+      inner_parameters = parameters.copy()
+      inner_parameters.append(at)
+      conditions_with_time = [] if conditions is None else conditions.copy()
+      conditions_with_time.append(self.before_or_at_clause)
+      result = self.select_raw(parameters, conditions_with_time, [('at', SortDirection.DESC)], limit=1)
+    return None if not result else self.recordType.hydrate(*result[0])
 
   def selectAsDataFrame(
     self,
