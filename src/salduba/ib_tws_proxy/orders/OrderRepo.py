@@ -1,7 +1,6 @@
 import logging
 from dataclasses import dataclass
-from decimal import Decimal
-from typing import Optional, Self
+from typing import Optional
 
 from ibapi.common import OrderId
 from ibapi.order import Order
@@ -141,7 +140,7 @@ class OrderRecord(Record):
     return result
 
   @classmethod
-  def newFromOrder(cls, rid: str, at: int, order: Order) -> Self:
+  def newFromOrder(cls, rid: str, at: int, order: Order) -> 'OrderRecord':
     return cls.from_dict(rid, at, order.__dict__)
 
 
@@ -162,8 +161,8 @@ class SoftDollarTierRepo(Repo[SoftDollarTierRecord]):
 class OrderStatusRecord(Record):
   orderId: OrderId
   status: IbOrderStatus
-  filled: Decimal
-  remaining: Decimal
+  filled: float
+  remaining: float
   avgFillPrice: float
   permId: int
   parentId: int

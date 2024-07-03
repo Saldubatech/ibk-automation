@@ -33,43 +33,6 @@ def test_parse_input_bad_sec_type() -> None:
   assert "BadBad" == result[3]
 
 
-def test_read_full_excel() -> None:
-  probe = os.path.join(_tr, "resources/Cervino Rebalance 240503.xlsx")
-  # TODO
-  try:
-    result = InputParser.read_full_excel(probe, "Movements")
-    assert 109, len(result)
-    assert {
-               "ID ISIN",
-               "Nombre",
-               "Trade",
-               "Currency",
-               "Exchange",
-               "Exchange2",
-               "Symbol",
-               "Country",
-               "RawType",
-               "IbkType"
-               } == set(result.columns)
-    assert "2875 JP Equity" == result.index[0]
-    expect_in_0 = {
-       "ID ISIN": "JP3613000003",
-       "Nombre": "Toyo Suisan Kaisha Ltd",
-       "Trade": 600,
-       "Currency": Currency.JPY,
-       "Exchange": Exchange.TSEJ,
-       "Exchange2": Exchange.NONE,
-       "Symbol": "2875",
-       "Country": "JP",
-       "RawType": "Equity",
-       "IbkType": "STK"
-    }
-    first = result.iloc[0]
-    assert expect_in_0 == dict(first)
-  except Exception as exc:
-    assert "Exchange is empty for first row. Probably the formulas are not evaluated" == str(exc)
-
-
 def test_read_csv_minimal() -> None:
   probe = os.path.join(_tr, "resources/cervino_rebalance_v2_minimal.csv")
   result = InputParser.read_csv(probe)
@@ -102,6 +65,44 @@ def test_read_csv_minimal() -> None:
   assert expect_in_0 == dict(first)
 
 
+def test_input_rows_from_excel() -> None:
+  probe = os.path.join(_tr, "resources/Cervino Rebalance 240503 minimal.xlsx")
+  result = InputParser.input_rows_from(probe, "Movements")
+  assert 109, len(result)
+  assert "2875 JP Equity" == result[0].ticker
+  expect_in_0 = {
+    "trade": 600,
+    "currency": Currency.JPY,
+    "exchange": Exchange.TSEJ,
+    "exchange2": Exchange.NONE,
+    "symbol": "2875",
+    "country": "JP",
+    "raw_type": "Equity",
+    "ibk_type": "STK",
+    'ticker': '2875 JP Equity'
+  }
+  assert expect_in_0 == result[0].__dict__
+
+
+def test_input_rows_from_csv() -> None:
+  probe = os.path.join(_tr, "resources/cervino_rebalance_v2_minimal.csv")
+  result = InputParser.input_rows_from(probe, "Movements")
+  assert 109, len(result)
+  assert "2222 JP Equity" == result[0].ticker
+  expect_in_0 = {
+      "trade": -2400,
+      "currency": Currency.JPY,
+      "exchange": Exchange.TSEJ,
+      "exchange2": Exchange.NONE,
+      "symbol": "2222",
+      "country": Country.JP,
+      "raw_type": "Equity",
+      "ibk_type": SecType.STK,
+      'ticker': '2222 JP Equity'
+  }
+  assert expect_in_0 == result[0].__dict__
+
+
 def test_read_excel_minimal() -> None:
   probe = os.path.join(_tr, "resources/Cervino Rebalance 240503 minimal.xlsx")
   # TODO
@@ -129,7 +130,7 @@ def test_read_excel_minimal() -> None:
       "Country": "JP",
       "RawType": "Equity",
       "IbkType": "STK",
-      'Ticker': '2875 JP Equity',
+      'Ticker': '2875 JP Equity'
     }
   first = result.iloc[0]
   assert expect_in_0 == dict(first)

@@ -39,10 +39,10 @@ class Listener(EWrapper):  # type: ignore
     else:
       _logger.error(f"Unexpected Error[{errorCode}]: {errorString} with AOR Info:\n\t{advancedOrderRejectJson}")
       self.responseTracker.error(ErrorResponse(reqId, errorCode, errorString, advancedOrderRejectJson))
-      super().error(reqId, errorCode, errorString, advancedOrderRejectJson)
+      super().error(reqId, errorCode, errorString)
       if self.responseTracker.isIdle():
-        print(f"Tracker found idle at error response: {reqId}")
-        print(f"\nUnexpected Error({errorCode}): {errorString} with:\n\t{advancedOrderRejectJson}")
+        _logger.info(f"Tracker found idle at error response: {reqId}")
+        _logger.error(f"\nUnexpected Error({errorCode}): {errorString} with:\n\t{advancedOrderRejectJson}")
         self.stop("Tracker is Idle")
 
   def isActive(self) -> bool:
@@ -112,7 +112,7 @@ class BaseProxy(ClientStub, Listener):
      repeat
     :command>
     :registerPendingCommand/
-    repeatwhile(more commands to send)
+    repeat while(more commands to send)
      }
     end fork
     end

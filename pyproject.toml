@@ -142,6 +142,25 @@ pandas-stubs = "^2.2.2.240514"
 
 types-requests = "^2.32.0.20240622"
 
+types-termcolor = "^1.1.6.2"
+types-appdirs = "^1.4.3.5"
+types-docutils = "^0.21.0.20240423"
+types-pyasn1 = "^0.6.0.20240402"
+types-pygments = "^2.18.0.20240506"
+types-markupsafe = "^1.1.10"
+types-aiofiles = "^24.1.0.20240626"
+types-attrs = "^19.1.0"
+types-click = "^7.1.8"
+types-cffi = "^1.16.0.20240331"
+types-urllib3 = "^1.26.25.14"
+types-cryptography = "^3.3.23.2"
+types-colorama = "^0.4.15.20240311"
+types-openpyxl = "^3.1.5.20240630"
+types-babel = "^2.11.0.15"
+types-jinja2 = "^2.11.9"
+types-pytz = "^2024.1.0.20240417"
+types-certifi = "^2021.10.8.3"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
