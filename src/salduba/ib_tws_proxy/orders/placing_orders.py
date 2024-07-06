@@ -57,6 +57,14 @@ See:
 """  # noqa: E501
 
 
+@dataclass
+class OrderNotification:
+  orderId: OrderId
+  contract: Contract
+  order: Order
+  orderState: OrderState
+
+
 class PlaceOrders(BaseProxy):
   def __init__(
       self,
@@ -76,7 +84,8 @@ class PlaceOrders(BaseProxy):
       self.targets: list[Tuple[Contract, Order]] = targets
       self.postProcess = postProcess
       self.delay = delay
-      self.pendingOrders: dict[int, Tuple[Contract, OrderRecord]] = {}
+      self.newlyOrdered: dict[int, Tuple[Contract, OrderRecord]] = {}
+      self.previousOrderMessages: dict[int, list[OrderNotification]] = {}
 
   def runCommands(self) -> None:
     if not self.targets or len(self.targets) == 0:
@@ -99,7 +108,7 @@ class PlaceOrders(BaseProxy):
             newRecord = OrderRecord.newFromOrder(str(uuid4()), millis_epoch(nowT), order)
             self.orderRepo.insert([newRecord])
             self.placeOrder(oid, contract, order)
-            self.pendingOrders[oid] = (contract, newRecord)
+            self.newlyOrdered[oid] = (contract, newRecord)
           else:
             _logger.error("Cannot Generate Order Id")
         if self.delay:
@@ -111,8 +120,8 @@ class PlaceOrders(BaseProxy):
       self,
       orderId: OrderId,
       status: str,
-      filled: Decimal,
-      remaining: Decimal,
+      filled: float,
+      remaining: float,
       avgFillPrice: float,
       permId: int,
       parentId: int,
@@ -146,14 +155,16 @@ class PlaceOrders(BaseProxy):
   ) -> None:
       _logger.info(f"Receiving: openOrder[{orderId}] for {contract.symbol}")
       with self._lock:
-          pendingOrderRecord = self.pendingOrders.get(orderId)
+          pendingOrderRecord = self.newlyOrdered.get(orderId)
       if not pendingOrderRecord:
           msg = f"Received openOrder for not pending orderId: {orderId}"
-          _logger.error(msg)
-          raise Exception(msg)
+          _logger.info(msg)
+          if orderId not in self.previousOrderMessages:
+            self.previousOrderMessages[orderId] = []
+          self.previousOrderMessages[orderId].append(OrderNotification(orderId, contract, order, orderState))
       else:
           _, pendingOrder = pendingOrderRecord
-          del self.pendingOrders[orderId]
+          # del self.pendingOrders[orderId]
           self.partialResponse(orderId, {"openOrder": (contract, order, orderState)})
           self.completeResponse(orderId)
           self.postProcess(orderId, contract, pendingOrder, orderState)

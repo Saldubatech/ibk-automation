@@ -44,29 +44,29 @@ class Configuration:
       return path
 
   @staticmethod
-  def db_path(ctx: click.Context, param: click.Option | click.Parameter, db_path: Any) -> str:  # Optional[str]) -> str:
-    assert db_path is str | None
+  def db_path(ctx: click.Context, param: click.Option | click.Parameter, db_path: Any) -> str:
+    assert isinstance(db_path, str) or db_path is None
     return str(
       Path(db_path) if db_path else Configuration._corvino_dir().joinpath(Configuration.default_db_name)
     )
 
   @staticmethod
   def output_path(ctx: click.Context, param: click.Option | click.Parameter, missing_contracts_output: Any) -> str:
-    assert missing_contracts_output is str | None
+    assert isinstance(missing_contracts_output, str) or missing_contracts_output is None
     return str(Path(missing_contracts_output) if missing_contracts_output else Configuration.default_missing_output)
 
   @staticmethod
   def input_path(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
-    assert value is str | None
+    assert isinstance(value, str) or value is None
     return str(Path(value) if value else Configuration.default_movement_input)
 
   @staticmethod
   def input_sheet(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
-    assert value is str | None
-    return value if value else Configuration.default_movements_sheet  # type: ignore
+    assert isinstance(value, str) or value is None
+    return value if value else Configuration.default_movements_sheet
 
   @staticmethod
   def batch_name(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
-    assert value is str | None
+    assert isinstance(value, str) or value is None
     nowT = datetime.datetime.now()
-    return value if value else f"{Configuration.default_batch_prefix}_{nowT.strftime('%Y%m%d%H%M%S')}"  # type: ignore
+    return value if value else f"{Configuration.default_batch_prefix}_{nowT.strftime('%Y%m%d%H%M%S')}"

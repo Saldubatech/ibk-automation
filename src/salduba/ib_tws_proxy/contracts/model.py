@@ -79,6 +79,7 @@ class ContractRecord(Record):
   strike: float
   right: Optional[str]
   multiplier: Optional[str]
+  lookup_exchange: Exchange
   exchange: Exchange
   primaryExchange: Exchange
   currency: Currency
@@ -111,55 +112,6 @@ class ContractDetailTagRecord(Record):
   contract_fk: str
   tag: str
   val: str
-
-
-contractDetailsCompanion = [
-    "CONTRACT_DETAILS",
-    [
-        "expires_on",
-        "contract_fk",
-        "marketplace",
-        "min_tick",
-        "order_types",
-        "valid_exchanges",
-        "under_conid",
-        "long_name",
-        "contract_month",
-        "industry",
-        "category",
-        "subcategory",
-        "time_zone_id",
-        "liquid_hours",
-        "ev_rule",
-        "ev_multiplier",
-        "agg_group",
-        # -- sec_id_list List<contract_detail_tag>
-        "under_symbol",
-        "under_sev_type",
-        "market_rule_ids",
-        "real_expiration_date",
-        "last_trade_time",
-        "stock_type",
-        "cusip",
-        "ratings",
-        "desc_append",
-        "bond_type",
-        "coupon_type",
-        "callable",
-        "putable",
-        "coupon",
-        "convertible",
-        "maturity",
-        "issue_date",
-        "next_option_date",
-        "next_option_partial",
-        "notes",
-        "min_size",
-        "size_increment",
-        "suggested_size_increment",
-    ],
-    db_version,
-  ]
 
 
 @dataclass

@@ -69,7 +69,7 @@ class MovementRepo(Repo[MovementRecord]):
         self.order_repo = order_repo
         self.batchClause: str = "(batch = ?)"
         self.tickerClause: str = "(ticker = ?)"
-        self.secTypeClause: str = "(secType = ?)"
+        self.secTypeClause: str = "(ibk_type = ?)"
         self.exchangeClause: str = "(exchange = ?)"
         self.symbolClause: str = "(symbol = ?)"
 

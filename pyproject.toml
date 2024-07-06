@@ -134,6 +134,8 @@ watchfiles = "^0.22.0"
 websockets = "^12.0"
 linkify = "^1.4"
 sphinxcontrib-confluencebuilder = "^2.5.2"
+coverage = "^7.5.4"
+
 [tool.poetry.group.types.dependencies]
 types-flake8 = "^7.0.0.20240511"
 

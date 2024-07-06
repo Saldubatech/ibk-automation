@@ -64,6 +64,7 @@ def test_contract_record(setup_db: TradingDB) -> None:
     strike=77.88,
     right="RIGHT",
     multiplier="MULTI",
+    lookup_exchange=Exchange.SMART,
     exchange=Exchange.SMART,
     currency=Currency.USD,
     localSymbol="L_SYMBOL",

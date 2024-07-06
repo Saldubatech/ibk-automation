@@ -102,7 +102,7 @@ class ContractRepo(Repo[ContractRecord]):
     symbol: str,
     ibk_type: str,
     exchange: str,
-    exchange2: Optional[str],
+    alternate_exchange: Optional[str],
     currency: str,
     atTime: int,
   ) -> Optional[ContractRecord]:
@@ -110,11 +110,11 @@ class ContractRepo(Repo[ContractRecord]):
       self.expiresAfterClause,
       self.symbolClause,
       self.secTypeClause,
-      f"({self.exchangeClause} or {self.exchangeClause})" if exchange2 is not None else self.exchangeClause,
+      self.exchangeClause if alternate_exchange is None else f"({self.exchangeClause} or {self.exchangeClause})",
       self.currencyClause
     ]
     parameters = [atTime, symbol, str(ibk_type), str(exchange)] + \
-      ([str(exchange2)] if exchange2 is not None else []) + \
+      ([str(alternate_exchange)] if alternate_exchange is not None else []) + \
       [str(currency)]
     _logger.debug(f"Lookup Symbol {symbol} with conditions {conditions} and parameters {parameters}")
     found: list[ContractRecord] = self.select(parameters, conditions)

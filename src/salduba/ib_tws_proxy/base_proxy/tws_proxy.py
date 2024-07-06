@@ -180,14 +180,14 @@ class BaseProxy(ClientStub, Listener):
 
   def activate(self) -> None:
     _logger.info(f"Connecting to {self._host}:{self._port} with ClientId: {self.clientId}")
-    self.connect(self._host, self._port, self.clientId)
+    self.connect(self._host, self._port, self.clientId)  # pyright: ignore
     _logger.info("serverVersion: %s connectionTime: %s" % (self.serverVersion(), self.twsConnectionTime()))
     self._listener.start()
     self._max_time_cleanup.start()
     # if self.terminate:
     #   self._console_watcher.start()
 
-  def wait_for_me(self) -> Optional[list[ErrorResponse]]:
+  def wait_for_me(self) -> Optional[dict[str, list[ErrorResponse]]]:
     if not self.isActive():
       self._listener.join()
       self._max_time_cleanup.join()

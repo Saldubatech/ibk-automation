@@ -3,7 +3,7 @@ import logging
 from enum import StrEnum
 from typing import Callable, Optional
 
-from ibapi.utils import current_fn_name
+from ibapi.utils import current_fn_name  # pyright: ignore
 
 _logger = logging.getLogger(__name__)
 
@@ -73,12 +73,14 @@ class OperationState(StrEnum):
 
 class OperationsTracker:
   max_idle = 3000  # msecs
+  info_only = [399]
 
   def __init__(self, logLevel: int = logging.DEBUG) -> None:
     self.status = OperationState.NEW
     self.pending: dict[int, Operation] = {}
     self.success: list[Operation] = []
     self.errors: list[Operation] = []
+    self.info: list[Operation] = []
     self.started = False
     self.requests_complete = False
     self._opId: int = -1  # Unique Id for each request, -1 means not initialized
@@ -154,7 +156,7 @@ class OperationsTracker:
     if rs.opId not in self.pending.keys():
       raise Exception(
         f"Response for unknown request [{current_fn_name(2)}::{current_fn_name(1)}]:"
-        + "{rs} with pending: {self.pending}"
+        + f"{rs} with pending: {self.pending}"
       )
     else:
       self.pending[rs.opId].responses.append(rs)
@@ -175,15 +177,22 @@ class OperationsTracker:
     if error.opId in self.pending.keys():
       op = self.pending[error.opId]
       op.error = error
-      self.errors.append(op)
-      _logger.error(f"ERROR {error.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
+      if error.errorCode in OperationsTracker.info_only:
+        self.info.append(op)
+        _logger.info(f"{error.opId}")
+      else:
+        self.errors.append(op)
+        _logger.error(f"ERROR {error.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
       del self.pending[error.opId]
     else:
       raise Exception(f"Response for unknown request: {error}")
     # _logger.debug("Released Lock")
 
-  def errorResults(self) -> list[ErrorResponse]:
-    return [e.error for e in self.errors if e.error]
+  def errorResults(self) -> dict[str, list[ErrorResponse]]:
+    return {
+      "info": [i.error for i in self.info if i.error],
+      "error": [e.error for e in self.errors if e.error]
+    }
 
 
 class OpStatus(StrEnum):
