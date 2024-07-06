@@ -5,10 +5,9 @@ import tempfile
 from pathlib import Path
 from typing import Optional, Tuple
 
-import pandas as pd
 import pytest
 
-from salduba.corvino.parse_input import InputParser
+from salduba.corvino.parse_input import InputParser, InputRow
 from salduba.corvino.persistence.movement_record import MovementRepo
 from salduba.corvino.services.app import CorvinoApp
 from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
@@ -62,7 +61,7 @@ def setup_db() -> TradingDB:
 @pytest.mark.tws
 def test_place_orders(setup_db: TradingDB) -> None:
   probeFile = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
-  probe_all: Optional[pd.DataFrame] = InputParser.read_csv(probeFile)
+  probe_all = InputParser.input_rows_from(probeFile)
   contract_repo, order_repo, movement_repo = repos(setup_db)
   underTest = CorvinoApp(
     contract_repo,
@@ -76,20 +75,21 @@ def test_place_orders(setup_db: TradingDB) -> None:
 
   tmp_file = tempfile.NamedTemporaryFile()
   tmp_file.close()
-  output_file_path = tmp_file.name
+  output_file_path = "debug_output.csv"  # tmp_file.name
   _logger.info(f"DB at {setup_db.config.storage}")
   _logger.info(f"Output file at: {output_file_path}")
   assert probe_all is not None
-  probe: pd.DataFrame = probe_all[0:2]
+  probe = probe_all[0:2]
 
-  missing_contracts = underTest.lookup_contracts(inputDF=probe, output_file=output_file_path, ttl=10000)
-  if missing_contracts is None:
-    result = underTest.placeOrders(
-      inputDF=probe,
+  missing_contracts: Optional[list[InputRow]] = \
+    underTest.lookup_contracts_for_input_rows(probe, output_file=output_file_path, ttl=10000)
+
+  if not missing_contracts:
+    result = underTest.place_orders(
+      probe,
       batch=f"TestBatch_{datetime.datetime.now().timestamp()}",
       output_file=output_file_path,
     )
-    # probeDF = pd.read_csv(probeFile)
     assert f"{len(probe)} Movements Placed" == result, result
   else:
     assert False, f"Could not find all contracts, output at: {output_file_path}"

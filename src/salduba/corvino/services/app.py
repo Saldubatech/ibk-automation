@@ -1,21 +1,22 @@
 import datetime
 import logging
-from decimal import Decimal
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 from uuid import uuid4
 
 import pandas as pd
-from ibapi.contract import Contract, ContractDetails, DeltaNeutralContract
-from ibapi.order import Order
-from ibapi.order_state import OrderState
+from ibapi.contract import Contract, ContractDetails, DeltaNeutralContract  # pyright: ignore
+from ibapi.order import Order  # pyright: ignore
+from ibapi.order_state import OrderState  # pyright: ignore
 
 from salduba.corvino.movements import Movement
+from salduba.corvino.parse_input import InputRow
 from salduba.corvino.persistence.movement_record import MovementRepo, MovementStatus
-from salduba.ib_tws_proxy.contracts.contract_repo import ContractKey, ContractRepo, DeltaNeutralContractRepo, contractFromRecord
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo, contractFromRecord
 from salduba.ib_tws_proxy.contracts.lookup_contract_details import LookupContractDetails
 from salduba.ib_tws_proxy.contracts.model import ContractRecord, DeltaNeutralContractRecord
-from salduba.ib_tws_proxy.domain.enumerations import Action, Exchange, OrderTif, OrderType
+from salduba.ib_tws_proxy.domain.enumerations import Action, Currency, Exchange, OrderTif, OrderType, SecType
 from salduba.ib_tws_proxy.domain.ibapi.AvailableAlgoParams import AvailableAlgoParams
+from salduba.ib_tws_proxy.operations import ErrorResponse
 from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord, OrderRepo
 from salduba.ib_tws_proxy.orders.placing_orders import OpenOrderResponse, OrderResponse, PlaceOrderPostProcessor, PlaceOrders
 from salduba.util.time import millis_epoch, ninety_days
@@ -30,14 +31,14 @@ def newOrder(
   orderRef: str = "",
   transmit: bool = False,
   orderId: Optional[int] = None,
-) -> Optional[Order]:
+) -> Order:
   """
   See: https://docs.google.com/spreadsheets/d/1pmFZ79c6chsPgXl_YJel3_k_0iu04KiPCioYGRCZFyo/edit#gid=0
 
   For interpretation of fields and values to assign.
   """
   order: Order = Order()
-  # Because of Incompatibilties between API's
+  # Because of Incompatibilities between API's
   order.eTradeOnly = False
   order.firmQuoteOnly = False
 
@@ -45,7 +46,7 @@ def newOrder(
   order.orderId = orderId
   order.solicited = False
   order.action = Action.BUY if trade > 0 else Action.SELL
-  order.totalQuantity = Decimal(abs(trade))
+  order.totalQuantity = int(abs(trade))
   order.orderType = OrderType.MKT
   # order.lmtPrice: float = 0.0
   order.tif = OrderTif.DAY
@@ -209,71 +210,52 @@ class CorvinoApp:
     self.order_repo = order_repo
     self.app_family = appFamily * 100
 
-  def _findNContract(self, r: pd.Series, at: int) -> Optional[ContractRecord]:  # type: ignore
+  def _findNominalContract(self, r: InputRow, at: int) -> Optional[ContractRecord]:
     rs = self.contract_repo.findNominalContract(
-      r["Symbol"],
-      str(r["IbkType"]),
-      str(r["Exchange"]),
-      str(r["Exchange2"]),
-      str(r["Currency"]),
-      at,
-    )
+      r.symbol,
+      r.ibk_type,
+      r.exchange,
+      None if r.exchange2 == Exchange.NONE else r.exchange2,
+      r.currency,
+      at)
     return rs
 
-  def verify_contracts_for_dataframe(
-    self,
-    df: pd.DataFrame,
-    output_file: Optional[str] = "missing_contracts.csv",
-  ) -> Optional[pd.DataFrame]:
-    # TODO This is an n+1 Query that should be optimized.
+  def verify_contracts_for_input_rows(
+      self,
+      input_rows: list[InputRow],
+      output_file: Optional[str] = 'missing_contracts.csv') -> Optional[list[InputRow]]:
     nowT = datetime.datetime.now()
-    df.loc[:, "is_missing"] = df.apply(
-      lambda r: self._findNContract(r, millis_epoch(nowT)) is None,
-      axis=1,
-    )
-    missing: pd.DataFrame = df[df["is_missing"]]
-    if output_file and len(missing) > 0:
-      missing.to_csv(output_file)
-    return missing if len(missing) > 0 else None
+    missing_rows = [r for r in input_rows if self._findNominalContract(r, millis_epoch(nowT)) is None]
+    if output_file and missing_rows:
+      missing = [
+        {
+          "ticker" : m.ticker,
+          "symbol" : m.symbol,
+          "exchange" : m.exchange,
+          "exchange2" : m.exchange2,
+          "currency" : m.currency,
+          "country" : m.country
+        } for m in missing_rows]
+      missingDf = pd.DataFrame(missing)
+      missingDf.to_csv(output_file)
+    return missing_rows if len(missing_rows) > 0 else None
 
-  @staticmethod
-  def contract_pattern_for(r: dict[str, Any]) -> Contract:
-    return ContractKey(
-      r["Symbol"],
-      r["IbkType"],
-      r["Exchange"],
-      r["Exchange2"],
-      r["Currency"]
-    ).contractPattern()
-
-  def lookup_contracts(
-    self,
-    inputDF: pd.DataFrame,
-    output_file: Optional[str] = "missing_contracts.csv",
-    ttl: int = ninety_days
-  ) -> Optional[pd.DataFrame]:
+  def lookup_contracts_for_input_rows(self,
+                                      input_rows: list[InputRow],
+                                      output_file: Optional[str] = "missing_contracts.csv",
+                                      ttl: int = ninety_days) -> Optional[list[InputRow]]:
     nowT = datetime.datetime.now()
-    _logger.debug(f"Looking for {len(inputDF)} contracts at {nowT}")
-    missing: Optional[pd.DataFrame] = self.verify_contracts_for_dataframe(inputDF, output_file)
-    if missing is not None and len(missing) > 0:
+    _logger.debug(f"Looking for {len(input_rows)} contracts at {nowT}")
+    missing = self.verify_contracts_for_input_rows(input_rows, None)  # Do not record the ones initially missing
+    if missing:
       _logger.debug(f"Found {len(missing)} contracts to refresh at {nowT}")
-      targets = missing.apply(CorvinoApp.contract_pattern_for, axis=1)
+      targets = self._prepareContractsForLookup(missing)
       _logger.debug(f"\tTransformed into {len(targets)} contract Keys")
-      updater: LookupContractDetails = LookupContractDetails(
-        targets.to_list(),
-        postProcess=lambda contract, details: self._doSaveContractRecord(ttl, contract, details),
-        host=self.host,
-        port=self.port,
-        clientId=self.app_family + 1,
-        timeout=len(targets) + 15,
-        search_delay=0.1
-      )
-      updater.activate()
-      errors = updater.wait_for_me()
+      errors = self._doLookups(targets, ttl)
       if not errors:
-        missing = self.verify_contracts_for_dataframe(inputDF, output_file)
-        if missing is not None and len(missing) > 0:
-          _logger.warning(f"Lookup Incomplete, missing[{len(missing)}]: {missing['Ticker']}")
+        missing = self.verify_contracts_for_input_rows(input_rows, output_file)
+        if missing:
+          _logger.warning(f"Lookup Incomplete, missing[{len(missing)}]")
           return missing
         else:
           _logger.debug(f"Lookup Contracts is Done, missing: {len(missing) if missing else 0}")
@@ -283,11 +265,45 @@ class CorvinoApp:
         return None
     else:
       _logger.debug(f"No missing contracts found at {nowT}")
-      return None
+      return []
+
+  def _prepareContractsForLookup(self, missing: list[InputRow]) -> dict[str, tuple[Contract, InputRow]]:
+    def populateContractForLookup(ir: InputRow) -> tuple[Contract, InputRow]:
+      rs: Contract = Contract()
+      rs.symbol = ir.symbol
+      if ir.exchange == Exchange.ISLAND:  # ISLAND is not reliable to look up contracts, use SMART instead
+        rs.exchange = Exchange.SMART
+      else:
+        rs.exchange = ir.exchange
+      # rs.exchange = ir.exchange
+      # if ir.exchange2 and ir.exchange2 != Exchange.NONE:
+      #   rs.primaryExchange = ir.exchange2
+      rs.secType = ir.ibk_type
+      rs.currency = ir.currency
+      return rs, ir
+    return {f"{c.symbol}::{c.exchange}": (c, r) for (c, r) in [populateContractForLookup(r) for r in missing]}
+
+  def _doLookups(self, targets: dict[str, tuple[Contract, InputRow]], ttl: int) -> Optional[dict[str, list[ErrorResponse]]]:
+    updater: LookupContractDetails = LookupContractDetails(
+      [c for (c, _) in targets.values()],
+      postProcess=lambda c, details:
+        self._doSaveContractRecord(
+          ttl,
+          targets[f"{c.symbol}::{c.exchange}"][1], c, details
+        ),
+      host=self.host,
+      port=self.port,
+      clientId=self.app_family + 1,
+      timeout=len(targets) + 15,
+      search_delay=0.1
+    )
+    updater.activate()
+    return updater.wait_for_me()
 
   def _doSaveContractRecord(
     self,
     ttl: int,
+    ir: InputRow,
     contract: Contract,
     details: list[dict[str, ContractDetails]],
   ) -> None:
@@ -296,40 +312,38 @@ class CorvinoApp:
     if len(details) == 1:
       cd: ContractDetails = details[0]["contractDetails"]
       c = cd.contract
-      dnc: DeltaNeutralContract = c.deltaNeutralContract
+      dnc: Optional[DeltaNeutralContract] = c.deltaNeutralContract if c.deltaNeutralContract else None
       dnc_r = (
         DeltaNeutralContractRecord(
           str(uuid4()),
           nowT,
-          (nowT + ttl),  # type: ignore
           dnc.conId,
           dnc.delta,
           dnc.price
-        )
-        if dnc
-        else None
+        ) if dnc else None
       )
       cr = ContractRecord(
         str(uuid4()),
         nowT,
-        nowT + ttl,
-        c.conId,
-        c.symbol,
-        c.secType,
-        c.lastTradeDateOrContractMonth,
-        c.strike,
-        c.right,
-        c.multiplier,
-        c.exchange,
-        c.primaryExchange,
-        c.currency,
-        c.localSymbol,
-        c.tradingClass,
-        c.secIdType,
-        c.secId,
-        c.comboLegsDescrip,
-        dnc_r.rid if dnc_r else None,
-        c.includeExpired
+        expires_on=nowT + ttl,
+        conId=c.conId,
+        symbol=c.symbol,
+        secType=SecType(c.secType),
+        lastTradeDateOrContractMonth=c.lastTradeDateOrContractMonth,
+        strike=c.strike,
+        right=c.right,
+        multiplier=c.multiplier,
+        lookup_exchange=Exchange(c.exchange),
+        exchange=ir.exchange,
+        primaryExchange=Exchange(c.primaryExchange),
+        currency=Currency(c.currency),
+        localSymbol=c.localSymbol,
+        tradingClass=c.tradingClass,
+        secIdType=c.secIdType,
+        secId=c.secId,
+        combo_legs_description=c.comboLegsDescrip,
+        delta_neutral_contract_fk=dnc_r.rid if dnc_r else None,
+        includeExpired=c.includeExpired
       )
       if dnc_r:
         self.dnc_repo.insert([dnc_r])
@@ -337,32 +351,25 @@ class CorvinoApp:
     else:
       _logger.warning(f"More than one ContractDetails obtained for {contract.symbol}")
 
-  def newMovement(
-    self,
-    batch: str,
-    at: int,
-    r: pd.Series,  # type: ignore
-    overrideExchange: Optional[Exchange] = None,
-  ) -> Tuple[Movement, Contract]:
-    contractRecord: Optional[ContractRecord] = self.contract_repo.findNominalContract(
-      r["Symbol"],
-      r["IbkType"],
-      r["Exchange"],
-      r["Exchange2"],
-      r["Currency"],
-      at,
-    )
-    if contractRecord:
-      dncRecord = self.dnc_repo.findById(contractRecord.delta_neutral_contract_fk)  # type: ignore
-      contract = contractFromRecord(contractRecord, dncRecord)
-      movement = Movement.fromDFRow(batch, r, contractRecord.rid)
-      if overrideExchange:
-        contract.exchange = overrideExchange
-        movement.exchange = overrideExchange
+  def new_movement(self,
+                   batch: str,
+                   at: int,
+                   r: InputRow,
+                   override_exchange: Optional[Exchange] = None) -> Tuple[Movement, Contract]:
+    contract_record: Optional[ContractRecord] = self._findNominalContract(r, at)
+    if contract_record:
+      dnc_record: Optional[DeltaNeutralContractRecord] = self.dnc_repo.findById(
+        contract_record.delta_neutral_contract_fk
+        ) if contract_record.delta_neutral_contract_fk else None
+      contract: Contract = contractFromRecord(contract_record, dnc_record)
+      movement = Movement.from_input_row(batch, r, contract_record)
+      if override_exchange:
+        contract.exchange = override_exchange
+        movement.exchange = override_exchange
         movement.exchange2 = None
       return movement, contract
     else:
-      msg = f"No contract found for {r['Symbol']}, {r['Exchange']} in {batch}"
+      msg = f"No contract found for {r.symbol}, {r.exchange} in {batch}"
       _logger.error(msg)
       raise Exception(msg)
 
@@ -379,7 +386,8 @@ class CorvinoApp:
     orderRecord: OrderRecord,
     orderState: OrderState,
   ) -> OrderResponse:
-    movementRecord = self.movements_repo.findOne(batch, contract.symbol, contract.secType, contract.exchange)
+    movementRecord = \
+      self.movements_repo.findOne(batch, contract.symbol, SecType(contract.secType), Exchange(contract.exchange))
     if movementRecord:
       movementRecord.status = MovementStatus.fromIbk(orderState.status)
       movementRecord.at = millis_epoch()
@@ -390,62 +398,58 @@ class CorvinoApp:
       _logger.error(msg)
       raise Exception(msg)
 
-  def placeOrders(
+  def place_orders(
     self,
-    inputDF: pd.DataFrame,
+    input_rows: list[InputRow],
     batch: Optional[str] = None,
     output_file: Optional[str] = "missing_contracts.csv",
+    execute_trades: bool = False
   ) -> str:
     nowT = datetime.datetime.now()
     if batch is None:
       batch = CorvinoApp.batch_name(nowT)
-    missing = self.verify_contracts_for_dataframe(inputDF, output_file)
-    if missing is not None:
+    missing = self.verify_contracts_for_input_rows(input_rows, output_file)
+
+    if missing:
       return f"Not all contracts are available for movements in batch: {batch}. See {output_file} for missing contracts"
     else:
-      # error: Argument 3 to "newMovement" of "CorvinoApp" has incompatible type "tuple[Hashable, Series[Any]]";
-      # expected "Series[Any]"
+      contractOrders: list[tuple[Contract, Order]] = self._prepare_orders(batch, nowT, input_rows, execute_trades)
+      errors = self._order_placement(batch, contractOrders)
+      if errors and errors['error']:
+        return f"Errors[{len(errors['error'])}] in placing orders: {errors}"
+      return f"{len(contractOrders)} Movements Placed" if not errors else f"{len(contractOrders)} Movements Placed" + \
+        "\n\t".join([i.errorString for i in errors['info']])
 
-      # m: list[Tuple[Movement, Contract]] = [
-      #   self.newMovement(batch, millis_epoch(nowT), r, Exchange.SMART) for r in inputDF.iterrows() # type: ignore
-      # ]
+  def _prepare_orders(
+      self, batch: str, nowT: datetime.datetime, input_rows: list[InputRow], execute_trades: bool
+      ) -> list[tuple[Contract, Order]]:
 
-      # error: Type argument "tuple[Movement, Any]" of "Series" must be a subtype of
-      # "str | bytes | date | time | bool | int | float | complex | ExtensionDtype | str | dtype[generic] | type[str] |
-      # type[complex] | type[bool] | type[object] | datetime | timedelta | Period | Interval[Any] | CategoricalDtype |
-      # BaseOffset"
-      movements: pd.Series[Tuple[Movement, Contract]] = inputDF.apply(  # type: ignore
-        lambda r: self.newMovement(batch, millis_epoch(nowT), r, Exchange.SMART),
-        axis=1,
-      )
-      _logger.debug(f"Setting up Movements for {len(movements)} Orders")
-      self.movements_repo.insert([m[0].newRecord() for m in movements])
-      contractOrders: list[Tuple[Contract, Order]] = [
-        (
-          c,
-          newOrder(
-            trade=m.trade,
-            conId=c.conId,
-            orderRef=m.batch + "::" + m.ticker,
-          ),
-        )
-        for m, c in movements.values
-      ]
-      assert all([c.exchange == Exchange.SMART for c, o in contractOrders])
-      _logger.debug(f"The contractOrders: {[(c.symbol, c.exchange, o.totalQuantity, o.eTradeOnly) for c, o in contractOrders]}")
-      ordering: PlaceOrders = PlaceOrders(
-        targets=contractOrders,
-        orderRepo=self.order_repo,
-        contractRepo=self.contract_repo,
-        postProcess=self.postPlaceOrderForBatch(batch),
-        host=self.host,
-        port=self.port,
-        clientId=self.app_family + 1,
-        timeout=len(movements) + 15,
-        delay=None,
-      )
-      ordering.activate()
-      errors = ordering.wait_for_me()
-      if errors:
-        return f"Errors[{len(errors)}] in placing orders: {errors}"
-      return f"{len(movements)} Movements Placed"
+    def movementMapper(r: InputRow) -> tuple[Movement, Contract]:
+      return self.new_movement(batch, millis_epoch(nowT), r, Exchange.SMART)
+
+    movements: list[tuple[Movement, Contract]] = [movementMapper(ir) for ir in input_rows]
+
+    _logger.debug(f"Setting up Movements for {len(movements)} Orders")
+    self.movements_repo.insert([m[0].newRecord() for m in movements])
+    contractOrders: list[Tuple[Contract, Order]] = [
+      (c, newOrder(m.trade, c.conId, orderRef=m.batch + "::" + m.ticker, transmit=execute_trades)) for m, c in movements
+    ]
+    assert all([c.exchange == Exchange.SMART for c, _ in contractOrders])
+    _logger.debug(f"The contractOrders: {[(c.symbol, c.exchange, o.totalQuantity, o.eTradeOnly) for c, o in contractOrders]}")
+    return contractOrders
+
+  def _order_placement(
+      self, batch: str, contract_orders: list[tuple[Contract, Order]]) -> Optional[dict[str, list[ErrorResponse]]]:
+    ordering: PlaceOrders = PlaceOrders(
+      targets=contract_orders,
+      orderRepo=self.order_repo,
+      contractRepo=self.contract_repo,
+      postProcess=self.postPlaceOrderForBatch(batch),
+      host=self.host,
+      port=self.port,
+      clientId=self.app_family + 1,
+      timeout=len(contract_orders) + 15,
+      delay=None,
+    )
+    ordering.activate()
+    return ordering.wait_for_me()

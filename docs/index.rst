@@ -1,4 +1,4 @@
-.. Corvino Trade system documentation master file
+.. Corvino Trade system documentation main file
    contain the root `toctree` directive.
 
 Corvino Trade Automation

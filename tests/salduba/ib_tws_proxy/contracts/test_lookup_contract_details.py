@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from ibapi.contract import Contract, ContractDetails
+from ibapi.contract import Contract, ContractDetails  # pyright: ignore
 
 from salduba.ib_tws_proxy.contracts.lookup_contract_details import LookupContractDetails
 from salduba.util.logging import init_logging
@@ -57,14 +57,16 @@ def test_one_contract() -> None:
   )
   underTest.activate()
   errors = underTest.wait_for_me()
-  assert errors is not None and len(errors) == 0, f"Got errors: {errors}"
+  assert errors is not None and len(errors['error']) == 0, f"Got errors: {errors}"
 
 
 @pytest.mark.tws
 def test_a_bunch() -> None:
   logging.info("Test A Bunch")
-  bunch: pd.DataFrame = pd.read_csv("tests/salduba/ib_tws_proxy/contracts/sample_contracts.csv", index_col="Ticker")
-  bunchProbe = [buildContract(r.Symbol, r.IBKType, r.Exchange, r.Currency) for r in bunch.itertuples()]  # type: ignore
+  bunch: pd.DataFrame = \
+    pd.read_csv("tests/salduba/ib_tws_proxy/contracts/sample_contracts.csv", index_col="Ticker")  # pyright: ignore
+  bunchProbe = \
+    [buildContract(r.Symbol, r.IBKType, r.Exchange, r.Currency) for r in bunch.itertuples()]  # type: ignore
   underTest = LookupContractDetails(
       bunchProbe[0:10],
       _postprocessor,
@@ -75,6 +77,6 @@ def test_a_bunch() -> None:
       0.1,
   )
   underTest.activate()
-  errors = underTest.wait_for_me()
-  assert not errors, f"Got errors: {errors}"
-  assert errors is not None and len(errors) == 0, f"Got errors: {errors}"
+  results = underTest.wait_for_me()
+  assert results, f"Got results: {results}"
+  assert results is not None and len(results['error']) == 0, f"Got errors: {results['error']}"

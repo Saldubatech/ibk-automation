@@ -3,7 +3,6 @@ on:
   workflow_dispatch:
   push:
 
-
 permissions:
   contents: write
   pages: write
@@ -46,7 +45,12 @@ jobs:
           poetry -n check
           poetry -n install
           poetry -n run pre-commit run --all-files
-          poetry -n run pytest -v -m "not tws" tests
+          poetry -n run pytest -v -m "not tws" --cov=./ --cov-report=xml tests
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
       - id: build
         name: Build
         run: |

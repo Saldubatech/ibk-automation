@@ -2,7 +2,7 @@ import datetime
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Any
 
 import click
 
@@ -19,7 +19,7 @@ class Configuration:
   default_movements_sheet = 'Movements'
   default_tws_host = 'localhost'
   default_tws_port = 7497
-  configuration_module_path: List[str] = module_path(__name__)
+  configuration_module_path: list[str] = module_path(__name__)
   default_log_config_file = 'corvino_logging.yaml'
   default_batch_prefix = 'order_batch'
 
@@ -44,24 +44,29 @@ class Configuration:
       return path
 
   @staticmethod
-  def db_path(ctx: click.Context, param: click.Option, db_path: Optional[str]) -> str:
+  def db_path(ctx: click.Context, param: click.Option | click.Parameter, db_path: Any) -> str:
+    assert isinstance(db_path, str) or db_path is None
     return str(
       Path(db_path) if db_path else Configuration._corvino_dir().joinpath(Configuration.default_db_name)
     )
 
   @staticmethod
-  def output_path(ctx: click.Context, param: click.Option, missing_contracts_output: Optional[str]) -> str:
+  def output_path(ctx: click.Context, param: click.Option | click.Parameter, missing_contracts_output: Any) -> str:
+    assert isinstance(missing_contracts_output, str) or missing_contracts_output is None
     return str(Path(missing_contracts_output) if missing_contracts_output else Configuration.default_missing_output)
 
   @staticmethod
-  def input_path(ctx: click.Context, param: click.Option, value: Optional[str]) -> str:
+  def input_path(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
+    assert isinstance(value, str) or value is None
     return str(Path(value) if value else Configuration.default_movement_input)
 
   @staticmethod
-  def input_sheet(ctx: click.Context, param: click.Option, value: Optional[str]) -> str:
+  def input_sheet(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
+    assert isinstance(value, str) or value is None
     return value if value else Configuration.default_movements_sheet
 
   @staticmethod
-  def batch_name(ctx: click.Context, param: click.Option, value: Optional[str]) -> str:
+  def batch_name(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
+    assert isinstance(value, str) or value is None
     nowT = datetime.datetime.now()
     return value if value else f"{Configuration.default_batch_prefix}_{nowT.strftime('%Y%m%d%H%M%S')}"

@@ -15,7 +15,7 @@ _logger = logging.getLogger(__name__)
 class ContractKey:
 
   @staticmethod
-  def resolveContractExchange(exchange: Exchange, exchange2: Exchange) -> Exchange:
+  def resolveContractExchange(exchange: Exchange, exchange2: Optional[Exchange]) -> Exchange:
     if exchange == Exchange.ISLAND:
       match exchange2:
         case None:
@@ -34,7 +34,7 @@ class ContractKey:
     symbol: str,
     secType: SecType,
     exchange: Exchange,
-    exchange2: Exchange,
+    exchange2: Optional[Exchange],
     currency: Currency,
   ):
     self.symbol = symbol
@@ -56,26 +56,31 @@ class DeltaNeutralContractRepo(Repo[DeltaNeutralContractRecord]):
     super().__init__(db, DeltaNeutralContractRecord, "delta_neutral_contract")
 
 
-def contractFromRecord(record: ContractRecord, dnc: Optional[DeltaNeutralContract] = None) -> Contract:
+def contractFromRecord(record: ContractRecord, dnc_r: Optional[DeltaNeutralContractRecord] = None) -> Contract:
   contract: Contract = Contract()
-  contract.expires_on = record.expires_on
+#  contract.expires_on = record.expires_on
   contract.conId = record.conId
   contract.symbol = record.symbol
   contract.secType = record.secType
-  contract.lastTradeDateOrContractMonth = record.lastTradeDateOrContractMonth
+  contract.lastTradeDateOrContractMonth = record.lastTradeDateOrContractMonth if record.lastTradeDateOrContractMonth else ''
   contract.strike = record.strike
-  contract.right = record.right
-  contract.multiplier = record.multiplier
+  contract.right = record.right if record.right else ''
+  contract.multiplier = record.multiplier if record.multiplier else ''
   contract.exchange = record.exchange
   contract.currency = record.currency
-  contract.localSymbol = record.localSymbol
+  contract.localSymbol = record.localSymbol if record.localSymbol else ''
   contract.primaryExchange = record.primaryExchange
-  contract.tradingClass = record.tradingClass
+  contract.tradingClass = record.tradingClass if record.tradingClass else ''
   contract.includeExpired = record.includeExpired
-  contract.secIdType = record.secIdType
-  contract.secId = record.secId
-  contract.comboLegsDescrip = record.combo_legs_description
-  contract.deltaNeutralContract = dnc
+  contract.secIdType = record.secIdType if record.secIdType else ''
+  contract.secId = record.secId if record.secId else ''
+  contract.comboLegsDescrip = record.combo_legs_description if record.combo_legs_description else ''
+  if dnc_r:
+    dnc = DeltaNeutralContract()
+    dnc.conId = dnc_r.conid
+    dnc.delta = dnc_r.delta
+    dnc.price = dnc_r.price
+    contract.deltaNeutralContract = dnc
   return contract
 
 
@@ -97,7 +102,7 @@ class ContractRepo(Repo[ContractRecord]):
     symbol: str,
     ibk_type: str,
     exchange: str,
-    exchange2: str,
+    alternate_exchange: Optional[str],
     currency: str,
     atTime: int,
   ) -> Optional[ContractRecord]:
@@ -105,18 +110,13 @@ class ContractRepo(Repo[ContractRecord]):
       self.expiresAfterClause,
       self.symbolClause,
       self.secTypeClause,
-      f"({self.exchangeClause} or {self.exchangeClause})",
+      self.exchangeClause if alternate_exchange is None else f"({self.exchangeClause} or {self.exchangeClause})",
       self.currencyClause
     ]
-    parameters = [
-      atTime,
-      symbol,
-      ibk_type,
-      exchange,
-      exchange2,
-      currency
-    ]
-    _logger.debug(f"Lookup Symbol {symbol} with condition {conditions} and parameters {parameters}")
+    parameters = [atTime, symbol, str(ibk_type), str(exchange)] + \
+      ([str(alternate_exchange)] if alternate_exchange is not None else []) + \
+      [str(currency)]
+    _logger.debug(f"Lookup Symbol {symbol} with conditions {conditions} and parameters {parameters}")
     found: list[ContractRecord] = self.select(parameters, conditions)
     _logger.debug(f"\t With Result: {found}")
     if found and len(found) > 1:

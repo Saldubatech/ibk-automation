@@ -3,10 +3,9 @@ import tempfile
 from typing import Optional, Tuple
 
 import click
-import pandas as pd
 
 from salduba.corvino.commands.configuration import Configuration
-from salduba.corvino.parse_input import InputParser
+from salduba.corvino.parse_input import InputParser, InputRow
 from salduba.corvino.persistence.movement_record import MovementRepo
 from salduba.corvino.services.app import CorvinoApp
 from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
@@ -121,31 +120,6 @@ def cli(
   ctx.obj['app'] = build_app(database)
 
 
-def read_from_input(input_file: str, sheet_name: str) -> pd.DataFrame:
-  input_type = input_file.split('.')[-1]
-  try:
-    if input_type == 'csv':
-      df = InputParser.read_csv(input_file)
-    elif input_type == 'xlsx':
-      df = InputParser.read_excel(input_file, sheet=sheet_name)
-    else:
-      raise click.BadParameter(f"Invalid input type: {input_type}")
-  except (ValueError, FileNotFoundError) as error_exc:
-    msg = f"Error reading input file: {input_file}:\n\t{error_exc}.\n\tSee Additional information in the logs"
-    _logger.critical(msg, exc_info=error_exc, stack_info=True)
-    raise click.FileError(input_file, msg)
-  if df is None:
-    msg = f"Invalid input file: {input_file}"
-    _logger.error(msg)
-    raise click.BadParameter(msg)
-  elif df.empty:
-    msg = f"No data in input file: {input_file}"
-    _logger.warning(msg)
-    raise click.BadParameter(msg)
-  else:
-    return df
-
-
 @cli.command()
 @click.argument(
   "input-movements-file",
@@ -158,17 +132,19 @@ def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
   app: CorvinoApp = ctx.obj['app']
 
   missing_output_file: str = ctx.obj['missing_output']
-  info_msg = f"Verifying Contracts from {input_movements_file}, missing contracts will be written to: {missing_output_file}"
+  info_msg = f"Verifying Contracts from {input_movements_file}"
   debug_msg = f"Using Database: {ctx.obj['db_path']}"
   _logger.info(info_msg)
   _logger.debug(debug_msg)
   click.echo(info_msg)
-  df: pd.DataFrame = read_from_input(input_movements_file, ctx.obj['movement_sheet'])
-  result = app.verify_contracts_for_dataframe(df, missing_output_file)
-  if result is not None and len(result) > 0:
-    msg = f"Missing Contracts: {len(result)}"
+  input_rows = read_input_rows(input_movements_file, ctx.obj['movement_sheet'])
+  rs = app.verify_contracts_for_input_rows(input_rows, missing_output_file)
+  if rs:
+    msg = f"Missing Contracts: {len(rs)}. See {missing_output_file} for details"
     click.echo(msg)
     _logger.info(msg)
+  else:
+    click.echo("No missing contracts")
 
 
 @cli.command()
@@ -179,30 +155,8 @@ def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
   type=click.Path(exists=True),
   callback=Configuration.input_path
 )
-def lookup_contracts(ctx: click.Context, input_movements_file: str) -> pd.DataFrame:
-  return _do_lookup_contracts(ctx, input_movements_file)
-
-
-def _do_lookup_contracts(ctx: click.Context, input_movements_file: str) -> pd.DataFrame:
-  app: CorvinoApp = ctx.obj['app']
-  missing_output_file: str = ctx.obj['missing_output']
-  info_msg = f"Looking up Contracts from {input_movements_file}, missing contracts will be written to: {missing_output_file}"
-  debug_msg = f"Using Database: {ctx.obj['db_path']}"
-  _logger.info(info_msg)
-  _logger.debug(debug_msg)
-  click.echo(info_msg)
-  df = read_from_input(input_movements_file, ctx.obj['movement_sheet'])
-  result = app.lookup_contracts(df, missing_output_file)
-  if result is not None and len(result) > 0:
-    msg = f"Cannot resolve some Contracts[{len(result)}]. See {missing_output_file} for details"
-    click.echo(msg)
-    _logger.error(msg)
-    raise click.ClickException(msg)
-  else:
-    msg = "All Contracts resolved"
-    click.echo(msg)
-    _logger.info(msg)
-  return df
+def lookup_contracts(ctx: click.Context, input_movements_file: str) -> None:
+  _do_lookup_contracts(ctx, input_movements_file)
 
 
 @cli.command()
@@ -213,6 +167,16 @@ def _do_lookup_contracts(ctx: click.Context, input_movements_file: str) -> pd.Da
   help="The name of the batch to use for these orders, default: Date with seconds (Year-Month-Day:Hour:min:secs)",
   callback=Configuration.batch_name
 )
+@click.option(
+  "--execute-trades",
+  is_flag=True,
+  help=click.style("USE WITH CAUTION!!!!", fg="bright_red") + """\n
+    - If the option is provided, the script will execute the trades directly,
+    - If not provided, the trades will be uploaded but not executed. The user is then
+    expected to execute them if appropriate using the TWS UI itself
+
+  """
+)
 @click.argument(
   "input-movements-file",
   required=True,
@@ -220,21 +184,68 @@ def _do_lookup_contracts(ctx: click.Context, input_movements_file: str) -> pd.Da
   callback=Configuration.input_path
 )
 @click.pass_context
-def place_orders(ctx: click.Context, batch: str, input_movements_file: str) -> None:
-  df = _do_lookup_contracts(ctx, input_movements_file)
+def place_orders(ctx: click.Context, batch: str, execute_trades: bool, input_movements_file: str) -> None:
+  input_rows = _do_lookup_contracts(ctx, input_movements_file)
   app: CorvinoApp = ctx.obj['app']
-  info_msg = f"Placing Orders from {input_movements_file}"
-  _logger.info(info_msg)
-  click.echo(info_msg)
-  msg = app.placeOrders(df, batch, None)
-  if "ERRORS" in msg.upper():
-    click.echo("Errors while placing Orders. Please look at the log files for information", err=True)
-    click.echo(f"Current Active Logs: {[h.name for h in _logger.handlers]}", err=True)
-    _logger.error(msg)
-    raise click.ClickException(msg)
+  if execute_trades:
+    info_msg = f"Placing Orders from {input_movements_file} "+click.style("WITH DIRECT EXECUTION!!", fg="bright_red")
+    confirmation = \
+      click.confirm(info_msg + "\n\tDo you want to continue?")
   else:
-    click.echo(msg)
-    _logger.info(msg)
+    info_msg = f"Placing Orders from {input_movements_file} without execution, " +\
+      click.style("Please use the TWS UI to execute them", fg="green")
+    click.echo(info_msg)
+    confirmation = True
+
+  _logger.info(info_msg)
+  if confirmation:
+    try:
+      msg = app.place_orders(input_rows, batch, ctx.obj['missing_output'], execute_trades)
+      if "ERRORS" in msg.upper():
+        click.echo("Errors while placing Orders. Please look at the log files for information", err=True)
+        click.echo(f"Current Active Logs: {[h.name for h in _logger.handlers]}", err=True)
+        _logger.error(msg)
+        raise click.ClickException(msg)
+      else:
+        click.echo(msg)
+        _logger.info(msg)
+    except Exception as exc:
+      raise click.ClickException(f"An error occurred: {str(exc)}")
+  else:
+    click.echo("Abandoning Operation")
+
+
+def _do_lookup_contracts(ctx: click.Context, input_movements_file: str) -> list[InputRow]:
+  app: CorvinoApp = ctx.obj['app']
+  missing_output_file: str = ctx.obj['missing_output']
+  info_msg = f"Looking up Contracts from {input_movements_file}, missing contracts will be written to: {missing_output_file}"
+  debug_msg = f"Using Database: {ctx.obj['db_path']}"
+  _logger.info(info_msg)
+  _logger.debug(debug_msg)
+  click.echo(info_msg)
+  input_rows = read_input_rows(input_movements_file, ctx.obj['movement_sheet'])
+  try:
+    missing = app.lookup_contracts_for_input_rows(input_rows, missing_output_file)
+    if missing:
+      msg = f"Cannot resolve some Contracts[{len(missing)}]. See {missing_output_file} for details"
+      click.echo(msg)
+      _logger.error(msg)
+      raise click.ClickException(msg)
+    else:
+      msg = "All Contracts resolved"
+      click.echo(msg)
+      _logger.info(msg)
+  except Exception as exc:
+    raise click.ClickException(f"An Error occurred: {str(exc)}")
+  return input_rows
+
+
+def read_input_rows(movements_file: str, sheet: str) -> list[InputRow]:
+  try:
+    input_rows = InputParser.input_rows_from(movements_file, sheet)
+    return input_rows
+  except ValueError as vError:
+    raise click.ClickException(f"Could not read the file {movements_file}: {str(vError)}")
 
 
 if __name__ == "__main__":

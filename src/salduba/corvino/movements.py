@@ -1,9 +1,9 @@
 import uuid
 from typing import Optional, Self
 
-import pandas as pd
-
+from salduba.corvino.parse_input import InputRow
 from salduba.corvino.persistence.movement_record import MovementRecord, MovementRepo, MovementStatus
+from salduba.ib_tws_proxy.contracts.model import ContractRecord
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
 from salduba.util.time import millis_epoch
 
@@ -12,25 +12,24 @@ class Movement:
     def __repr__(self) -> str:
         return repr(self.__dict__)
 
-    # error: Missing type parameters for generic type "Series"
     @classmethod
-    def fromDFRow(cls, batch: str, r: pd.Series, contractRid: str) -> Self:  # type: ignore
-        return cls(
-            MovementStatus.NEW,
-            batch,
-            r["Ticker"],
-            r["Trade"],
-            r["Nombre"],
-            r["Symbol"],
-            r["RawType"],
-            r["Country"],
-            r["IbkType"],
-            r["Currency"],
-            r["Exchange"],
-            r["Exchange2"],
-            contractRid,
-            None,
-        )
+    def from_input_row(cls, batch: str, r: InputRow, contract: ContractRecord) -> Self:
+      return cls(
+        MovementStatus.NEW,
+        batch,
+        r.ticker,
+        r.trade,
+        f"{contract.symbol}, {contract.secType}, {contract.localSymbol}",  # should be 'name'
+        r.symbol,
+        r.raw_type,
+        r.ibk_type,
+        r.country,
+        r.currency,
+        r.exchange,
+        r.exchange2,
+        contract.rid,
+        None
+      )
 
     def __init__(
         self,

@@ -65,6 +65,7 @@ CREATE TABLE CONTRACT (
   strike decimal(19, 2) not null,
   right  varchar(255),
   multiplier varchar(255),
+  lookup_exchange varchar(255) not null,
   exchange varchar(255) not null,
   currency varchar(255) not null,
   local_symbol varchar(255),
