@@ -46,12 +46,13 @@ jobs:
           poetry -n install
           poetry -n run pre-commit run --all-files
           poetry -n run pytest -v -m "not tws" tests
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: .coverage
       - id: build
         name: Build
         run: |
           poetry -n check
           poetry -n build
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
