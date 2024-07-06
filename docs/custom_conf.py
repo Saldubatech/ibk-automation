@@ -185,8 +185,8 @@ custom_extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.graphviz',
     'sphinx.ext.todo',
-    'sphinxcontrib.plantuml',
-    'sphinxcontrib.confluencebuilder'
+    'sphinxcontrib.plantuml'
+#    'sphinxcontrib.confluencebuilder'
     ]
 
 # Add custom required Python modules that must be added to the
@@ -197,7 +197,7 @@ custom_extensions = [
 # sphinx-notfound-page, sphinx-reredirects, sphinx-tabs, sphinxcontrib-jquery,
 # sphinxext-opengraph
 custom_required_modules = [
-    "sphinxcontrib-confluencebuilder",
+#    "sphinxcontrib-confluencebuilder",
     "matplotlib",
     "aiofiles",
     "alabaster",
@@ -275,7 +275,7 @@ custom_required_modules = [
     "sphinxcontrib-plantuml",
     "sphinxcontrib-qthelp",
     "sphinxcontrib-serializinghtml",
-    "sphinxcontrib-confluencebuilder",
+#    "sphinxcontrib-confluencebuilder",
     "sphinxext-opengraph",
     "starlette",
     "stevedore",
