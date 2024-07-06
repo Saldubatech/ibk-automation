@@ -275,6 +275,7 @@ custom_required_modules = [
     "sphinxcontrib-plantuml",
     "sphinxcontrib-qthelp",
     "sphinxcontrib-serializinghtml",
+    "sphinxcontrib.confluencebuilder",
     "sphinxext-opengraph",
     "starlette",
     "stevedore",
