@@ -7,7 +7,7 @@ from typing import Tuple
 import pandas as pd
 import pytest
 
-from salduba.corvino.parse_input import InputParser
+from salduba.corvino.io.parse_input import InputParser
 from salduba.corvino.persistence.movement_record import MovementRepo
 from salduba.corvino.services.app import CorvinoApp
 from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB

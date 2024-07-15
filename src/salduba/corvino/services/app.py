@@ -8,8 +8,8 @@ from ibapi.contract import Contract, ContractDetails, DeltaNeutralContract  # py
 from ibapi.order import Order  # pyright: ignore
 from ibapi.order_state import OrderState  # pyright: ignore
 
+from salduba.corvino.io.parse_input import InputRow
 from salduba.corvino.movements import Movement
-from salduba.corvino.parse_input import InputRow
 from salduba.corvino.persistence.movement_record import MovementRepo, MovementStatus
 from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo, contractFromRecord
 from salduba.ib_tws_proxy.contracts.lookup_contract_details import LookupContractDetails

@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 import click
 
 from salduba.corvino.commands.configuration import Configuration
-from salduba.corvino.parse_input import InputParser, InputRow
+from salduba.corvino.io.parse_input import InputParser, InputRow
 from salduba.corvino.persistence.movement_record import MovementRepo
 from salduba.corvino.services.app import CorvinoApp
 from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB

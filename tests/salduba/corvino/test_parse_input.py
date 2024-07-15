@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from salduba.corvino.parse_input import InputParser, split_ticker
+from salduba.corvino.io.parse_input import InputParser, split_ticker
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
 from salduba.util.logging import init_logging
 from salduba.util.tests import findTestsRoot
