@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Optional
 
-from ibapi.contract import Contract, DeltaNeutralContract
+from ibapi.contract import Contract, DeltaNeutralContract  # pyright: ignore
 
 from salduba.ib_tws_proxy.backing_db.db import TradingDB
 from salduba.ib_tws_proxy.backing_db.repo import Repo
