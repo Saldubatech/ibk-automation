@@ -59,7 +59,7 @@ class Listener(EWrapper):  # type: ignore
 
 class ClientStub(EClient):  # type: ignore
   def __init__(self, clientId: int, ib_wrapper: Listener) -> None:
-    EClient.__init__(self, wrapper=ib_wrapper)
+    EClient.__init__(self, wrapper=ib_wrapper)  # pyright: ignore
     self.clientId = clientId
 
 
