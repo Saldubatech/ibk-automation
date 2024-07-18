@@ -1,9 +1,13 @@
+import os
+import sys
 from typing import Optional
-
-from salduba.util.files import resolveDir
 
 _tests_root_name = "tests"
 
 
 def findTestsRoot() -> Optional[str]:
-    return resolveDir(_tests_root_name)
+  for directory in sys.path:
+    path = os.path.join(directory, _tests_root_name)
+    if os.path.isdir(path):
+      return path
+  return None

@@ -1,54 +1,32 @@
 import logging
-import tempfile
+from datetime import datetime
+from pathlib import Path
 from typing import Optional, Tuple
 
 import click
 
-from salduba.corvino.commands.configuration import Configuration
+from salduba.common.configuration import CervinoConfig, Cfg, DbConfig, InputConfig, Meta, defaultMeta
 from salduba.corvino.io.parse_input import InputParser, InputRow
+from salduba.corvino.io.results_out import ResultsBatch
 from salduba.corvino.persistence.movement_record import MovementRepo
 from salduba.corvino.services.app import CorvinoApp
-from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
+from salduba.ib_tws_proxy.backing_db.db import TradingDB
 from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo
 from salduba.ib_tws_proxy.orders.OrderRepo import OrderRepo, OrderStatusRepo, SoftDollarTierRepo
-from salduba.util.files import resolveDir
-from salduba.util.logging import find_log_file, init_logging
-from salduba.util.sys.paths import module_path
+from salduba.util.logging import init_logging
 
-_log_file = find_log_file(
-  Configuration.corvino_dir_name,
-  module_path(__name__),
-  Configuration.default_log_config_file)
+initial_configuration = defaultMeta
 
-init_logging(_log_file)
+
+with initial_configuration.log_config_path as l_path:
+  init_logging(l_path)
 
 _logger = logging.getLogger(__name__)
 
 
-def _all_repos(
-    dbFilePath: Optional[str]
-) -> Tuple[TradingDB, DeltaNeutralContractRepo, ContractRepo, OrderRepo, MovementRepo]:
-  if dbFilePath:
-    dbFile = dbFilePath
-  else:
-    tmp_file = tempfile.NamedTemporaryFile()
-    tmp_file.close()
-    dbFile = tmp_file.name
-  schemata = resolveDir("salduba/ib_tws_proxy/backing_db/schema")
-  seed_data = resolveDir("salduba/ib_tws_proxy/backing_db/seed-data")
-  if not schemata or not seed_data:
-    raise Exception("Schema or Seed Data directories not found")
-  db_config = DbConfig(
-    {
-      "path": dbFile,
-      "schemas": schemata,
-      "seed_data": seed_data,
-      "expected_version": "0",
-      "target_version": "1",
-      "version_date": "2024-02-01 00:00:00.000",
-    }
-  )
-  db = TradingDB(db_config)
+def _all_repos(cfg: DbConfig, tmp_file_override: bool = False) \
+    -> Tuple[TradingDB, DeltaNeutralContractRepo, ContractRepo, OrderRepo, MovementRepo]:
+  db = TradingDB(cfg, tmp_file_override)
   db.configure()
   dnc_repo = DeltaNeutralContractRepo(db)
   contract_repo = ContractRepo(db, dnc_repo)
@@ -59,16 +37,16 @@ def _all_repos(
   return db, dnc_repo, contract_repo, order_repo, movement_repo
 
 
-def build_app(dbFilePath: Optional[str]) -> CorvinoApp:
-  _, dnc_repo, contract_repo, order_repo, movement_repo = _all_repos(dbFilePath)
+def build_app(configuration: Cfg) -> CorvinoApp:
+  _, dnc_repo, contract_repo, order_repo, movement_repo = _all_repos(configuration.db)
   app = CorvinoApp(
     contract_repo,
     dnc_repo,
     movement_repo,
     order_repo,
     appFamily=1000,
-    host=Configuration.default_tws_host,
-    port=Configuration.default_tws_port)
+    host=configuration.tws.host,
+    port=configuration.tws.port)
   return app
 
 
@@ -84,40 +62,23 @@ def require_csv_or_xlsx(param: click.Option, value: str) -> Optional[str]:
 
 @click.group()
 @click.option(
-  "--database", "-db",
+  "--config", "-c",
   type=str,
   required=False,
-  help="Path to the database to use",
-  callback=Configuration.db_path
-)
-@click.option(
-  "--missing-output",
-  type=str,
-  required=False,
-  help="Path to the output for missing contracts, it must be a *.csv file",
-  callback=Configuration.output_path
-)
-@click.option(
-  "--movement-sheet",
-  type=str,
-  required=False,
-  default='Movements',
-  help="If the input is a xlsx file with more than one sheet, the name of the sheet with the Movements\nDefault: 'Movements'",
-  callback=Configuration.input_sheet
+  help="Path to the configuration file to use",
+  callback=Meta.config_path
 )
 @click.pass_context
 def cli(
     ctx: click.Context,
-    database: str,
-    missing_output: str,
-    movement_sheet: str
+    config: str
     ) -> None:
+  config_path = Path(config)
+  meta = Meta(override_config_path=config_path.parent)
+  cfg = meta.resolve_config
   ctx.ensure_object(dict)
-  ctx.obj['db_path'] = database
-  ctx.obj['missing_output'] = missing_output
-#  ctx.obj['input_type'] = movement_input.split('.')[-1]
-  ctx.obj['movement_sheet'] = movement_sheet
-  ctx.obj['app'] = build_app(database)
+  ctx.obj['config'] = cfg
+  ctx.obj['app'] = build_app(cfg)
 
 
 @cli.command()
@@ -125,26 +86,30 @@ def cli(
   "input-movements-file",
   required=True,
   type=click.Path(exists=True),
-  callback=Configuration.input_path
+  callback=InputConfig.input_path
 )
 @click.pass_context
 def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
   app: CorvinoApp = ctx.obj['app']
 
-  missing_output_file: str = ctx.obj['missing_output']
+  cfg: Cfg = ctx.obj['config']
+  cfg.input.file_name = input_movements_file
+
   info_msg = f"Verifying Contracts from {input_movements_file}"
-  debug_msg = f"Using Database: {ctx.obj['db_path']}"
+  debug_msg = f"Using Database: {ctx.obj['config'].db.storage_name}"
   _logger.info(info_msg)
   _logger.debug(debug_msg)
   click.echo(info_msg)
-  input_rows = read_input_rows(input_movements_file, ctx.obj['movement_sheet'])
-  rs = app.verify_contracts_for_input_rows(input_rows, missing_output_file)
+
+  input_rows = read_input_rows(cfg.input.file_name, cfg.input.sheet_name)
+  rs: ResultsBatch = app.verify_contracts_for_input_rows(input_rows)
   if rs:
-    msg = f"Missing Contracts: {len(rs)}. See {missing_output_file} for details"
+    msg = f"Missing Contracts: {len(rs.unknown)}. See {cfg.output.file_name} for details"
     click.echo(msg)
     _logger.info(msg)
   else:
     click.echo("No missing contracts")
+  rs.write_xlsx()
 
 
 @cli.command()
@@ -153,10 +118,22 @@ def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
   "input-movements-file",
   required=True,
   type=click.Path(exists=True),
-  callback=Configuration.input_path
+  callback=InputConfig.input_path
 )
 def lookup_contracts(ctx: click.Context, input_movements_file: str) -> None:
-  _do_lookup_contracts(ctx, input_movements_file)
+  cfg: Cfg = ctx.obj['config']
+  cfg.input.file_name = input_movements_file
+
+  rs = _do_lookup_contracts(ctx.obj['app'], cfg)
+  rs.write_xlsx()
+  if rs.unknown:
+    if rs.errors:
+      click.echo(rs.errors)
+    _logger.error(rs.message)
+    raise click.ClickException(rs.message)
+  else:
+    _logger.info(rs.message)
+    click.echo(rs.message)
 
 
 @cli.command()
@@ -165,7 +142,7 @@ def lookup_contracts(ctx: click.Context, input_movements_file: str) -> None:
   type=str,
   required=False,
   help="The name of the batch to use for these orders, default: Date with seconds (Year-Month-Day:Hour:min:secs)",
-  callback=Configuration.batch_name
+  callback=CervinoConfig.batch_name
 )
 @click.option(
   "--execute-trades",
@@ -174,70 +151,75 @@ def lookup_contracts(ctx: click.Context, input_movements_file: str) -> None:
     - If the option is provided, the script will execute the trades directly,
     - If not provided, the trades will be uploaded but not executed. The user is then
     expected to execute them if appropriate using the TWS UI itself
-
   """
 )
 @click.argument(
   "input-movements-file",
   required=True,
   type=click.Path(exists=True),
-  callback=Configuration.input_path
+  callback=InputConfig.input_path
 )
 @click.pass_context
 def place_orders(ctx: click.Context, batch: str, execute_trades: bool, input_movements_file: str) -> None:
-  input_rows = _do_lookup_contracts(ctx, input_movements_file)
-  app: CorvinoApp = ctx.obj['app']
-  if execute_trades:
-    info_msg = f"Placing Orders from {input_movements_file} "+click.style("WITH DIRECT EXECUTION!!", fg="bright_red")
-    confirmation = \
-      click.confirm(info_msg + "\n\tDo you want to continue?")
+  rs = _do_lookup_contracts(ctx.obj['app'], ctx.obj['config'])
+  if not rs.unknown:
+    app: CorvinoApp = ctx.obj['app']
+    if execute_trades:
+      info_msg = f"Placing Orders from {input_movements_file} "+click.style("WITH DIRECT EXECUTION!!", fg="bright_red")
+      confirmation = \
+        click.confirm(info_msg + "\n\tDo you want to continue?")
+    else:
+      info_msg = f"Placing Orders from {input_movements_file} without execution, " +\
+        click.style("Please use the TWS UI to execute them", fg="green")
+      click.echo(info_msg)
+      confirmation = True
+
+    _logger.info(info_msg)
+
+    if confirmation:
+      try:
+        order_rs = app.place_orders(rs.inputs, batch, ctx.obj['missing_output'], execute_trades)
+        order_rs.write_xlsx()
+        error_keys = [k.upper() for k in rs.errors.keys()]
+        if "ERRORS" in error_keys:
+          click.echo("Errors while placing Orders. Please look at the log files for information", err=True)
+          click.echo(f"Current Active Logs: {[h.name for h in _logger.handlers]}", err=True)
+          _logger.error(rs.message)
+          click.echo("Please see the output file for details")
+          raise click.ClickException(rs.message)
+        else:
+          click.echo(rs.message)
+          _logger.info(rs.message)
+      except Exception as exc:
+        raise click.ClickException(f"An error occurred: {str(exc)}")
+    else:
+      click.echo("User did not confirm: Abandoning Operation")
+      rs.write_xlsx()
   else:
-    info_msg = f"Placing Orders from {input_movements_file} without execution, " +\
-      click.style("Please use the TWS UI to execute them", fg="green")
-    click.echo(info_msg)
-    confirmation = True
-
-  _logger.info(info_msg)
-  if confirmation:
-    try:
-      msg = app.place_orders(input_rows, batch, ctx.obj['missing_output'], execute_trades)
-      if "ERRORS" in msg.upper():
-        click.echo("Errors while placing Orders. Please look at the log files for information", err=True)
-        click.echo(f"Current Active Logs: {[h.name for h in _logger.handlers]}", err=True)
-        _logger.error(msg)
-        raise click.ClickException(msg)
-      else:
-        click.echo(msg)
-        _logger.info(msg)
-    except Exception as exc:
-      raise click.ClickException(f"An error occurred: {str(exc)}")
-  else:
-    click.echo("Abandoning Operation")
+    rs.write_xlsx()
 
 
-def _do_lookup_contracts(ctx: click.Context, input_movements_file: str) -> list[InputRow]:
-  app: CorvinoApp = ctx.obj['app']
-  missing_output_file: str = ctx.obj['missing_output']
-  info_msg = f"Looking up Contracts from {input_movements_file}, missing contracts will be written to: {missing_output_file}"
-  debug_msg = f"Using Database: {ctx.obj['db_path']}"
+def _do_lookup_contracts(app: CorvinoApp, cfg: Cfg) -> ResultsBatch:
+  info_msg = f"Looking up Contracts from {cfg.input.file_name}, missing contracts will be written to: {cfg.output.file_name}"
+  debug_msg = f"Using Database: {cfg.db.storage_path}"
   _logger.info(info_msg)
   _logger.debug(debug_msg)
   click.echo(info_msg)
-  input_rows = read_input_rows(input_movements_file, ctx.obj['movement_sheet'])
+  input_rows = read_input_rows(cfg.input.file_name, cfg.input.sheet_name)
   try:
-    missing = app.lookup_contracts_for_input_rows(input_rows, missing_output_file)
-    if missing:
-      msg = f"Cannot resolve some Contracts[{len(missing)}]. See {missing_output_file} for details"
-      click.echo(msg)
-      _logger.error(msg)
-      raise click.ClickException(msg)
-    else:
-      msg = "All Contracts resolved"
-      click.echo(msg)
-      _logger.info(msg)
+    missing = app.lookup_contracts_for_input_rows(input_rows)
   except Exception as exc:
-    raise click.ClickException(f"An Error occurred: {str(exc)}")
-  return input_rows
+    raise click.ClickException(f"Unexpected Error occurred: {str(exc)}")
+  return ResultsBatch(
+    datetime.now(),
+    missing.message + " See output file for details" if missing.unknown else "All Contracts resolved",
+    input_rows,
+    missing.known,
+    missing.updated,
+    missing.unknown,
+    [],
+    missing.errors
+  )
 
 
 def read_input_rows(movements_file: str, sheet: str) -> list[InputRow]:

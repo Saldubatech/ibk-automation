@@ -29,21 +29,23 @@ class Listener(EWrapper):  # type: ignore
   ) -> None:
     if errorCode in Listener.ignoreErrors:
       pass
-    elif errorCode == 502 or errorCode == 504:
-      msg = f"Got a 'Not Connected' error({errorCode}): '{errorString}', with {advancedOrderRejectJson}"
-      # Not Connected, stop
-      self.stop(msg)
-    elif errorCode == 2110:
-      msg = "TWS connectivity to server is broken. Stopping..."
-      self.stop(msg)
     else:
-      _logger.error(f"Unexpected Error[{errorCode}]: {errorString} with AOR Info:\n\t{advancedOrderRejectJson}")
       self.responseTracker.error(ErrorResponse(reqId, errorCode, errorString, advancedOrderRejectJson))
-      super().error(reqId, errorCode, errorString)
-      if self.responseTracker.isIdle():
-        _logger.info(f"Tracker found idle at error response: {reqId}")
-        _logger.error(f"\nUnexpected Error({errorCode}): {errorString} with:\n\t{advancedOrderRejectJson}")
-        self.stop("Tracker is Idle")
+      if errorCode == 502 or errorCode == 504:
+        msg = f"Got a 'Not Connected' error({errorCode}): '{errorString}', with {advancedOrderRejectJson}"
+        # Not Connected, stop
+        self.stop(msg)
+      elif errorCode == 2110:
+        msg = "TWS connectivity to server is broken. Stopping..."
+        self.stop(msg)
+      else:
+        _logger.error(f"Unexpected Error[{errorCode}]: {errorString} with AOR Info:\n\t{advancedOrderRejectJson}")
+        self.responseTracker.error(ErrorResponse(reqId, errorCode, errorString, advancedOrderRejectJson))
+        super().error(reqId, errorCode, errorString)
+        if self.responseTracker.isIdle():
+          _logger.info(f"Tracker found idle at error response: {reqId}")
+          _logger.error(f"\nUnexpected Error({errorCode}): {errorString} with:\n\t{advancedOrderRejectJson}")
+          self.stop("Tracker is Idle")
 
   def isActive(self) -> bool:
     return not self.done and self.responseTracker.started

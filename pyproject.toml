@@ -36,6 +36,7 @@ click = "^7.0"  # "^8.1.7"
 
 sqlalchemy = "^2.0.31"
 pixi = "^1.0.1"
+platformdirs = "^4.2.2"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 sphinx = "^7.3.7"

@@ -53,7 +53,7 @@ class ErrorResponse(Response):
 
 
 class Operation:
-  def __init__(self, opId: int, request: Request) -> None:
+  def __init__(self, opId: int, request: Request, error: Optional[ErrorResponse] = None) -> None:
     self.opId = opId
     self.request = request
     self.responses: list[SuccessResponse] = []
@@ -185,7 +185,20 @@ class OperationsTracker:
         _logger.error(f"ERROR {error.opId} from {current_fn_name(2)}::{current_fn_name(1)}")
       del self.pending[error.opId]
     else:
-      raise Exception(f"Response for unknown request: {error}")
+      if error.errorCode == 502:
+        self.errors.append(
+          Operation(
+            error.opId,
+            Request("",
+                    "Trying to connect to TWS"),
+            ErrorResponse(
+              error.opId,
+              error.errorCode,
+              error.errorString,
+              error.advancedOrderRejectJson)))
+        raise Exception(error.errorString)
+      else:
+        raise Exception(f"Response for unknown request: {error}")
     # _logger.debug("Released Lock")
 
   def errorResults(self) -> dict[str, list[ErrorResponse]]:

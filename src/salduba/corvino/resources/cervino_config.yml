@@ -1,0 +1,32 @@
+cervino:
+  app_id: cervino
+  batch_prefix: order_batch
+  data_dir: '/Users/jmp/.cervino'
+  log_file_name: logging.yml
+
+input:
+  input_dir: "."
+  file_prefix: movements
+  file_name: movements.csv
+  sheet_name: Movements
+
+output:
+  output_dir: "."
+  file_prefix: "cervino_command_output"
+  file_name: "cervino_command_output.xlsx"  # if provided `file_prefix` is ignored
+  inputs_sheet: inputs
+  known_sheet: known
+  updated_sheet: updated
+  missing_sheet: missing
+  movement_sheet: movement
+  error_sheet: errors
+
+db:
+  storage_name: cervino.db
+  version_date: "2024-02-01 00:00:00.000"
+  min_required_version:
+  max_accepted_version:
+
+tws:
+  port: 7497
+  host: 'localhost'
