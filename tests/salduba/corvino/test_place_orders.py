@@ -77,8 +77,7 @@ def test_place_orders(setup_db: TradingDB) -> None:
   if not missing_contracts.unknown:
     result = underTest.place_orders(
       probe,
-      batch=f"TestBatch_{datetime.datetime.now().timestamp()}",
-      output_file=output_file_path,
+      batch=f"TestBatch_{datetime.datetime.now().timestamp()}"
     )
     assert f"{len(probe)} Movements Placed" == result.message, result
   else:
