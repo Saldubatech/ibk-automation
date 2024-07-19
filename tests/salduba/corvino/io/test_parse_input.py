@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from salduba.corvino.parse_input import InputParser, split_ticker
+from salduba.corvino.io.parse_input import InputParser, split_ticker
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
 from salduba.util.logging import init_logging
 from salduba.util.tests import findTestsRoot
@@ -49,7 +49,7 @@ def test_read_csv_minimal() -> None:
       "Exchange",
       "Exchange2"
    ] == list(result.columns)
-  assert "2222 JP Equity" == result.index[0]
+  assert "2222 JP Equity" == result.index[0]  # pyright: ignore
   expect_in_0 = {
       "Trade": -2400,
       "Currency": str(Currency.JPY),
@@ -61,8 +61,8 @@ def test_read_csv_minimal() -> None:
       "IbkType": str(SecType.STK),
       'Ticker': '2222 JP Equity'
   }
-  first = result.iloc[0]
-  assert expect_in_0 == dict(first)
+  first = result.iloc[0]  # pyright: ignore
+  assert expect_in_0 == dict(first)  # pyright: ignore
 
 
 def test_input_rows_from_excel() -> None:
@@ -120,7 +120,7 @@ def test_read_excel_minimal() -> None:
       "Exchange2"
    ] == list(result.columns)
 
-  assert "2875 JP Equity" == result.index[0]
+  assert "2875 JP Equity" == result.index[0]  # pyright: ignore
   expect_in_0 = {
       "Trade": 600,
       "Currency": str(Currency.JPY),
@@ -132,5 +132,5 @@ def test_read_excel_minimal() -> None:
       "IbkType": "STK",
       'Ticker': '2875 JP Equity'
     }
-  first = result.iloc[0]
-  assert expect_in_0 == dict(first)
+  first = result.iloc[0]  # pyright: ignore
+  assert expect_in_0 == dict(first)  # pyright: ignore

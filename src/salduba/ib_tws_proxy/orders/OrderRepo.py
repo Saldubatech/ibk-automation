@@ -2,8 +2,8 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from ibapi.common import OrderId
-from ibapi.order import Order
+from ibapi.common import OrderId  # pyright: ignore
+from ibapi.order import Order  # pyright: ignore
 
 from salduba.ib_tws_proxy.backing_db.db import TradingDB
 from salduba.ib_tws_proxy.backing_db.record import Record
@@ -16,7 +16,6 @@ _logger = logging.getLogger(__name__)
 # https://interactivebrokers.github.io/tws-api/classIBApi_1_1Order.html
 @dataclass
 class OrderRecord(Record):
-  table = 'ORDER_T'
   orderId: int
   clientId: int
   action: str

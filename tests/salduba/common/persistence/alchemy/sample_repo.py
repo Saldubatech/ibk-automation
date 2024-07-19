@@ -26,10 +26,10 @@ class DeltaNeutralContractRecord(EntityBase):
   # default = None is just for the dataclass constructor so that a value it is not explicitly needed
   contract_fk: Mapped[str] = mapped_column(ForeignKey("contract.rid"))
   # Only needed if back-navigation in python code is needed. It does not change the schema.
-  contract: Mapped['ContractRecord'] = relationship(default=None, back_populates='delta_neutral_contracts')
+  contract: Mapped['ContractRecordAlch'] = relationship(default=None, back_populates='delta_neutral_contracts')
 
 
-class ContractRecord(EntityBase):
+class ContractRecordAlch(EntityBase):
   __tablename__ = 'contract'
 
   expires_on: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -55,7 +55,7 @@ class ContractRecord(EntityBase):
   # print(f"Table for DNC: {CreateTable(DeltaNeutralContractRecord.__table__).compile(dialect=sqlite.dialect())}")
 
 
-class ContractRepo(Repo[ContractRecord]):
+class ContractRepo(Repo[ContractRecordAlch]):
   contract_shelf_life = 3 * 30 * 24 * 3600 * 1000
 
   def __init__(self, engine: Engine) -> None:
@@ -68,22 +68,22 @@ class ContractRepo(Repo[ContractRecord]):
       exchange: Exchange,
       alternate_exchange: Optional[Exchange],
       currency: Currency,
-      atTime: int) -> Optional[ContractRecord]:
+      atTime: int) -> Optional[ContractRecordAlch]:
     exchange_clause = \
-      ContractRecord.exchange == exchange if alternate_exchange is None \
-      else or_(ContractRecord.exchange == exchange, ContractRecord.exchange == alternate_exchange)
-    stmt = select(ContractRecord).where(
+      ContractRecordAlch.exchange == exchange if alternate_exchange is None \
+      else or_(ContractRecordAlch.exchange == exchange, ContractRecordAlch.exchange == alternate_exchange)
+    stmt = select(ContractRecordAlch).where(
       and_(
-        ContractRecord.expires_on > atTime,
-        ContractRecord.symbol == symbol,
-        ContractRecord.ibk_type == ibk_type,
+        ContractRecordAlch.expires_on > atTime,
+        ContractRecordAlch.symbol == symbol,
+        ContractRecordAlch.ibk_type == ibk_type,
         exchange_clause,
-        ContractRecord.currency == currency
+        ContractRecordAlch.currency == currency
       )
     )
     with Session(self.engine) as ss:
       _logger.debug(f"Lookup Symbol {symbol}")
-      rs: ScalarResult[ContractRecord] = ss.scalars(stmt)
+      rs: ScalarResult[ContractRecordAlch] = ss.scalars(stmt)
       found = rs.fetchall()
       _logger.debug(f"\t With Result: {found}")
       if found and len(found) > 1:
@@ -92,13 +92,13 @@ class ContractRepo(Repo[ContractRecord]):
       else:
         return found[0] if found else None
 
-  def recordClz(self) -> type[ContractRecord]:
-    return ContractRecord
+  def recordClz(self) -> type[ContractRecordAlch]:
+    return ContractRecordAlch
 
   def insertStmt(self) -> Insert:
     return insert(ContractRepo)
 
-  def registerUpdate(self, updated: ContractRecord) -> ContractRecord:
+  def registerUpdate(self, updated: ContractRecordAlch) -> ContractRecordAlch:
     at: int = millis_epoch()
     with Session(self.engine) as ss:
       preExisting = self.findNominalContract(

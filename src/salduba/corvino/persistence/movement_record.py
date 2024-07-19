@@ -89,3 +89,6 @@ class MovementRepo(Repo[MovementRecord]):
                 self.exchangeClause,
             ],
         )
+
+    def findForBatch(self, batch: str) -> list[MovementRecord]:
+      return self.select([batch], [self.batchClause])

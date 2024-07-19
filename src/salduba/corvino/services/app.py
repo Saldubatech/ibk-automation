@@ -3,13 +3,13 @@ import logging
 from typing import Optional, Tuple
 from uuid import uuid4
 
-import pandas as pd
 from ibapi.contract import Contract, ContractDetails, DeltaNeutralContract  # pyright: ignore
 from ibapi.order import Order  # pyright: ignore
 from ibapi.order_state import OrderState  # pyright: ignore
 
+from salduba.corvino.io.parse_input import InputRow
+from salduba.corvino.io.results_out import ResultsBatch
 from salduba.corvino.movements import Movement
-from salduba.corvino.parse_input import InputRow
 from salduba.corvino.persistence.movement_record import MovementRepo, MovementStatus
 from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo, contractFromRecord
 from salduba.ib_tws_proxy.contracts.lookup_contract_details import LookupContractDetails
@@ -43,7 +43,7 @@ def newOrder(
   order.firmQuoteOnly = False
 
   # Regular fill-ins
-  order.orderId = orderId
+  order.orderId = orderId if orderId else 0
   order.solicited = False
   order.action = Action.BUY if trade > 0 else Action.SELL
   order.totalQuantity = int(abs(trade))
@@ -207,7 +207,7 @@ class CorvinoApp:
     self.movements_repo = movements_repo
     self.host = host
     self.port = port
-    self.order_repo = order_repo
+    self.order_repo: OrderRepo = order_repo
     self.app_family = appFamily * 100
 
   def _findNominalContract(self, r: InputRow, at: int) -> Optional[ContractRecord]:
@@ -220,52 +220,75 @@ class CorvinoApp:
       at)
     return rs
 
-  def verify_contracts_for_input_rows(
-      self,
-      input_rows: list[InputRow],
-      output_file: Optional[str] = 'missing_contracts.csv') -> Optional[list[InputRow]]:
+  def verify_contracts_for_input_rows(self, input_rows: list[InputRow]) -> ResultsBatch:
     nowT = datetime.datetime.now()
-    missing_rows = [r for r in input_rows if self._findNominalContract(r, millis_epoch(nowT)) is None]
-    if output_file and missing_rows:
-      missing = [
-        {
-          "ticker" : m.ticker,
-          "symbol" : m.symbol,
-          "exchange" : m.exchange,
-          "exchange2" : m.exchange2,
-          "currency" : m.currency,
-          "country" : m.country
-        } for m in missing_rows]
-      missingDf = pd.DataFrame(missing)
-      missingDf.to_csv(output_file)
-    return missing_rows if len(missing_rows) > 0 else None
+    input_dict = {r.ticker: r for r in input_rows}
+    finding = {r.ticker: self._findNominalContract(r, millis_epoch(nowT)) for r in input_rows}
+    found_contracts: list[ContractRecord] = list(filter(None, finding.values()))
+    missing_rows: list[InputRow] = [input_dict[t] for t in finding.keys() if finding[t] is None]
+    # missing_rows = [r for r in input_rows if self._findNominalContract(r, millis_epoch(nowT)) is None]
+    # if output_file and missing_rows:
+    #   missing = [
+    #     {
+    #       "ticker" : m.ticker,
+    #       "symbol" : m.symbol,
+    #       "exchange" : m.exchange,
+    #       "exchange2" : m.exchange2,
+    #       "currency" : m.currency,
+    #       "country" : m.country
+    #     } for m in missing_rows]
+    #   missingDf = pd.DataFrame(missing)
+    #   missingDf.to_csv(output_file)
+    return ResultsBatch(
+      atTime=nowT,
+      message="All contracts already known" if not missing_rows else "Some contracts not known",
+      inputs=input_rows,
+      known=found_contracts,
+      updated=[],
+      movements_placed=[],
+      unknown=missing_rows if missing_rows else [],
+      errors={}
+    )
 
   def lookup_contracts_for_input_rows(self,
                                       input_rows: list[InputRow],
-                                      output_file: Optional[str] = "missing_contracts.csv",
-                                      ttl: int = ninety_days) -> Optional[list[InputRow]]:
+                                      ttl: int = ninety_days) -> ResultsBatch:
     nowT = datetime.datetime.now()
     _logger.debug(f"Looking for {len(input_rows)} contracts at {nowT}")
-    missing = self.verify_contracts_for_input_rows(input_rows, None)  # Do not record the ones initially missing
-    if missing:
-      _logger.debug(f"Found {len(missing)} contracts to refresh at {nowT}")
-      targets = self._prepareContractsForLookup(missing)
-      _logger.debug(f"\tTransformed into {len(targets)} contract Keys")
-      errors = self._doLookups(targets, ttl)
-      if not errors:
-        missing = self.verify_contracts_for_input_rows(input_rows, output_file)
-        if missing:
-          _logger.warning(f"Lookup Incomplete, missing[{len(missing)}]")
-          return missing
-        else:
-          _logger.debug(f"Lookup Contracts is Done, missing: {len(missing) if missing else 0}")
-          return missing
-      else:
-        _logger.error(f"Lookup completed with Errors: {errors}")
-        return None
+    verification: ResultsBatch = self.verify_contracts_for_input_rows(input_rows)
+    if not verification.unknown:
+      return verification
     else:
-      _logger.debug(f"No missing contracts found at {nowT}")
-      return []
+      _logger.debug(f"Found {len(verification.unknown)} contracts to refresh at {nowT}")
+      targets = self._prepareContractsForLookup(verification.unknown)
+      _logger.debug(f"\tTransformed into {len(targets)} contract Keys")
+      errors: dict[str, list[ErrorResponse]] | None = self._doLookups(targets, ttl)
+      if (errors) and ('error' in errors) and bool(errors['error']):
+        _logger.error(f"Lookup completed with Errors: {errors}")
+        return ResultsBatch(
+          nowT,
+          "Lookup Completed with Errors",
+          input_rows,
+          verification.known,
+          updated=[],
+          unknown=verification.unknown,
+          movements_placed=[],
+          errors=errors
+        )
+      else:
+        _logger.debug("Lookup completed without Errors")
+        lookup_result = self.verify_contracts_for_input_rows(input_rows)
+        updated = [r for r in lookup_result.known if filter(lambda cr : cr.rid == r.rid, verification.known)]
+        return ResultsBatch(
+          nowT,
+          f"Lookup Incomplete, missing[{len(lookup_result.unknown)}]" if lookup_result.unknown else "Lookup Complete, no missing",
+          input_rows,
+          verification.known,
+          updated=updated,
+          unknown=lookup_result.unknown,
+          movements_placed=[],
+          errors={}
+        )
 
   def _prepareContractsForLookup(self, missing: list[InputRow]) -> dict[str, tuple[Contract, InputRow]]:
     def populateContractForLookup(ir: InputRow) -> tuple[Contract, InputRow]:
@@ -402,23 +425,49 @@ class CorvinoApp:
     self,
     input_rows: list[InputRow],
     batch: Optional[str] = None,
-    output_file: Optional[str] = "missing_contracts.csv",
     execute_trades: bool = False
-  ) -> str:
+  ) -> ResultsBatch:
     nowT = datetime.datetime.now()
     if batch is None:
       batch = CorvinoApp.batch_name(nowT)
-    missing = self.verify_contracts_for_input_rows(input_rows, output_file)
+    missing = self.verify_contracts_for_input_rows(input_rows)
 
-    if missing:
-      return f"Not all contracts are available for movements in batch: {batch}. See {output_file} for missing contracts"
+    if missing.unknown:
+      return ResultsBatch(
+        nowT,
+        f"Not all contracts are available for movements in batch: {batch}.",
+        input_rows,
+        missing.known,
+        missing.updated,
+        missing.unknown,
+        [],
+        missing.errors
+        )
     else:
       contractOrders: list[tuple[Contract, Order]] = self._prepare_orders(batch, nowT, input_rows, execute_trades)
       errors = self._order_placement(batch, contractOrders)
-      if errors and errors['error']:
-        return f"Errors[{len(errors['error'])}] in placing orders: {errors}"
-      return f"{len(contractOrders)} Movements Placed" if not errors else f"{len(contractOrders)} Movements Placed" + \
-        "\n\t".join([i.errorString for i in errors['info']])
+      movements_for_batch = self.movements_repo.findForBatch(batch)
+      if (errors) and ('error' in errors) and bool(errors['error']):
+        return ResultsBatch(
+          nowT,
+          f"Errors[{len(errors['error'])}] trying to place orders",
+          input_rows,
+          missing.known,
+          missing.updated,
+          missing.unknown,
+          movements_for_batch,
+          errors)
+      else:
+        return ResultsBatch(
+          nowT,
+          f"{len(movements_for_batch)} Movements Placed",
+          input_rows,
+          missing.known,
+          missing.updated,
+          missing.unknown,
+          movements_for_batch,
+          missing.errors
+        )
 
   def _prepare_orders(
       self, batch: str, nowT: datetime.datetime, input_rows: list[InputRow], execute_trades: bool

@@ -1,6 +1,6 @@
 from typing import Set, Tuple
 
-from ibapi.order import Order
+from ibapi.order import Order  # pyright: ignore
 
 from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord
 

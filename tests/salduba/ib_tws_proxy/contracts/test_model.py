@@ -5,11 +5,11 @@ from uuid import uuid4
 
 import pytest
 
-from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
+from salduba.common.configuration import DbConfig
+from salduba.ib_tws_proxy.backing_db.db import TradingDB
 from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo
 from salduba.ib_tws_proxy.contracts.model import ContractRecord
 from salduba.ib_tws_proxy.domain.enumerations import Currency, Exchange, SecType
-from salduba.util.files import resolveDir
 
 expected_db_version = 1
 expected_tables = {
@@ -35,19 +35,9 @@ def setup_db() -> TradingDB:
 def new_db() -> TradingDB:
   temp = tempfile.NamedTemporaryFile()
   temp.close()
-  schemata = resolveDir("salduba/ib_tws_proxy/backing_db/schema")
-  seed_data = resolveDir("salduba/ib_tws_proxy/backing_db/seed-data")
-  if not schemata or not seed_data:
-    raise Exception("Schema or Seed Data directories not found")
   local_config = DbConfig(
-    {
-      "path": temp.name,
-      "schemas": schemata,
-      "seed_data": seed_data,
-      "expected_version": "0",
-      "target_version": "1",
-      "version_date": "2024-02-01 00:00:00.000",
-    }
+      storage_name=temp.name,
+      min_required_version=1
   )
   return TradingDB(local_config)
 

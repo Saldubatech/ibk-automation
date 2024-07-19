@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional, Self
 
-from salduba.corvino.parse_input import InputRow
+from salduba.corvino.io.parse_input import InputRow
 from salduba.corvino.persistence.movement_record import MovementRecord, MovementRepo, MovementStatus
 from salduba.ib_tws_proxy.contracts.model import ContractRecord
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType

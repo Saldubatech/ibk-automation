@@ -7,13 +7,13 @@ from typing import Tuple
 import pandas as pd
 import pytest
 
-from salduba.corvino.parse_input import InputParser
+from salduba.common.configuration import DbConfig
+from salduba.corvino.io.parse_input import InputParser
 from salduba.corvino.persistence.movement_record import MovementRepo
 from salduba.corvino.services.app import CorvinoApp
-from salduba.ib_tws_proxy.backing_db.db import DbConfig, TradingDB
+from salduba.ib_tws_proxy.backing_db.db import TradingDB
 from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo
 from salduba.ib_tws_proxy.orders.OrderRepo import OrderRepo, OrderStatusRepo, SoftDollarTierRepo
-from salduba.util.files import resolveDir
 from salduba.util.logging import init_logging
 from salduba.util.tests import findTestsRoot
 
@@ -37,19 +37,9 @@ def all_repos() -> Tuple[TradingDB, DeltaNeutralContractRepo, ContractRepo, Orde
   tmp_file = tempfile.NamedTemporaryFile()
   tmp_file.close()
   tmp_file_path = tmp_file.name
-  schemata = resolveDir("salduba/ib_tws_proxy/backing_db/schema")
-  seed_data = resolveDir("salduba/ib_tws_proxy/backing_db/seed-data")
-  if not schemata or not seed_data:
-    raise Exception("Schema or Seed Data directories not found")
   db_config = DbConfig(
-    {
-      "path": tmp_file_path,
-      "schemas": schemata,
-      "seed_data": seed_data,
-      "expected_version": "0",
-      "target_version": "1",
-      "version_date": "2024-02-01 00:00:00.000",
-    }
+    storage_name=tmp_file_path,
+    min_required_version=1
   )
   db = TradingDB(db_config)
   db.configure()
@@ -77,18 +67,15 @@ def test_on_empty_db() -> None:
   _logger.info(f"Output file at: {output_file_path}")
   probe = InputParser.input_rows_from(probeFile)
   assert probe is not None and len(probe) > 0
-  result = underTest.verify_contracts_for_input_rows(probe, output_file_path)
-  assert result is not None
-  probeDF = pd.read_csv(probeFile)
-  results = pd.read_csv(output_file_path)
-  assert len(probeDF) == len(results)
-  assert (len(result) if result is not None else 0) == len(results)
+  result = underTest.verify_contracts_for_input_rows(probe)
+  probeDF = pd.read_csv(probeFile)  # pyright: ignore
+  assert len(probeDF) == len(result.unknown)
 
 
 @pytest.mark.tws
 def test_lookup_contracts() -> None:
   db, dnc_repo, contract_repo, order_repo, movement_repo = all_repos()
-  _logger.info(f"DB at: {db.config.storage}")
+  _logger.info(f"DB at: {db.config.storage_path}")
   probeFile = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
   probe = InputParser.input_rows_from(probeFile)
   assert probe is not None
@@ -105,8 +92,10 @@ def test_lookup_contracts() -> None:
 
   tmp_file = tempfile.NamedTemporaryFile()
   tmp_file.close()
-  output_file_path = tmp_file.name
+  output_file_path = tmp_file.name + '.xlsx'
   _logger.info(f"Output file at: {output_file_path}")
-  result = underTest.lookup_contracts_for_input_rows(probe[0:10], output_file=output_file_path, ttl=10000)
+  result = underTest.lookup_contracts_for_input_rows(probe[0:10], ttl=10000)
   # probeDF = pd.read_csv(probeFile)
-  assert result is None or len(result) == 0, f"All Contracts should have been found. Not found[{len(result)}]: {result}"
+  if result.unknown:
+    result.write_xlsx(output_file_path)
+  assert not result.unknown, f"All Contracts should have been found. Not found[{len(result.unknown)}]: See:{output_file_path}"
