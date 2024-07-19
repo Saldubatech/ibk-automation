@@ -161,6 +161,7 @@ def lookup_contracts(ctx: click.Context, input_movements_file: str) -> None:
 )
 @click.pass_context
 def place_orders(ctx: click.Context, batch: str, execute_trades: bool, input_movements_file: str) -> None:
+  ctx.obj['config'].input.file_name = input_movements_file
   rs = _do_lookup_contracts(ctx.obj['app'], ctx.obj['config'])
   if not rs.unknown:
     app: CorvinoApp = ctx.obj['app']
@@ -178,7 +179,7 @@ def place_orders(ctx: click.Context, batch: str, execute_trades: bool, input_mov
 
     if confirmation:
       try:
-        order_rs = app.place_orders(rs.inputs, batch, ctx.obj['missing_output'], execute_trades)
+        order_rs = app.place_orders(rs.inputs, batch, execute_trades)
         order_rs.write_xlsx()
         error_keys = [k.upper() for k in rs.errors.keys()]
         if "ERRORS" in error_keys:

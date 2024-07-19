@@ -425,7 +425,6 @@ class CorvinoApp:
     self,
     input_rows: list[InputRow],
     batch: Optional[str] = None,
-    output_file: Optional[str] = "missing_contracts.csv",
     execute_trades: bool = False
   ) -> ResultsBatch:
     nowT = datetime.datetime.now()
@@ -436,7 +435,7 @@ class CorvinoApp:
     if missing.unknown:
       return ResultsBatch(
         nowT,
-        f"Not all contracts are available for movements in batch: {batch}. See {output_file} for missing contracts",
+        f"Not all contracts are available for movements in batch: {batch}.",
         input_rows,
         missing.known,
         missing.updated,

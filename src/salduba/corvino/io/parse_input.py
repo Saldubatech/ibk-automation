@@ -73,6 +73,7 @@ class InputParser:
 
   @staticmethod
   def input_rows_from(movements_path: str, sheet: str = 'Movements') -> list[InputRow]:
+    print(f"##### Input File: {movements_path}::{sheet}")
     file_type = movements_path.split('.')[-1]
     df: Optional[pd.DataFrame] = None
     if file_type == 'xlsx':
