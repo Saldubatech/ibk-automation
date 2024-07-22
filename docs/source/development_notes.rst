@@ -7,7 +7,7 @@ General
 
 1. Although only the columns described in :doc:`user_guide` will be used, the application may fail if other columns are not available in the file. This is under current testing.
 2. Need testing with XLS files.
-3. The Log Level can be controlled by putting a file in the `$HOME/.corvino` folder named `corvino_logging.yaml` with the regular python logging format.
+3. The Log Level can be controlled by putting a file in the `$HOME/.cervino` folder named `logging.yaml` with the regular python logging format.
 
 Versioning
 =============
