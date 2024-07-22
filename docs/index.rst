@@ -9,6 +9,7 @@ Corvino Trade Automation
    :caption: TOC:
 
    source/user_guide
+   source/configuration_file
    source/development_notes
    source/workflow
    source/movements

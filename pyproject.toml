@@ -37,6 +37,9 @@ click = "^7.0"  # "^8.1.7"
 sqlalchemy = "^2.0.31"
 pixi = "^1.0.1"
 platformdirs = "^4.2.2"
+
+
+matplotlib = "^3.9.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 sphinx = "^7.3.7"
@@ -139,6 +142,7 @@ linkify = "^1.4"
 sphinxcontrib-confluencebuilder = "^2.5.2"
 coverage = "^7.5.4"
 
+sphinxcontrib-inlinesyntaxhighlight = "^0.2"
 [tool.poetry.group.types.dependencies]
 types-flake8 = "^7.0.0.20240511"
 

@@ -19,7 +19,7 @@ import datetime
 ############################################################
 
 # Product name
-project = 'Corvino Trade Automation'
+project = 'Cervino Trade Automation'
 author = 'Salduba Technologies'
 
 # The title you want to display for the documentation in the sidebar.
@@ -58,7 +58,7 @@ copyright = '%s CC-BY-SA, %s' % (datetime.date.today().year, author)
 # sphinxext.opengraph extension will be disabled.
 ogp_site_url = ''  # https://canonical-starter-pack.readthedocs-hosted.com/'
 # The documentation website name (usually the same as the product name)
-ogp_site_name = "corvino_cli"
+ogp_site_name = "cervino_cli"
 # The URL of an image or logo that is used in the preview
 ogp_image = ''  # https://assets.ubuntu.com/v1/253da317-image-document-ubuntudocs.svg'
 

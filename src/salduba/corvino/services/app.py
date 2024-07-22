@@ -278,7 +278,11 @@ class CorvinoApp:
       else:
         _logger.debug("Lookup completed without Errors")
         lookup_result = self.verify_contracts_for_input_rows(input_rows)
-        updated = [r for r in lookup_result.known if filter(lambda cr : cr.rid == r.rid, verification.known)]
+        if len(lookup_result.unknown) == len(verification.unknown):
+          updated: list[ContractRecord] = []
+        else:
+          first_pass = set(cr.conId for cr in verification.known)
+          updated = [cr for cr in lookup_result.known if cr.conId not in first_pass]
         return ResultsBatch(
           nowT,
           f"Lookup Incomplete, missing[{len(lookup_result.unknown)}]" if lookup_result.unknown else "Lookup Complete, no missing",
