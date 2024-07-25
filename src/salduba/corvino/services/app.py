@@ -76,8 +76,10 @@ class CorvinoApp:
   def verify_contracts_for_input_rows(self, input_rows: list[InputRow], uow: UnitOfWork) -> ResultsBatch:
     nowT = datetime.datetime.now()
     input_dict = {r.ticker: r for r in input_rows}
-    finding = {r.ticker: self._findNominalContract(r, millis_epoch(nowT), uow) for r in input_rows}
-    found_contracts: list[ContractRecord2] = list(filter(None, finding.values()))
+    finding: dict[str, Optional[ContractRecord2]] = {
+      r.ticker: self._findNominalContract(r, millis_epoch(nowT), uow) for r in input_rows
+    }
+    found_contracts: list[ContractRecord2] = [v for v in finding.values() if v is not None]
     missing_rows: list[InputRow] = [input_dict[t] for t in finding.keys() if finding[t] is None]
     return ResultsBatch(
       atTime=nowT,

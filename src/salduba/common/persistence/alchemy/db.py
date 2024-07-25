@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from typing import Any, Generator, Optional
 
-from sqlalchemy import Engine
+from sqlalchemy import Engine, ExecutableDDLElement, MetaData, create_engine, create_mock_engine
 from sqlalchemy.orm import Session
 
 
@@ -36,11 +36,16 @@ class Db:
     self.engine = engine
     self.session: Optional[Session] = None
 
+  @classmethod
+  def from_url(cls, url: str, echo: bool = False) -> 'Db':
+    return Db(create_engine(url, echo=echo))
+
   @contextmanager
   def for_work(self) -> Generator[UnitOfWork, Any, None]:
     try:
       if not self.session:
-        self.session = Session(self.engine)
+        # expire_on_commit=False is needed to be able to use objects after a commit.
+        self.session = Session(self.engine, expire_on_commit=False)
       yield UnitOfWork(self.session)
     except Exception as exc:
       if self.session and self.session.is_active:
@@ -54,3 +59,9 @@ class Db:
         self.session.commit()
         self.session.close()
       self.session = None
+
+  def print_schema(self, metadata: MetaData) -> None:
+    def dump(sql: ExecutableDDLElement, *multi_params: Any, **params: Any) -> None:
+      print(sql.compile(dialect=self.engine.dialect))
+    engine = create_mock_engine(f'{self.engine.url.drivername}://', strategy='mock', executor=dump)
+    metadata.create_all(engine, checkfirst=False)

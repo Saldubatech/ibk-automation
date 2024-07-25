@@ -23,6 +23,7 @@ output:
 
 db:
   storage_name: cervino.db
+  echo: false
 
 
 tws:

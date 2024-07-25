@@ -33,7 +33,7 @@ class User(RecordBase):
 class Address(RecordBase):
     __tablename__: str = "address"
     email_address: Mapped[str]
-    user_id: Mapped[str] = mapped_column(ForeignKey("user_account.rid"))
+    user_id: Mapped[str] = mapped_column(ForeignKey(User.rid))
     user: Mapped[User] = relationship(back_populates="addresses")
 
     def __repr__(self) -> str:
@@ -87,6 +87,11 @@ def build_engine() -> Engine:
 def test_engine(setup_db: Engine) -> None:
   assert setup_db.dialect.name == "sqlite"
   assert setup_db.url.drivername == "sqlite"
+
+
+def test_ddl(setup_db: Engine) -> None:
+  db = Db(setup_db)
+  db.print_schema(RecordBase.metadata)
 
 
 class UserOps(RepoOps[User]):

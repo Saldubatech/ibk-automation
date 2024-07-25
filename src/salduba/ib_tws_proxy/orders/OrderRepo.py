@@ -299,7 +299,7 @@ class OrderRecord2(RecordBase):
   conditionsCancelOrder: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
   isOmsContainer: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
   usePriceMgmtAlgo: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
-  soft_dollar_tier_fk: Mapped[Optional[str]] = mapped_column(String(255), ForeignKey('SOFT_DOLLAR_TIER.rid'), nullable=True)
+  soft_dollar_tier_fk: Mapped[Optional[str]] = mapped_column(String(255), ForeignKey(SoftDollarTierRecord2.rid), nullable=True)
   softDollarTier: Mapped[Optional[SoftDollarTierRecord2]] = relationship(
       SoftDollarTierRecord2,
       foreign_keys=[soft_dollar_tier_fk],
@@ -307,7 +307,7 @@ class OrderRecord2(RecordBase):
       single_parent=True,
       cascade="all, delete-orphan",
       lazy=True)
-  order_status_fk: Mapped[str] = mapped_column(String(255), ForeignKey('ORDER_STATUS.rid'), nullable=False)
+  order_status_fk: Mapped[str] = mapped_column(String(255), ForeignKey(OrderStatusRecord2.rid), nullable=False)
   order_status: Mapped[OrderStatusRecord2] = relationship(
       OrderStatusRecord2,
       foreign_keys=[order_status_fk],

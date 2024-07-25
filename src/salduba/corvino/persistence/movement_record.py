@@ -59,10 +59,10 @@ class MovementRecord2(RecordBase):
   currency: Mapped[Currency] = mapped_column(Enum(Currency), nullable=False)
   exchange: Mapped[Exchange] = mapped_column(Enum(Exchange), nullable=False)
   exchange2: Mapped[Optional[Exchange]] = mapped_column(Enum(Exchange), nullable=True)
-  contract_fk: Mapped[str] = mapped_column(String(255), ForeignKey('CONTRACT.rid'), nullable=False)
+  contract_fk: Mapped[str] = mapped_column(String(255), ForeignKey(ContractRecord2.rid), nullable=False)
   contract: Mapped[ContractRecord2] = \
     relationship(ContractRecord2, uselist=False, cascade='none', foreign_keys=[contract_fk], lazy=True)
-  order_fk: Mapped[str] = mapped_column(String(255), ForeignKey('ORDER_T.rid'), nullable=False)
+  order_fk: Mapped[str] = mapped_column(String(255), ForeignKey(OrderRecord2.rid), nullable=False)
   order: Mapped[OrderRecord2] = \
     relationship(OrderRecord2, uselist=False, cascade='none', foreign_keys=[order_fk], lazy=True)
 

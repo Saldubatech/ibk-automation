@@ -57,7 +57,7 @@ class ContractKey:
 
 
 class DeltaNeutralContractRecord2(RecordBase):
-  __tablename__: str = "delta_neutral_contract"
+  __tablename__: str = "DELTA_NEUTRAL_CONTRACT"
   con_id: Mapped[int] = mapped_column(Integer, nullable=False)
   delta: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
   price: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
@@ -97,7 +97,7 @@ class ContractRecord2(RecordBase):
   combo_legs_description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
   include_expired: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
   delta_neutral_contract_fk: Mapped[Optional[str]] = \
-    mapped_column(String(255), ForeignKey("delta_neutral_contract.rid"), nullable=True)
+    mapped_column(String(255), ForeignKey(DeltaNeutralContractRecord2.rid), nullable=True)
   delta_neutral_contract: Mapped[Optional[DeltaNeutralContractRecord2]] = \
     relationship(
       DeltaNeutralContractRecord2,

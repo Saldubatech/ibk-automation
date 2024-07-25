@@ -4,12 +4,11 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from pyway.migrate import Migrate  # type: ignore
-from pyway.settings import ConfigFile  # type: ignore
-from sqlalchemy import create_engine
 
-from salduba.common.configuration import CervinoConfig, Cfg, DbConfig, InputConfig, Meta, defaultMeta
+from salduba.common.configuration import CervinoConfig, Cfg, InputConfig, Meta, defaultMeta
 from salduba.common.persistence.alchemy.db import Db, UnitOfWork
+from salduba.common.persistence.alchemy.repo import RecordBase
+from salduba.common.persistence.pyway.migrating import init_db
 from salduba.corvino.io.parse_input import InputParser, InputRow
 from salduba.corvino.io.results_out import ResultsBatch
 from salduba.corvino.persistence.movement_record import MovementRecordOps
@@ -27,24 +26,16 @@ with initial_configuration.log_config_path as l_path:
 _logger = logging.getLogger(__name__)
 
 
-def init_db(configuration: DbConfig) -> None:
-  config = ConfigFile()
-  config.database_type = 'sqlite'
-  config.database_name = str(configuration.storage_path.absolute())
-  config.database_table = 'pyway_info'
-  config.database_migration_dir = configuration.migration_path
-
-  _logger.info(Migrate(config).run())
-
-
 def build_app(configuration: Cfg) -> CorvinoApp:
   init_logging(configuration.meta.log_config_path)
 
   init_db(configuration.db)
+  db = Db.from_url(
+    f"sqlite:///{configuration.db.storage_path.absolute()}",
+    echo=configuration.db.echo)
 
-  engine = create_engine(f"sqlite:///{configuration.db.storage_path.absolute()}", echo=True)
   app = CorvinoApp(
-    db=Db(engine),
+    db=db,
     contract_repo=ContractRecordOps(),
     dnc_repo=DeltaNeutralContractOps(),
     movements_repo=MovementRecordOps(),
@@ -86,6 +77,17 @@ def cli(
   ctx.obj['app'] = build_app(cfg)
 
 
+@cli.command(
+  help=click.style("USE FOR DEVELOPMENT ONLY", fg="bright_red") + """\n
+    This command will dump the required DB schema for the application
+  """
+)
+@click.pass_context
+def dump_ddl(ctx: click.Context) -> None:
+  app: CorvinoApp = ctx.obj['app']
+  app.db.print_schema(RecordBase.metadata)
+
+
 @cli.command()
 @click.argument(
   "input-movements-file",
@@ -95,6 +97,12 @@ def cli(
 )
 @click.pass_context
 def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
+  """
+  Verify whether the system already has up-to-date information about
+  the contracts needed to execute the trades.
+
+  This command works locally and does not need to have TWS running.
+  """
   app: CorvinoApp = ctx.obj['app']
 
   cfg: Cfg = ctx.obj['config']
@@ -109,7 +117,7 @@ def verify_contracts(ctx: click.Context, input_movements_file: str) -> None:
   input_rows = read_input_rows(cfg.input.file_name, cfg.input.sheet_name)
   with app.db.for_work() as uow:
     rs: ResultsBatch = app.verify_contracts_for_input_rows(input_rows, uow)
-    if rs:
+    if rs.unknown:
       msg = f"Missing Contracts: {len(rs.unknown)}. See {cfg.output.file_name} for details"
       click.echo(msg)
       _logger.info(msg)
@@ -194,12 +202,12 @@ def place_orders(ctx: click.Context, batch: str, execute_trades: bool, input_mov
           if "ERRORS" in error_keys:
             click.echo("Errors while placing Orders. Please look at the log files for information", err=True)
             click.echo(f"Current Active Logs: {[h.name for h in _logger.handlers]}", err=True)
-            _logger.error(rs.message)
+            _logger.error(order_rs.message)
             click.echo("Please see the output file for details")
-            raise click.ClickException(rs.message)
+            raise click.ClickException(order_rs.message)
           else:
-            click.echo(rs.message)
-            _logger.info(rs.message)
+            click.echo(order_rs.message)
+            _logger.info(order_rs.message)
         except Exception as exc:
           raise click.ClickException(f"An error occurred: {str(exc)}")
       else:
@@ -222,7 +230,8 @@ def _do_lookup_contracts(app: CorvinoApp, cfg: Cfg, uow: UnitOfWork) -> ResultsB
     raise click.ClickException(f"Unexpected Error occurred: {str(exc)}")
   return ResultsBatch(
     datetime.now(),
-    missing.message + " See output file for details" if missing.unknown else "All Contracts resolved",
+    missing.message + " See output file for details"
+    if missing.unknown else f"All Contracts resolved, {len(missing.updated)} updated",
     input_rows,
     missing.known,
     missing.updated,

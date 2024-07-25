@@ -237,6 +237,7 @@ class CervinoConfig:
 class DbConfig:
   meta: Meta = field(default_factory=(lambda : defaultMeta))
   storage_name: str = 'cervino.db'
+  echo: bool = False
 
   @property
   def storage_path(self) -> Path: return self.meta.resolve_storage_file(self.storage_name)
@@ -250,6 +251,8 @@ class DbConfig:
     d: dict[str, Any] = {'meta': meta}
     if 'storage_name' in values:
       d['storage_name'] = values['storage_name']
+    if 'echo' in values:
+      d['echo'] = values['echo']
     return DbConfig(**d)
 
 
