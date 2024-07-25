@@ -2,7 +2,7 @@ import logging
 import time
 from typing import Callable, Optional
 
-from ibapi.contract import Contract, ContractDetails
+from ibapi.contract import Contract, ContractDetails  # pyright: ignore
 
 from salduba.ib_tws_proxy.base_proxy.tws_proxy import BaseProxy
 from salduba.ib_tws_proxy.operations import ErrorResponse

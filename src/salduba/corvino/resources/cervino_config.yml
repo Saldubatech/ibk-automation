@@ -23,9 +23,7 @@ output:
 
 db:
   storage_name: cervino.db
-  version_date: "2024-02-01 00:00:00.000"
-  min_required_version:
-  max_accepted_version:
+
 
 tws:
   port: 7497

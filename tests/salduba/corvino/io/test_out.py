@@ -8,10 +8,11 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from salduba.corvino.io.parse_input import InputRow
 from salduba.corvino.io.results_out import ResultsBatch, contract_columns, error_columns, input_columns, movement_columns
-from salduba.corvino.persistence.movement_record import MovementRecord, MovementStatus
-from salduba.ib_tws_proxy.contracts.model import ContractRecord
+from salduba.corvino.persistence.movement_record import MovementRecord2, MovementStatus
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecord2
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
 from salduba.ib_tws_proxy.operations import ErrorResponse
+from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord2
 from salduba.util.logging import init_logging
 from salduba.util.tests import findTestsRoot
 
@@ -21,29 +22,39 @@ init_logging(Path(_tr, "resources/logging.yaml"))
 _logger = logging.getLogger(__name__)
 
 
-def contractProbe(seed: int) -> ContractRecord:
-  return ContractRecord(
-    f'{seed}_rid',
-    seed*11,
-    seed*22,
-    seed*101,
-    f"{seed}Symbol",
-    SecType.STK,
-    None,
-    float(seed)*1.11111,
-    f"{seed}_right",
-    f"{seed}_multiplier",
-    Exchange.NYSE,
-    Exchange.ISLAND,
-    Exchange.NYSE,
-    Currency.USD,
-    f"{seed}_Local",
-    f"{seed}_TradingClass",
-    f"{seed}_secIdType",
-    f"{seed}_SecId",
-    f'{seed}combo_legs_desc',
-    f"{seed}dnc_fk",
-    False)
+def orderProbe(seed: int) -> OrderRecord2:
+  return OrderRecord2(
+    rid=f'{seed}_rid',
+    at=seed*11,
+    orderId=f"{seed}_orderId",
+    transmit=False,
+  )
+
+
+def contractProbe(seed: int) -> ContractRecord2:
+  return ContractRecord2(
+    rid=f'{seed}_rid',
+    at=seed*11,
+    expires_on=seed*22,
+    con_id=seed*101,
+    symbol=f"{seed}Symbol",
+    sec_type=SecType.STK,
+    last_trade_date_or_contract_month=None,
+    strike=float(seed)*1.11111,
+    right=f"{seed}_right",
+    multiplier=f"{seed}_multiplier",
+    lookup_exchange=Exchange.NYSE,
+    exchange=Exchange.ISLAND,
+    primary_exchange=Exchange.NYSE,
+    currency=Currency.USD,
+    local_symbol=f"{seed}_Local",
+    trading_class=f"{seed}_TradingClass",
+    sec_id_type=f"{seed}_secIdType",
+    sec_id=f"{seed}_SecId",
+    combo_legs_description=f'{seed}combo_legs_desc',
+    include_expired=False,
+    delta_neutral_contract=None  # f"{seed}dnc_fk",
+  )
 
 
 def inputProbe(seed: int) -> InputRow:
@@ -60,29 +71,28 @@ def inputProbe(seed: int) -> InputRow:
   )
 
 
-def movementProbe(batch: str, seed: int) -> MovementRecord:
-  return MovementRecord(
-    f'{seed}_rid',
-    seed*11,
-    MovementStatus.CONFIRMED,
-    batch,
-    f"{seed}_ticker",
-    seed*100,
-    f"{seed}_nombre",
-    f"{seed}_symbol",
-    f"{seed}_raw_type",
-    SecType.STK,
-    Country.US,
-    Currency.USD,
-    Exchange.ISLAND,
-    Exchange.NYSE,
-    f"{seed}_contract_fk",
-    f"{seed}_order_fk"
+def movementProbe(batch: str, seed: int) -> MovementRecord2:
+  return MovementRecord2(
+    rid=f'{seed}_rid',
+    at=seed*11,
+    status=MovementStatus.CONFIRMED,
+    batch=batch,
+    ticker=f"{seed}_ticker",
+    trade=seed*100,
+    nombre=f"{seed}_nombre",
+    symbol=f"{seed}_symbol",
+    raw_type=f"{seed}_raw_type",
+    ibk_type=SecType.STK,
+    country=Country.US,
+    currency=Currency.USD,
+    exchange=Exchange.ISLAND,
+    exchange2=Exchange.NYSE,
+    contract=contractProbe(seed),  # f"{seed}_contract_fk",
+    order=orderProbe(seed)  # f"{seed}_order_fk"
   )
 
 
 sample_contracts = [contractProbe(i) for i in range(1, 12)]
-
 
 sample_inputs = [inputProbe(i) for i in range(1, 7)]
 

@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from importlib import resources as lib_res
 from importlib.abc import Traversable
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any, Optional
 
 import click
 import yaml
@@ -237,31 +237,19 @@ class CervinoConfig:
 class DbConfig:
   meta: Meta = field(default_factory=(lambda : defaultMeta))
   storage_name: str = 'cervino.db'
-  min_required_version: Optional[int] = None
-  max_required_version: Optional[int] = None
-  version_date: str = "2024-02-01 00:00:00.000"
-  @property
-  def _db_schemas_path(self) -> Traversable: return lib_res.files('salduba.ib_tws_proxy.backing_db.schema')
-  @property
-  def db_schemata(self) -> Iterator[Traversable]: return self._db_schemas_path.iterdir()
-  @property
-  def _db_seed_path(self) -> Traversable: return lib_res.files('salduba.ib_tws_proxy.backing_db.seed-data')
-  @property
-  def db_seeds(self) -> Iterator[Traversable]: return self._db_seed_path.iterdir()
+
   @property
   def storage_path(self) -> Path: return self.meta.resolve_storage_file(self.storage_name)
+
+  @property
+  def migration_path(self) -> str:
+    return str(lib_res.files('salduba.corvino').joinpath('resources/pyway'))
 
   @staticmethod
   def configure(meta: Meta, values: dict[str, Any]) -> 'DbConfig':
     d: dict[str, Any] = {'meta': meta}
     if 'storage_name' in values:
       d['storage_name'] = values['storage_name']
-    if 'min_required_version' in values and values['min_required_version']:
-      d['min_required_version'] = int(values['min_required_version'])
-    if 'max_required_version' in values and values['max_required_version']:
-      d['max_required_version'] = int(values['max_required_version'])
-    if 'version_date' in values:
-      d['version_date'] = values['version_date']
     return DbConfig(**d)
 
 

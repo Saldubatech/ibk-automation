@@ -3,17 +3,17 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Tuple
 
 import pytest
+from sqlalchemy import Engine, create_engine
 
-from salduba.common.configuration import DbConfig
+from salduba.common.persistence.alchemy.db import Db
+from salduba.common.persistence.alchemy.repo import RecordBase
 from salduba.corvino.io.parse_input import InputParser
-from salduba.corvino.persistence.movement_record import MovementRepo
+from salduba.corvino.persistence.movement_record import MovementRecordOps
 from salduba.corvino.services.app import CorvinoApp
-from salduba.ib_tws_proxy.backing_db.db import TradingDB
-from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo
-from salduba.ib_tws_proxy.orders.OrderRepo import OrderRepo, OrderStatusRepo, SoftDollarTierRepo
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecordOps, DeltaNeutralContractOps
+from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecordOps
 from salduba.util.logging import init_logging
 from salduba.util.tests import findTestsRoot
 
@@ -23,41 +23,27 @@ init_logging(Path(os.path.join(_tr, "resources/logging.yaml")))
 _logger = logging.getLogger(__name__)
 
 
-def repos(db: TradingDB) -> Tuple[ContractRepo, OrderRepo, MovementRepo]:
-  dnc_repo = DeltaNeutralContractRepo(db)
-  c_repo = ContractRepo(db, dnc_repo)
-  orderStRepo = OrderStatusRepo(db)
-  sdTRepo = SoftDollarTierRepo(db)
-  o_repo = OrderRepo(db, sdTRepo, orderStRepo)
-  m_repo = MovementRepo(db, c_repo, o_repo)
-  return c_repo, o_repo, m_repo
-
-
 @pytest.fixture
-def setup_db() -> TradingDB:
-  tmp_file = tempfile.NamedTemporaryFile()
-  tmp_file.close()
-  tmp_file_path = tmp_file.name
-  _logger.info(f"Database File at: {tmp_file_path}")
-  db_config = DbConfig(
-    storage_name=tmp_file_path,
-    min_required_version=1
-  )
-  db = TradingDB(db_config)
-  db.configure()
-  return db
+def setup_db() -> Db:
+  temp = tempfile.NamedTemporaryFile()
+  file_name = Path(temp.name)
+  temp.close()
+  print(f"##### Db file in {file_name.absolute()}")
+  engine: Engine = create_engine(f"sqlite:///{file_name.absolute()}", echo=True)
+  RecordBase.metadata.create_all(engine)
+  return Db(engine)
 
 
 @pytest.mark.tws
-def test_place_orders(setup_db: TradingDB) -> None:
+def test_place_orders(setup_db: Db) -> None:
   probeFile = os.path.join(_tr, "resources/cervino_rebalance_v2.csv")
   probe_all = InputParser.input_rows_from(probeFile)
-  contract_repo, order_repo, movement_repo = repos(setup_db)
   underTest = CorvinoApp(
-    contract_repo,
-    contract_repo.deltaNeutralContractsRepo,
-    movement_repo,
-    order_repo,
+    db=setup_db,
+    contract_repo=ContractRecordOps(),
+    dnc_repo=DeltaNeutralContractOps(),
+    movements_repo=MovementRecordOps(),
+    order_repo=OrderRecordOps(),
     appFamily=1000,
     host="localhost",
     port=7497,
@@ -66,19 +52,22 @@ def test_place_orders(setup_db: TradingDB) -> None:
   tmp_file = tempfile.NamedTemporaryFile()
   tmp_file.close()
   output_file_path = "debug_output.csv"  # tmp_file.name
-  _logger.info(f"DB at {setup_db.config.storage_name}")
+  _logger.info(f"DB at {setup_db.engine.url}")
   _logger.info(f"Output file at: {output_file_path}")
   assert probe_all is not None
   probe = probe_all[0:2]
 
-  missing_contracts = \
-    underTest.lookup_contracts_for_input_rows(probe, ttl=10000)
+  with setup_db.for_work() as uow:
+    missing_contracts = \
+      underTest.lookup_contracts_for_input_rows(probe, uow=uow, ttl=10000)
 
-  if not missing_contracts.unknown:
-    result = underTest.place_orders(
-      probe,
-      batch=f"TestBatch_{datetime.datetime.now().timestamp()}"
-    )
-    assert f"{len(probe)} Movements Placed" == result.message, result
-  else:
-    assert False, f"Could not find all contracts, output at: {output_file_path}"
+    if not missing_contracts.unknown:
+      result = underTest.place_orders(
+        probe,
+        batch=f"TestBatch_{datetime.datetime.now().timestamp()}",
+        execute_trades=False,
+        uow=uow
+      )
+      assert f"{len(probe)} Movements Placed" == result.message, result
+    else:
+      assert False, f"Could not find all contracts, output at: {output_file_path}"

@@ -1,14 +1,15 @@
 import logging
-from dataclasses import dataclass
 from enum import StrEnum
-from typing import Optional
+from typing import Callable, Iterable, Optional
 
-from salduba.ib_tws_proxy.backing_db.db import TradingDB
-from salduba.ib_tws_proxy.backing_db.record import Record
-from salduba.ib_tws_proxy.backing_db.repo import Repo
-from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo
+from sqlalchemy import Enum, ForeignKey, Integer, String, and_
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from salduba.common.persistence.alchemy.db import UnitOfWork
+from salduba.common.persistence.alchemy.repo import RecordBase, RepoOps
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecord2
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
-from salduba.ib_tws_proxy.orders.OrderRepo import OrderRepo
+from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord2
 
 _logger = logging.getLogger(__name__)
 
@@ -44,51 +45,45 @@ class MovementStatus(StrEnum):
                 return MovementStatus.API_ERROR
 
 
-@dataclass
-class MovementRecord(Record):
-    status: MovementStatus
-    batch: str
-    ticker: str
-    trade: int
-    nombre: str
-    symbol: str
-    raw_type: str
-    ibk_type: SecType
-    country: Country
-    currency: Currency
-    exchange: Exchange
-    exchange2: Optional[Exchange]
-    contract_fk: str
-    order_fk: Optional[str]
+class MovementRecord2(RecordBase):
+  __tablename__: str = 'MOVEMENT'
+  status: Mapped[MovementStatus] = mapped_column(Enum(MovementStatus), nullable=False)
+  batch: Mapped[str] = mapped_column(String(255), nullable=False)
+  ticker: Mapped[str] = mapped_column(String(255), nullable=False)
+  trade: Mapped[int] = mapped_column(Integer, nullable=False)
+  nombre: Mapped[str] = mapped_column(String(255), nullable=False)
+  symbol: Mapped[str] = mapped_column(String(255), nullable=False)
+  raw_type: Mapped[str] = mapped_column(String(255), nullable=False)
+  ibk_type: Mapped[SecType] = mapped_column(Enum(SecType), nullable=False)
+  country: Mapped[Country] = mapped_column(Enum(Country), nullable=False)
+  currency: Mapped[Currency] = mapped_column(Enum(Currency), nullable=False)
+  exchange: Mapped[Exchange] = mapped_column(Enum(Exchange), nullable=False)
+  exchange2: Mapped[Optional[Exchange]] = mapped_column(Enum(Exchange), nullable=True)
+  contract_fk: Mapped[str] = mapped_column(String(255), ForeignKey('CONTRACT.rid'), nullable=False)
+  contract: Mapped[ContractRecord2] = \
+    relationship(ContractRecord2, uselist=False, cascade='none', foreign_keys=[contract_fk], lazy=True)
+  order_fk: Mapped[str] = mapped_column(String(255), ForeignKey('ORDER_T.rid'), nullable=False)
+  order: Mapped[OrderRecord2] = \
+    relationship(OrderRecord2, uselist=False, cascade='none', foreign_keys=[order_fk], lazy=True)
 
 
-class MovementRepo(Repo[MovementRecord]):
-    def __init__(self, db: TradingDB, contract_repo: ContractRepo, order_repo: OrderRepo) -> None:
-        super().__init__(db, MovementRecord, "MOVEMENT")
-        self.contract_repo = contract_repo
-        self.order_repo = order_repo
-        self.batchClause: str = "(batch = ?)"
-        self.tickerClause: str = "(ticker = ?)"
-        self.secTypeClause: str = "(ibk_type = ?)"
-        self.exchangeClause: str = "(exchange = ?)"
-        self.symbolClause: str = "(symbol = ?)"
+class MovementRecordOps(RepoOps[MovementRecord2]):
+  def __init__(self) -> None:
+    super().__init__(MovementRecord2)
 
-    def forBatch(self, batch: str) -> list[MovementRecord]:
-        return self.select([batch], [self.batchClause])
+  def find_for_batch(self, batch: str) -> Callable[[UnitOfWork], Iterable[MovementRecord2]]:
+    return self.find(lambda q: q.where(MovementRecord2.batch == batch))
 
-    def doesBatchExist(self, batch: str) -> bool:
-        return self.count([batch], self.batchClause) > 0
+  def does_batch_exists(self, batch: str) -> Callable[[UnitOfWork], bool]:
+    return lambda uow: self.count(lambda q: q.where(MovementRecord2.batch == batch))(uow) > 0
 
-    def findOne(self, batch: str, symbol: str, secType: SecType, exchange: Exchange) -> Optional[MovementRecord]:
-        return self.selectOne(
-            [batch, symbol, secType, exchange],
-            [
-                self.batchClause,
-                self.symbolClause,
-                self.secTypeClause,
-                self.exchangeClause,
-            ],
-        )
-
-    def findForBatch(self, batch: str) -> list[MovementRecord]:
-      return self.select([batch], [self.batchClause])
+  def find_it(self, batch: str, symbol: str, sec_type: SecType, exchange: Exchange)\
+      -> Callable[[UnitOfWork], Optional[MovementRecord2]]:
+    return self.find_one(lambda q: q.where(
+      and_(
+        MovementRecord2.batch == batch,
+        MovementRecord2.symbol == symbol,
+        MovementRecord2.ibk_type == sec_type,
+        MovementRecord2.exchange == exchange
+      )
+    ))

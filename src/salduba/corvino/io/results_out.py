@@ -7,23 +7,23 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from salduba.common.configuration import Defaults
 from salduba.corvino.io.parse_input import InputRow
-from salduba.corvino.persistence.movement_record import MovementRecord
-from salduba.ib_tws_proxy.contracts.model import ContractRecord
+from salduba.corvino.persistence.movement_record import MovementRecord2
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecord2
 from salduba.ib_tws_proxy.operations import ErrorResponse
 
 contract_columns = [
   'expires_on',
-  'conId',
+  'con_id',
   'symbol',
-  'secType',
+  'sec_type',
   'lookup_exchange',
   'exchange',
-  'primaryExchange',
+  'primary_exchange',
   'currency',
-  'localSymbol',
-  'tradingClass',
-  'secIdType',
-  'secId',
+  'local_symbol',
+  'trading_class',
+  'sec_id_type',
+  'sec_id',
   'rid',
   'at'
 ]
@@ -58,10 +58,10 @@ class ResultsBatch:
                atTime: datetime.datetime,
                message: str,
                inputs: list[InputRow],
-               known: list[ContractRecord],
-               updated: list[ContractRecord],
+               known: list[ContractRecord2],
+               updated: list[ContractRecord2],
                unknown: list[InputRow],
-               movements_placed: list[MovementRecord],
+               movements_placed: list[MovementRecord2],
                errors: dict[str, list[ErrorResponse]]) -> None:
     self.atTime = atTime
     self.message = message
@@ -81,7 +81,7 @@ class ResultsBatch:
     self.filename = Defaults.output.file_name
 
   @staticmethod
-  def _contracts_pd(contract_records: list[ContractRecord]) -> pd.DataFrame:
+  def _contracts_pd(contract_records: list[ContractRecord2]) -> pd.DataFrame:
     return pd.DataFrame(
       data=[{c:  cr.__dict__[c] for c in contract_columns} for cr in contract_records],
       columns=contract_columns
@@ -95,7 +95,7 @@ class ResultsBatch:
     )
 
   @staticmethod
-  def _movements_pd(movements: list[MovementRecord]) -> pd.DataFrame:
+  def _movements_pd(movements: list[MovementRecord2]) -> pd.DataFrame:
     return pd.DataFrame(
       columns=movement_columns,
       data=[{c: m.__dict__[c] for c in movement_columns} for m in movements]

@@ -1,10 +1,14 @@
+from datetime import datetime
 from typing import Set, Tuple
 
 from ibapi.order import Order  # pyright: ignore
+from sqlalchemy import inspect
 
-from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord
+from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord2, newOrderRecord
 
 probe = {
+  # "eTradeOnly": False,
+  # "firmQuoteOnly": False,
   "rid": "RID",
   'at': 1111,
   'orderId': 22222,
@@ -125,41 +129,69 @@ probe = {
 
 
 def test_order_record() -> None:
-  underTest = OrderRecord.from_dict(str(probe['rid']), int(str(probe['at'])), probe)
-  assert probe == underTest.__dict__
+  underTest = OrderRecord2(**probe)
+  rs = {k: v for k, v in underTest.__dict__.items() if not k.startswith('_')}
+  assert rs == probe, "The fields should all match"
 
 
 def test_to_order() -> None:
   orderRecord, order = record_to_order()
   from_order = {}
   from_record = {}
-  for f in OrderRecord.own_fields():
+  check_keys = (c.key for c in inspect(OrderRecord2).columns
+                if (c.key not in ['rid', 'at'])
+                and not c.key.startswith('_')
+                and not c.key.endswith('_fk')
+                and not c.key == 'algoStrategy')
+  print(f"##### Check Keys: {check_keys}")
+  for f in check_keys:
     from_order[f] = getattr(order, f)
     from_record[f] = orderRecord.__dict__[f]
   assert from_order == from_record
 
 
-def record_to_order() -> Tuple[OrderRecord, Order]:
-  underTest: OrderRecord = OrderRecord.from_dict(str(probe['rid']), int(str(probe['at'])), probe)
+def record_to_order() -> Tuple[OrderRecord2, Order]:
+  underTest: OrderRecord2 = OrderRecord2(**probe)
   order = underTest.toOrder()
   return underTest, order
 
 
+def test_fields_present() -> None:
+  target = newOrderRecord(22, 222, datetime.now(), "orderRef", False, 33333)
+  missing: list[str] = []
+  keys = target.__dict__.keys()
+  for k in (c.key for c in inspect(OrderRecord2).columns
+            if not c.key.startswith('_')
+            and not c.key.endswith('_fk')):
+    if k not in keys:
+      missing.append(k)
+
+  assert not missing
+
+
 def test_order_all_fields() -> None:
   target = Order()
-  order_fields: Set[str] = set(target.__dict__.keys())
-  missing_keys = [f for f in OrderRecord.own_fields() if f not in order_fields]
+  order_fields: Set[str] = set(k for k in target.__dict__.keys())
+  missing_keys = set(f.key for f in inspect(OrderRecord2).columns
+                     if f.key not in ['rid', 'at']
+                     and not f.key.startswith('_')
+                     and not f.key.endswith('_fk')
+                     and f.key not in order_fields)
+  # missing_keys = [f.key for f in inspect(OrderRecord2).columns if f.key not in order_fields]
   assert not missing_keys, f"Not Found: {missing_keys}"
 
 
 def test_from_order() -> None:
   _, order = record_to_order()
-  recovered: OrderRecord = OrderRecord.newFromOrder(str(probe['rid']), int(str(probe['at'])), order)
+  recovered: OrderRecord2 = OrderRecord2.newFromOrder(str(probe['rid']), int(str(probe['at'])), order)
   assert recovered.rid == probe['rid']
   assert recovered.at == probe['at']
   from_order = {}
   from_probe = {}
-  for f in OrderRecord.own_fields():
+  for f in (c.key for c in inspect(OrderRecord2).columns
+            if c.key not in ['rid', 'at']
+            and not c.key.startswith('_')
+            and not c.key.endswith('_fk')):
     from_order[f] = getattr(order, f)
     from_probe[f] = getattr(recovered, f)
   assert from_order == from_probe
