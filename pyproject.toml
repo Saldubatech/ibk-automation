@@ -172,6 +172,8 @@ types-pytz = "^2024.1.0.20240417"
 types-certifi = "^2021.10.8.3"
 
 
+types-sqlalchemy = "^1.4.53.38"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

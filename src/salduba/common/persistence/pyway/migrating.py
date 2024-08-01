@@ -1,9 +1,9 @@
 import logging
 
+from pyway.migrate import Migrate  # type: ignore
 from pyway.settings import ConfigFile  # type: ignore
 
 from salduba.common.configuration import DbConfig
-from salduba.common.persistence.pyway.migrate_patch import Migrate
 
 _logger = logging.getLogger(__name__)
 
