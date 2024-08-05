@@ -41,6 +41,7 @@ class Exchange(StrEnum):
     TSEJ = "TSEJ"
     VSE = "VSE"
     ISLAND = "ISLAND"
+    BATS = "BATS"
 
 
 class SecType(StrEnum):

@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
+from importlib import metadata
 from pathlib import Path
-from typing import Optional
 
 import click
 
@@ -18,6 +18,9 @@ from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecordOps
 from salduba.util.logging import init_logging
 
 initial_configuration = defaultMeta
+
+__app_name__ = 'salduba_corvino'
+__version__ = metadata.version(__app_name__)
 
 
 with initial_configuration.log_config_path as l_path:
@@ -46,17 +49,9 @@ def build_app(configuration: Cfg) -> CorvinoApp:
   return app
 
 
-def require_csv_or_xlsx(param: click.Option, value: str) -> Optional[str]:
-  parts = value.split('.')
-  if len(parts) < 2:
-    raise click.BadParameter(f"{param.name} must be a *.csv or *.xlsx file")
-  elif parts[-1] == 'xlsx' or parts[-1] == 'csv':
-    return value
-  else:
-    raise click.BadParameter(f"{param.name} must be a *.csv or *.xlsx file")
-
-
-@click.group()
+@click.group(invoke_without_command=True, no_args_is_help=True)
+@click.pass_context
+@click.version_option()
 @click.option(
   "--config", "-c",
   type=str,
@@ -64,7 +59,6 @@ def require_csv_or_xlsx(param: click.Option, value: str) -> Optional[str]:
   help="Path to the configuration file to use",
   callback=Meta.config_path
 )
-@click.pass_context
 def cli(
     ctx: click.Context,
     config: str
@@ -72,6 +66,7 @@ def cli(
   config_path = Path(config)
   meta = Meta(override_config_path=config_path.parent)
   cfg = meta.resolve_config
+  click.echo(f"{__app_name__}, v{__version__}")
   ctx.ensure_object(dict)
   ctx.obj['config'] = cfg
   ctx.obj['app'] = build_app(cfg)

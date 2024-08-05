@@ -67,5 +67,8 @@ class LookupContractDetails(BaseProxy):
       raise Exception(msg)
     else:
       _logger.debug(f"Post Processing Contract: {contract.symbol}")
-      self.postProcess(contract, receivedDetails)
-      self.completeResponse(reqId)
+      try:
+        self.postProcess(contract, receivedDetails)
+        self.completeResponse(reqId)
+      except ValueError as v_error:
+        self.error(reqId, -1, str(v_error), '')

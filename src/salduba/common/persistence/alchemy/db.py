@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from typing import Any, Generator, Optional
 
-from sqlalchemy import Engine, ExecutableDDLElement, MetaData, create_engine, create_mock_engine
+from sqlalchemy import ExecutableDDLElement, MetaData, create_engine, create_mock_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 

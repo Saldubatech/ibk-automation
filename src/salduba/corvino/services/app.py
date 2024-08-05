@@ -182,44 +182,48 @@ class CorvinoApp:
   ) -> None:
     nowT = millis_epoch()
     if len(details) == 1:
-      _logger.debug(f"Saving Contract: {contract.symbol}::{contract.exchange}::{contract.currency} at {nowT}")
-      cd: ContractDetails = details[0]["contractDetails"]
-      c = cd.contract
-      dnc: Optional[DeltaNeutralContract] = c.deltaNeutralContract if c.deltaNeutralContract else None
-      dnc_r = (
-        DeltaNeutralContractRecord2(
+      try:
+        _logger.debug(f"Saving Contract: {contract.symbol}::{contract.exchange}::{contract.currency} at {nowT}")
+        cd: ContractDetails = details[0]["contractDetails"]
+        c = cd.contract
+        dnc: Optional[DeltaNeutralContract] = c.deltaNeutralContract if c.deltaNeutralContract else None
+        dnc_r = (
+          DeltaNeutralContractRecord2(
+            rid=str(uuid4()),
+            at=nowT,
+            con_id=dnc.conId,
+            delta=dnc.delta,
+            price=dnc.price
+          ) if dnc else None
+        )
+        cr = ContractRecord2(
           rid=str(uuid4()),
           at=nowT,
-          con_id=dnc.conId,
-          delta=dnc.delta,
-          price=dnc.price
-        ) if dnc else None
-      )
-      cr = ContractRecord2(
-        rid=str(uuid4()),
-        at=nowT,
-        expires_on=nowT + ttl,
-        con_id=c.conId,
-        symbol=c.symbol,
-        sec_type=SecType(c.secType),
-        last_trade_date_or_contract_month=c.lastTradeDateOrContractMonth,
-        strike=c.strike,
-        right=c.right,
-        multiplier=c.multiplier,
-        lookup_exchange=Exchange(c.exchange),
-        exchange=ir.exchange,
-        primary_exchange=Exchange(c.primaryExchange),
-        currency=Currency(c.currency),
-        local_symbol=c.localSymbol,
-        trading_class=c.tradingClass,
-        sec_id_type=c.secIdType,
-        sec_id=c.secId,
-        combo_legs_description=c.comboLegsDescrip,
-        include_expired=c.includeExpired,
-        delta_neutral_contract=dnc_r
-      )
-      self.contract_repo.insert_one(cr)(uow)
-      _logger.debug(f"Saved Contract with symbol: {cr.symbol}")
+          expires_on=nowT + ttl,
+          con_id=c.conId,
+          symbol=c.symbol,
+          sec_type=SecType(c.secType),
+          last_trade_date_or_contract_month=c.lastTradeDateOrContractMonth,
+          strike=c.strike,
+          right=c.right,
+          multiplier=c.multiplier,
+          lookup_exchange=Exchange(c.exchange),
+          exchange=ir.exchange,
+          primary_exchange=Exchange(c.primaryExchange),
+          currency=Currency(c.currency),
+          local_symbol=c.localSymbol,
+          trading_class=c.tradingClass,
+          sec_id_type=c.secIdType,
+          sec_id=c.secId,
+          combo_legs_description=c.comboLegsDescrip,
+          include_expired=c.includeExpired,
+          delta_neutral_contract=dnc_r
+        )
+        self.contract_repo.insert_one(cr)(uow)
+        _logger.debug(f"Saved Contract with symbol: {cr.symbol}")
+      except ValueError as v_error:
+        _logger.error(f"{v_error}")
+        raise v_error
     else:
       _logger.warning(f"More than one ContractDetails obtained for {contract.symbol}")
 
@@ -243,7 +247,7 @@ class CorvinoApp:
           contract.symbol,
           SecType(contract.secType),
           Exchange(contract.exchange))(uow)
-      if movementRecord:
+      if movementRecord is not None:
         movementRecord.status = MovementStatus.fromIbk(orderState.status)
         movementRecord.at = millis_epoch()
         return OpenOrderResponse(orderId, contract, movementRecord.order.toOrder())
