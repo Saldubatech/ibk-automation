@@ -77,8 +77,9 @@ class ResultsBatch:
     return pd.DataFrame(
       data=[
         {
-          c:  cr.__dict__[c] for c in contract_columns
-          }
+          c:  datetime.datetime.fromtimestamp(float(cr.__dict__[c])/1e3).strftime("%Y-%m-%d %H:%M:%S")
+          if c in ['expires_on', 'at'] else cr.__dict__[c] for c in contract_columns
+        }
         for cr in contract_records
         ],
       columns=contract_columns
