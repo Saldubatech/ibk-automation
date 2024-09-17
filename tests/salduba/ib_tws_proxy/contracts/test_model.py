@@ -1,84 +1,120 @@
 # -*- coding: utf-8 -*-
+# import datetime
 import datetime
 import tempfile
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import Engine, create_engine, text
+from sqlalchemy.orm import Session
 
-from salduba.common.configuration import DbConfig
-from salduba.ib_tws_proxy.backing_db.db import TradingDB
-from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo, DeltaNeutralContractRepo
-from salduba.ib_tws_proxy.contracts.model import ContractRecord
+# from salduba.common.configuration import DbConfig
+from salduba.common.persistence.alchemy.db import Db
+from salduba.common.persistence.alchemy.repo import RecordBase
+from salduba.corvino.persistence.movement_record import MovementRecord2
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecord2, ContractRecordOps, DeltaNeutralContractRecord2
 from salduba.ib_tws_proxy.domain.enumerations import Currency, Exchange, SecType
+from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord2, OrderStatusRecord2, SoftDollarTierRecord2
+
+# from uuid import uuid4
+
+
+# from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecord2, ContractRecordOps, DeltaNeutralContractOps
+# from salduba.ib_tws_proxy.domain.enumerations import Currency, Exchange, SecType
 
 expected_db_version = 1
-expected_tables = {
-  "DB_INFO",
-  "DELTA_NEUTRAL_CONTRACT",
-  "CONTRACT",
-  "COMBO_LEG",
-  "CONTRACT_DETAIL_TAG",
-  "CONTRACT_DETAILS",
-  "MOVEMENT",
-  "ORDER_T"
-}
+expected_tables = set(
+  [n.__tablename__.upper() for n in [
+    DeltaNeutralContractRecord2,
+    ContractRecord2,
+    MovementRecord2,
+    SoftDollarTierRecord2,
+    OrderRecord2,
+    OrderStatusRecord2
+    ]]
+)
+# {
+#   "DB_INFO",
+#   "DELTA_NEUTRAL_CONTRACT",
+#   "CONTRACT",
+#   "COMBO_LEG",
+#   "CONTRACT_DETAIL_TAG",
+#   "CONTRACT_DETAILS",
+#   "MOVEMENT",
+#   "ORDER_T"
+# }
 
 
 @pytest.fixture
-def setup_db() -> TradingDB:
-  ndb = new_db()
-  v = ndb.ensure_version(expected_db_version)
-  assert v and v.version == expected_db_version
-  return ndb
-
-
-def new_db() -> TradingDB:
+def setup_db() -> Db:
   temp = tempfile.NamedTemporaryFile()
+  file_name = Path(temp.name)
   temp.close()
-  local_config = DbConfig(
-      storage_name=temp.name,
-      min_required_version=1
-  )
-  return TradingDB(local_config)
+  print(f"##### Db file in {file_name.absolute()}")
+  engine: Engine = create_engine(f"sqlite:///{file_name.absolute()}", echo=True)
+  RecordBase.metadata.create_all(engine)
+  return Db(engine)
 
 
-def test_contract_record(setup_db: TradingDB) -> None:
-  probe = ContractRecord(
+@pytest.fixture
+def setup_engine() -> Engine:
+  temp = tempfile.NamedTemporaryFile()
+  file_name = Path(temp.name)
+  temp.close()
+  print(f"##### Db file in {file_name.absolute()}")
+  engine: Engine = create_engine(f"sqlite:///{file_name.absolute()}", echo=True)
+  RecordBase.metadata.create_all(engine)
+  return engine
+
+
+def test_raw_engine(setup_engine: Engine) -> None:
+  with Session(setup_engine) as session:
+      q = text("SELECT name FROM sqlite_master WHERE type='table';")
+      rs = session.execute(q).scalars().fetchall()
+      result = set(n.upper() for n in rs)
+      probe = [n.upper() for n in expected_tables if n.upper() not in result]
+      assert not probe, f"Retrieved Tables should include probe: {result}"
+
+
+def test_db_wrapper(setup_db: Db) -> None:
+  with setup_db.for_work() as uow:
+    with uow.in_unit() as s:
+      q = text("SELECT name FROM sqlite_master WHERE type='table';")
+      rs = s.execute(q).scalars().fetchall()
+      result = set(n.upper() for n in rs)
+      probe = [n.upper() for n in expected_tables if n.upper() not in result]
+      assert not probe, f"Retrieved Tables should include probe: {result}"
+
+
+def test_contract_record(setup_db: Db) -> None:
+  probe = ContractRecord2(
     rid=str(uuid4()),
     at=int(datetime.datetime.now().timestamp() * 1000),
     expires_on=1111,
-    conId=12345,
+    con_id=12345,
     symbol="SYMBOL",
-    secType=SecType.STK,
-    lastTradeDateOrContractMonth="March",
+    sec_type=SecType.STK,
+    last_trade_date_or_contract_month="March",
     strike=77.88,
     right="RIGHT",
     multiplier="MULTI",
     lookup_exchange=Exchange.SMART,
     exchange=Exchange.SMART,
     currency=Currency.USD,
-    localSymbol="L_SYMBOL",
-    primaryExchange=Exchange.NYSE,
-    tradingClass="TR_CLASS",
-    secIdType="SEC_ID_TYPE",
-    secId="SEC_ID",
+    local_symbol="L_SYMBOL",
+    primary_exchange=Exchange.NYSE,
+    trading_class="TR_CLASS",
+    sec_id_type="SEC_ID_TYPE",
+    sec_id="SEC_ID",
     combo_legs_description="COMBO_LEGS_DESC",
-    delta_neutral_contract_fk=None,
-    includeExpired=True
-  )
-  probe_values = probe.values()
-  dnc_repo = DeltaNeutralContractRepo(setup_db)
-  repo = ContractRepo(setup_db, dnc_repo)
+    delta_neutral_contract=None,
+    include_expired=True
+   )
+  repo = ContractRecordOps()
 
-  with setup_db as db:
-    with db.cursor() as crs_inserter:
-      tables = crs_inserter.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
-      assert set([t[0].upper() for t in tables]) == expected_tables
-
-      crs_inserter.execute(repo.value_inserter, probe_values)
-    with db.cursor() as crs_reader:
-      tables = crs_reader.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
-      assert set([t[0].upper() for t in tables]) == expected_tables
-      records = crs_reader.execute(repo.selector + ";").fetchall()
-      assert len(records) == 1, "Should have only one record: {}".format(records)
-      assert records[0] == probe_values, "Values should match: \n\t{}\n\t{}".format(records[0], probe_values)
+  with setup_db.for_work() as uow:
+    repo.insert_one(probe)(uow)
+    rs = list(repo.find()(uow))
+    assert len(rs) == 1, "Should have only one record: {}".format(rs)
+    assert rs[0].__dict__ == probe.__dict__, "Values should match"

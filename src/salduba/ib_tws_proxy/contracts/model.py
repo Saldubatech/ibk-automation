@@ -1,8 +1,7 @@
-from dataclasses import dataclass
-from typing import Optional
+# from dataclasses import dataclass
+# from typing import Optional
 
-from salduba.ib_tws_proxy.backing_db.record import Record
-from salduba.ib_tws_proxy.domain.enumerations import Currency, Exchange, SecType
+# from salduba.ib_tws_proxy.domain.enumerations import Currency, Exchange, SecType
 
 
 class Schema:
@@ -62,59 +61,59 @@ class Schema:
 db_version = 1
 
 
-@dataclass
-class DeltaNeutralContractRecord(Record):
-  conid: int
-  delta: float
-  price: float
+# @dataclass
+# class DeltaNeutralContractRecord(Record):
+#   conid: int
+#   delta: float
+#   price: float
 
 
-@dataclass
-class ContractRecord(Record):
-  expires_on: Optional[int]
-  conId: int
-  symbol: str
-  secType: SecType
-  lastTradeDateOrContractMonth: Optional[str]
-  strike: float
-  right: Optional[str]
-  multiplier: Optional[str]
-  lookup_exchange: Exchange
-  exchange: Exchange
-  primaryExchange: Exchange
-  currency: Currency
-  localSymbol: Optional[str]
-  tradingClass: Optional[str]
-  secIdType: Optional[str]
-  secId: Optional[str]
-  combo_legs_description: Optional[str]
-  delta_neutral_contract_fk: Optional[str]
-  includeExpired: bool = False
+# @dataclass
+# class ContractRecord(Record):
+#   expires_on: Optional[int]
+#   conId: int
+#   symbol: str
+#   secType: SecType
+#   lastTradeDateOrContractMonth: Optional[str]
+#   strike: float
+#   right: Optional[str]
+#   multiplier: Optional[str]
+#   lookup_exchange: Exchange
+#   exchange: Exchange
+#   primaryExchange: Exchange
+#   currency: Currency
+#   localSymbol: Optional[str]
+#   tradingClass: Optional[str]
+#   secIdType: Optional[str]
+#   secId: Optional[str]
+#   combo_legs_description: Optional[str]
+#   delta_neutral_contract_fk: Optional[str]
+#   includeExpired: bool = False
 
 
-@dataclass
-class ComboLegRecord(Record):
-  table = 'COMBO_LEG'
-  contract_fk: str
-  conId: int
-  ratio: Optional[int]
-  action: str
-  exchange: Optional[Exchange]
-  open_close: Optional[int]
-  short_sale_slot: Optional[int]
-  designated_location: Optional[str]
-  exempt_code: int = 0
+# @dataclass
+# class ComboLegRecord(Record):
+#   table = 'COMBO_LEG'
+#   contract_fk: str
+#   conId: int
+#   ratio: Optional[int]
+#   action: str
+#   exchange: Optional[Exchange]
+#   open_close: Optional[int]
+#   short_sale_slot: Optional[int]
+#   designated_location: Optional[str]
+#   exempt_code: int = 0
 
 
-@dataclass
-class ContractDetailTagRecord(Record):
-  table = "CONTRACT_DETAIL_TAG"
-  contract_fk: str
-  tag: str
-  val: str
+# @dataclass
+# class ContractDetailTagRecord(Record):
+#   table = "CONTRACT_DETAIL_TAG"
+#   contract_fk: str
+#   tag: str
+#   val: str
 
 
-@dataclass
-class ContractDetailsRecord(Record):
-  table = "CONTRACT_DETAILS"
-  expires_on: int
+# @dataclass
+# class ContractDetailsRecord(Record):
+#   table = "CONTRACT_DETAILS"
+#   expires_on: int

@@ -1,33 +1,20 @@
 import datetime
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
+from sqlalchemy import inspect
 
 from salduba.common.configuration import Defaults
+from salduba.common.persistence.alchemy.repo import RecordBase
 from salduba.corvino.io.parse_input import InputRow
-from salduba.corvino.persistence.movement_record import MovementRecord
-from salduba.ib_tws_proxy.contracts.model import ContractRecord
+from salduba.corvino.persistence.movement_record import MovementRecord2
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecord2
 from salduba.ib_tws_proxy.operations import ErrorResponse
 
-contract_columns = [
-  'expires_on',
-  'conId',
-  'symbol',
-  'secType',
-  'lookup_exchange',
-  'exchange',
-  'primaryExchange',
-  'currency',
-  'localSymbol',
-  'tradingClass',
-  'secIdType',
-  'secId',
-  'rid',
-  'at'
-]
-
+contract_columns = [c.key for c in inspect(ContractRecord2).columns
+                    if not c.key.endswith('_fk')]
 
 input_columns = ['ticker', 'trade', 'symbol', 'country', 'raw_type', 'ibk_type', 'currency', 'exchange', 'exchange2']
 
@@ -58,10 +45,10 @@ class ResultsBatch:
                atTime: datetime.datetime,
                message: str,
                inputs: list[InputRow],
-               known: list[ContractRecord],
-               updated: list[ContractRecord],
+               known: list[ContractRecord2],
+               updated: list[ContractRecord2],
                unknown: list[InputRow],
-               movements_placed: list[MovementRecord],
+               movements_placed: list[MovementRecord2],
                errors: dict[str, list[ErrorResponse]]) -> None:
     self.atTime = atTime
     self.message = message
@@ -81,9 +68,20 @@ class ResultsBatch:
     self.filename = Defaults.output.file_name
 
   @staticmethod
-  def _contracts_pd(contract_records: list[ContractRecord]) -> pd.DataFrame:
+  def _explode(r: RecordBase) -> dict[str, Any]:
+    r.rid
+    return r.__dict__
+
+  @staticmethod
+  def _contracts_pd(contract_records: list[ContractRecord2]) -> pd.DataFrame:
     return pd.DataFrame(
-      data=[{c:  cr.__dict__[c] for c in contract_columns} for cr in contract_records],
+      data=[
+        {
+          c:  datetime.datetime.fromtimestamp(float(cr.__dict__[c])/1e3).strftime("%Y-%m-%d %H:%M:%S")
+          if c in ['expires_on', 'at'] else cr.__dict__[c] for c in contract_columns
+        }
+        for cr in contract_records
+        ],
       columns=contract_columns
     )
 
@@ -95,7 +93,7 @@ class ResultsBatch:
     )
 
   @staticmethod
-  def _movements_pd(movements: list[MovementRecord]) -> pd.DataFrame:
+  def _movements_pd(movements: list[MovementRecord2]) -> pd.DataFrame:
     return pd.DataFrame(
       columns=movement_columns,
       data=[{c: m.__dict__[c] for c in movement_columns} for m in movements]

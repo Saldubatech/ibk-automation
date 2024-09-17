@@ -40,7 +40,6 @@ class Listener(EWrapper):  # type: ignore
         self.stop(msg)
       else:
         _logger.error(f"Unexpected Error[{errorCode}]: {errorString} with AOR Info:\n\t{advancedOrderRejectJson}")
-        self.responseTracker.error(ErrorResponse(reqId, errorCode, errorString, advancedOrderRejectJson))
         super().error(reqId, errorCode, errorString)
         if self.responseTracker.isIdle():
           _logger.info(f"Tracker found idle at error response: {reqId}")
@@ -239,7 +238,7 @@ class BaseProxy(ClientStub, Listener):
     caller = current_fn_name(1)
     if caller != "startApi":
       self.responseTracker.request(caller, msg)
-    super().sendMsg(msg)
+    super().sendMsg(msg)  # pyright: ignore
 
   def partialResponse(self, reqId: int, rsp: dict[str, Any]) -> None:
     with self._lock:

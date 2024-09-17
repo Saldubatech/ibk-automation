@@ -4,6 +4,8 @@ Cervino Trade Automation User Guide
 Installation
 ==============
 
+Mac/Unix
+---------
 
 1. Ensure there is a `Version of Python <https://www.python.org/downloads/>`_ installed in your system. The application is developed against Python 3.11, 3.12 has not been tested and is known to have some incompatibilities with some libraries that have not been upgraded yet. It is likely that this problem will disappear with time.
 2. *Optional* create and activate a virtual environment to isolate the packages for this application:
@@ -25,6 +27,16 @@ If looking for a version that is only in ``test-pypi``
 .. code-block::shell
 
   % pip install --extra-index-url https://test.pypi.org/simple/ salduba_corvino==<version_identifier>
+
+Windows
+--------
+
+- Install Python
+- env
+- Add to Path in powershell: `$Env:PATH = "<env-path>;$Env:PATH"`
+- Create `c:\tmp` directory to enable logs.
+- corvino_cli --help
+- Install Tws & Login. Allow all requests presented.
 
 Usage
 =======

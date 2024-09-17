@@ -8,10 +8,11 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from salduba.corvino.io.parse_input import InputRow
 from salduba.corvino.io.results_out import ResultsBatch, contract_columns, error_columns, input_columns, movement_columns
-from salduba.corvino.persistence.movement_record import MovementRecord, MovementStatus
-from salduba.ib_tws_proxy.contracts.model import ContractRecord
+from salduba.corvino.persistence.movement_record import MovementRecord2, MovementStatus
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecord2
 from salduba.ib_tws_proxy.domain.enumerations import Country, Currency, Exchange, SecType
 from salduba.ib_tws_proxy.operations import ErrorResponse
+from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord2
 from salduba.util.logging import init_logging
 from salduba.util.tests import findTestsRoot
 
@@ -21,29 +22,39 @@ init_logging(Path(_tr, "resources/logging.yaml"))
 _logger = logging.getLogger(__name__)
 
 
-def contractProbe(seed: int) -> ContractRecord:
-  return ContractRecord(
-    f'{seed}_rid',
-    seed*11,
-    seed*22,
-    seed*101,
-    f"{seed}Symbol",
-    SecType.STK,
-    None,
-    float(seed)*1.11111,
-    f"{seed}_right",
-    f"{seed}_multiplier",
-    Exchange.NYSE,
-    Exchange.ISLAND,
-    Exchange.NYSE,
-    Currency.USD,
-    f"{seed}_Local",
-    f"{seed}_TradingClass",
-    f"{seed}_secIdType",
-    f"{seed}_SecId",
-    f'{seed}combo_legs_desc',
-    f"{seed}dnc_fk",
-    False)
+def orderProbe(seed: int) -> OrderRecord2:
+  return OrderRecord2(
+    rid=f'{seed}_rid',
+    at=seed*11,
+    orderId=f"{seed}_orderId",
+    transmit=False,
+  )
+
+
+def contractProbe(seed: int) -> ContractRecord2:
+  return ContractRecord2(
+    rid=f'{seed}_rid',
+    at=seed*11,
+    expires_on=seed*22,
+    con_id=seed*101,
+    symbol=f"{seed}Symbol",
+    sec_type=SecType.STK,
+    last_trade_date_or_contract_month=None,
+    strike=float(seed)*1.11111,
+    right=f"{seed}_right",
+    multiplier=f"{seed}_multiplier",
+    lookup_exchange=Exchange.NYSE,
+    exchange=Exchange.ISLAND,
+    primary_exchange=Exchange.NYSE,
+    currency=Currency.USD,
+    local_symbol=f"{seed}_Local",
+    trading_class=f"{seed}_TradingClass",
+    sec_id_type=f"{seed}_secIdType",
+    sec_id=f"{seed}_SecId",
+    combo_legs_description=f'{seed}combo_legs_desc',
+    include_expired=False,
+    delta_neutral_contract=None  # f"{seed}dnc_fk",
+  )
 
 
 def inputProbe(seed: int) -> InputRow:
@@ -60,29 +71,28 @@ def inputProbe(seed: int) -> InputRow:
   )
 
 
-def movementProbe(batch: str, seed: int) -> MovementRecord:
-  return MovementRecord(
-    f'{seed}_rid',
-    seed*11,
-    MovementStatus.CONFIRMED,
-    batch,
-    f"{seed}_ticker",
-    seed*100,
-    f"{seed}_nombre",
-    f"{seed}_symbol",
-    f"{seed}_raw_type",
-    SecType.STK,
-    Country.US,
-    Currency.USD,
-    Exchange.ISLAND,
-    Exchange.NYSE,
-    f"{seed}_contract_fk",
-    f"{seed}_order_fk"
+def movementProbe(batch: str, seed: int) -> MovementRecord2:
+  return MovementRecord2(
+    rid=f'{seed}_rid',
+    at=seed*11,
+    status=MovementStatus.CONFIRMED,
+    batch=batch,
+    ticker=f"{seed}_ticker",
+    trade=seed*100,
+    nombre=f"{seed}_nombre",
+    symbol=f"{seed}_symbol",
+    raw_type=f"{seed}_raw_type",
+    ibk_type=SecType.STK,
+    country=Country.US,
+    currency=Currency.USD,
+    exchange=Exchange.ISLAND,
+    exchange2=Exchange.NYSE,
+    contract=contractProbe(seed),  # f"{seed}_contract_fk",
+    order=orderProbe(seed)  # f"{seed}_order_fk"
   )
 
 
 sample_contracts = [contractProbe(i) for i in range(1, 12)]
-
 
 sample_inputs = [inputProbe(i) for i in range(1, 7)]
 
@@ -98,13 +108,19 @@ sample_errors = {
 sample_movements = [movementProbe("TestBatch", i) for i in range(1, 7)]
 
 
-def check_sheet(sheets: list[str], columns: list[str], probes: list[dict[str, Any]], sheet: Worksheet) -> None:
+def check_sheet(
+    sheets: list[str], columns: list[str], probes: list[dict[str, Any]], sheet: Worksheet, date_compare: bool = False) -> None:
   assert sheet
   assert sheet.max_row == len(probes)+1
   for c_idx, h in enumerate(columns):
     assert sheet.cell(row=1, column=c_idx+1).value == h
     for r_idx, ir in enumerate(probes):
-      assert sheet.cell(row=r_idx+2, column=c_idx+1).value == ir[h], f"Checking {h} in row {r_idx+2} against {ir}"
+      cell_value = sheet.cell(row=r_idx+2, column=c_idx+1).value
+      if h in ['expires_on', 'at'] and date_compare:
+        assert cell_value == datetime.datetime.fromtimestamp(ir[h]/1e3).strftime("%Y-%m-%d %H:%M:%S"), \
+          f"Checking {h} in row {r_idx+2} with value {cell_value} against {ir[h]}"
+      else:
+        assert cell_value == ir[h], f"Checking {h} in row {r_idx+2} with value {cell_value} against {ir[h]}"
 
 
 def test_input() -> None:
@@ -147,21 +163,21 @@ def test_missing() -> None:
 
 def test_known() -> None:
   probe = ResultsBatch(
-    datetime.datetime.now(),
-    "Testing Knowns render",
-    [],
-    sample_contracts,
-    [],
-    [],
-    [],
-    {}
+    atTime=datetime.datetime.now(),
+    message="Testing Knowns render",
+    inputs=[],
+    known=sample_contracts,
+    updated=[],
+    unknown=[],
+    movements_placed=[],
+    errors={}
   )
   probe.write_xlsx()
   result = load_workbook(probe.filename)
   assert len(result.sheetnames) == 1
   assert result.sheetnames[0] == probe.known_sheet
   sheet = result[probe.known_sheet]
-  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet)
+  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet, True)
 
 
 def test_updated() -> None:
@@ -180,7 +196,7 @@ def test_updated() -> None:
   assert len(result.sheetnames) == 1
   assert result.sheetnames[0] == probe.updated_sheet
   sheet = result[probe.updated_sheet]
-  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet)
+  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet, True)
 
 
 def test_orders() -> None:
@@ -263,10 +279,10 @@ def test_all_together() -> None:
   check_sheet([probe.input_sheet], input_columns, [r.__dict__ for r in probe.inputs], sheet)
 
   sheet = result[probe.known_sheet]
-  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet)
+  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet, True)
 
   sheet = result[probe.updated_sheet]
-  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet)
+  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet, True)
 
   sheet = result[probe.missing_sheet]
   check_sheet([probe.missing_sheet], input_columns, [r.__dict__ for r in probe.unknown], sheet)

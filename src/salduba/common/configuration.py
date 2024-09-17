@@ -1,12 +1,14 @@
-import datetime
+
 import logging
+import logging.handlers
+import os
 import shutil
 from contextlib import AbstractContextManager
 from dataclasses import dataclass, field
 from importlib import resources as lib_res
 from importlib.abc import Traversable
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any, Optional
 
 import click
 import yaml
@@ -62,35 +64,62 @@ class Meta:
   def config_file_path(self) -> Path:
     return self.resolve_configuration_file(self.config_file_name, self.default_config_file_context)
 
-  def resolve_configuration_file(
-      self,
-      file_name: str,
-      default_contents: AbstractContextManager[Path]) -> Path:
+  def resolve_configuration_dir(self) -> Path:
     config_dir_candidates: list[Path] = [
-          self.config_dir_path,
-          self.home,
-          Path(self.platform.user_config_dir),
-          Path(self.platform.user_documents_dir),
-          Path(self.platform.user_desktop_dir),
-          self.cwd
-        ]
+      self.config_dir_path,
+      self.home,
+      Path(self.platform.user_config_dir),
+      Path(self.platform.user_documents_dir),
+      Path(self.platform.user_desktop_dir),
+      self.cwd
+    ]
     existing_config_dirs: list[Path] = [cd for cd in config_dir_candidates if cd.is_dir()]
-    config_file_candidates = [
-      cf for cf in [cd.joinpath(file_name) for cd in existing_config_dirs] if cf.is_file()]
-    if config_file_candidates:
-      file_path = config_file_candidates[0]
-    else:
-      config_dir = existing_config_dirs[0]
-      if config_dir == self.home:
-        self.config_dir_path.mkdir()
-        config_dir = self.config_dir_path
-      file_path = config_dir.joinpath(file_name)
-    if not file_path.exists():
-      if not file_path.parent.exists():
-        file_path.parent.mkdir()
+    candidate = existing_config_dirs[0]
+    if candidate == self.home:
+      os.makedirs(self.config_dir_path)
+    return self.config_dir_path
+
+  def resolve_configuration_file(self, file_name: str, default_contents: AbstractContextManager[Path]) -> Path:
+    config_dir = self.resolve_configuration_dir()
+    candidate = config_dir.joinpath(file_name)
+    if candidate.is_dir():
+      raise Exception(f"Expected file at: {candidate} but found directory")
+    if not candidate.exists():
+      if not candidate.parent.exists():
+        os.makedirs(candidate.parent)
       with default_contents as default_file:
-        shutil.copyfile(default_file, file_path)
-    return file_path
+        shutil.copyfile(default_file, candidate)
+    return candidate
+
+  # def resolve_configuration_file(
+  #     self,
+  #     file_name: str,
+  #     default_contents: AbstractContextManager[Path]) -> Path:
+  #   config_dir_candidates: list[Path] = [
+  #         self.config_dir_path,
+  #         self.home,
+  #         Path(self.platform.user_config_dir),
+  #         Path(self.platform.user_documents_dir),
+  #         Path(self.platform.user_desktop_dir),
+  #         self.cwd
+  #       ]
+  #   existing_config_dirs: list[Path] = [cd for cd in config_dir_candidates if cd.is_dir()]
+  #   config_file_candidates = [
+  #     cf for cf in [cd.joinpath(file_name) for cd in existing_config_dirs] if cf.is_file()]
+  #   if config_file_candidates:
+  #     file_path = config_file_candidates[0]
+  #   else:
+  #     config_dir = existing_config_dirs[0]
+  #     if config_dir == self.home:
+  #       os.makedirs(self.config_dir_path)
+  #       config_dir = self.config_dir_path
+  #     file_path = config_dir.joinpath(file_name)
+  #   if not file_path.exists():
+  #     if not file_path.parent.exists():
+  #       os.makedirs(file_path.parent)
+  #     with default_contents as default_file:
+  #       shutil.copyfile(default_file, file_path)
+  #   return file_path
 
   def resolve_storage_file(self, storage_name: str, override_dir: Optional[str] = None) -> Path:
     if override_dir:
@@ -115,7 +144,7 @@ class Meta:
           storage_path = in_existing_dirs[0]
 
     if not storage_path.parent.exists():
-      storage_path.parent.mkdir()
+      os.makedirs(storage_path.parent)
     if not storage_path.is_file():
       storage_path.touch()
     return storage_path
@@ -130,6 +159,27 @@ class Meta:
 
 
 defaultMeta = Meta()
+
+
+class LogFileHandler(logging.handlers.RotatingFileHandler):
+  def __init__(
+      self,
+      filename: str,
+      mode: str = 'a',
+      maxBytes: int = 0,
+      backupCount: int = 0,
+      encoding: Optional[str] = None,
+      delay: bool = False,
+      errors: Optional[str] = None) -> None:
+    super().__init__(
+      defaultMeta.resolve_storage_file(filename),
+      mode,
+      maxBytes,
+      backupCount,
+      encoding,
+      delay,
+      errors
+    )
 
 
 @dataclass
@@ -213,13 +263,8 @@ class OutputConfig:
 class CervinoConfig:
   data_dir: Path
   meta: Meta = field(default_factory=(lambda : defaultMeta))
-  batch_prefix: str = 'order_batch'
-
-  @staticmethod
-  def batch_name(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
-    assert isinstance(value, str) or value is None
-    nowT = datetime.datetime.now()
-    return value if value else f"{Defaults.cervino.batch_prefix}_{nowT.strftime('%Y%m%d%H%M%S')}"
+  batch_prefix: str = field(default_factory=(lambda : "order_batchLALA"))
+  allocation: str = field(default_factory=(lambda : ""))
 
   @staticmethod
   def configure(meta: Meta, values: dict[str, Any]) -> 'CervinoConfig':
@@ -230,38 +275,32 @@ class CervinoConfig:
       d['data_dir'] = meta.home.joinpath(f".{meta.app_id}")
     if 'batch_prefix' in values:
       d['batch_prefix'] = values['batch_prefix']
-    return CervinoConfig(**d)
+    if 'allocation' in values:
+      d['allocation'] = values['allocation']
+    cfg = CervinoConfig(**d)
+    return cfg
 
 
 @dataclass
 class DbConfig:
   meta: Meta = field(default_factory=(lambda : defaultMeta))
   storage_name: str = 'cervino.db'
-  min_required_version: Optional[int] = None
-  max_required_version: Optional[int] = None
-  version_date: str = "2024-02-01 00:00:00.000"
-  @property
-  def _db_schemas_path(self) -> Traversable: return lib_res.files('salduba.ib_tws_proxy.backing_db.schema')
-  @property
-  def db_schemata(self) -> Iterator[Traversable]: return self._db_schemas_path.iterdir()
-  @property
-  def _db_seed_path(self) -> Traversable: return lib_res.files('salduba.ib_tws_proxy.backing_db.seed-data')
-  @property
-  def db_seeds(self) -> Iterator[Traversable]: return self._db_seed_path.iterdir()
+  echo: bool = False
+
   @property
   def storage_path(self) -> Path: return self.meta.resolve_storage_file(self.storage_name)
+
+  @property
+  def migration_path(self) -> str:
+    return str(lib_res.files('salduba.corvino').joinpath('resources/pyway'))
 
   @staticmethod
   def configure(meta: Meta, values: dict[str, Any]) -> 'DbConfig':
     d: dict[str, Any] = {'meta': meta}
     if 'storage_name' in values:
       d['storage_name'] = values['storage_name']
-    if 'min_required_version' in values and values['min_required_version']:
-      d['min_required_version'] = int(values['min_required_version'])
-    if 'max_required_version' in values and values['max_required_version']:
-      d['max_required_version'] = int(values['max_required_version'])
-    if 'version_date' in values:
-      d['version_date'] = values['version_date']
+    if 'echo' in values:
+      d['echo'] = values['echo']
     return DbConfig(**d)
 
 

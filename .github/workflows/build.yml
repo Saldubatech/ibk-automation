@@ -56,3 +56,7 @@ jobs:
         run: |
           poetry -n check
           poetry -n build
+      # - id: publish
+      #   name: Publish
+      #   run: |
+      #     poetry publish -r testpypi --build

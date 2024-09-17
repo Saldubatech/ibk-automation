@@ -20,6 +20,10 @@ loggers:
     handlers: [console]
   ibapi:
     level: WARNING
+  base:
+    level: WARNING
+  sqlalchemy.engine:
+    level: WARNING
   sqlite3:
     level: DEBUG
   salduba.ib_tws_proxy.backing_db.repo:

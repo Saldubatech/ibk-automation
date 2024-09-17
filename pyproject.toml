@@ -7,7 +7,9 @@ name = "salduba_corvino"
 # Possible tools:
 #   - https://github.com/mtkennerly/poetry-dynamic-versioning
 #   - https://github.com/mtkennerly/dunamai
-version = "1.0.0a3" # "1.0.0a0.post2"
+#
+# For example: `poetry version prerelease`
+version = "1.0.0a8" # "1.0.0a0.post2"
 description = "Automated Trade Management for Corvino Fund"
 authors = ["Miguel Pinilla <miguel.pinilla@saldubatech.com>"]
 readme = ["README.md"]
@@ -39,7 +41,10 @@ pixi = "^1.0.1"
 platformdirs = "^4.2.2"
 
 
-matplotlib = "^3.9.1"
+matplotlib = "^3.9.0"
+pyway = "^0.3.28"
+importlib = "^1.0.4"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 sphinx = "^7.3.7"
@@ -171,6 +176,7 @@ types-pytz = "^2024.1.0.20240417"
 types-certifi = "^2021.10.8.3"
 
 
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -178,6 +184,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 # This is what defines what "top-level" scripts will be published.
+# Example Publishing: `poetry publish -r testpypi --build`
 corvino_cli = "salduba.corvino.commands.cli:cli"
 
 [tool.pytest.ini_options]

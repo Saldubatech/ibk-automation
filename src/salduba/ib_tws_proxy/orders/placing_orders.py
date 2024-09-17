@@ -1,23 +1,19 @@
-import datetime
 import logging
-import sys
 import time
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Callable, Optional, TextIO, Tuple, Union
-from uuid import uuid4
+from typing import Callable, Optional, Union
 
-from ibapi.common import OrderId
-from ibapi.contract import Contract
-from ibapi.execution import Execution
-from ibapi.order import Order
-from ibapi.order_state import OrderState
+from ibapi.common import OrderId  # pyright: ignore
+from ibapi.contract import Contract  # pyright: ignore
+from ibapi.order import Order  # pyright: ignore
+from ibapi.order_state import OrderState  # pyright: ignore
 
+from salduba.common.persistence.alchemy.db import Db
+from salduba.corvino.persistence.movement_record import MovementRecord2
 from salduba.ib_tws_proxy.base_proxy.tws_proxy import BaseProxy
-from salduba.ib_tws_proxy.contracts.contract_repo import ContractRepo
-from salduba.ib_tws_proxy.domain.enumerations import IbOrderStatus
-from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord, OrderRepo, OrderStatusRecord
-from salduba.util.time import millis_epoch
+from salduba.ib_tws_proxy.contracts.contract_repo import ContractRecordOps
+from salduba.ib_tws_proxy.orders.OrderRepo import OrderRecord2, OrderRecordOps
 
 _logger = logging.getLogger(__name__)
 
@@ -47,7 +43,7 @@ class OpenOrderResponse:
 OrderResponse = Union[OpenOrderResponse, OrderStatusResponse]
 
 
-PlaceOrderPostProcessor = Callable[[int, Contract, OrderRecord, OrderState], OrderResponse]
+PlaceOrderPostProcessor = Callable[[int, Contract, OrderRecord2, OrderState], OrderResponse]
 
 """markdown
 See:
@@ -68,9 +64,10 @@ class OrderNotification:
 class PlaceOrders(BaseProxy):
   def __init__(
       self,
-      targets: list[Tuple[Contract, Order]],
-      orderRepo: OrderRepo,
-      contractRepo: ContractRepo,
+      db: Db,
+      targets: list[MovementRecord2],
+      orderRepo: OrderRecordOps,
+      contractRepo: ContractRecordOps,
       postProcess: PlaceOrderPostProcessor,
       host: str,
       port: int,
@@ -79,12 +76,13 @@ class PlaceOrders(BaseProxy):
       delay: Optional[float] = None,
   ) -> None:
       super().__init__(host, port, clientId, timeout=timeout)
+      self.db = db
       self.orderRepo = orderRepo
       self.contractRepo = contractRepo
-      self.targets: list[Tuple[Contract, Order]] = targets
+      self.targets: list[MovementRecord2] = targets
       self.postProcess = postProcess
       self.delay = delay
-      self.newlyOrdered: dict[int, Tuple[Contract, OrderRecord]] = {}
+      self.newlyOrdered: dict[int, MovementRecord2] = {}
       self.previousOrderMessages: dict[int, list[OrderNotification]] = {}
 
   def runCommands(self) -> None:
@@ -93,22 +91,21 @@ class PlaceOrders(BaseProxy):
       self.stop("No Orders to Place")
     else:
       _logger.debug(f"Will place {len(self.targets)} orders")
-      nowT = datetime.datetime.now()
-      for contract, order in self.targets:
+      for movement in self.targets:
         with self._lock:
           oid: Optional[int] = self.responseTracker.nextOpId()
           if oid:
-            if not order.orderId:
-              order.orderId = oid
+            if not movement.order.orderId:
+              movement.order.orderId = oid
             _logger.info(
-              f"Placing order[{oid} of type {order.orderType} for {contract.symbol}]"
-              f"with strategy: {order.algoStrategy}"
+              f"Placing order[{oid} of type {movement.order.orderType} for {movement.contract.symbol}]"
+              f"with strategy: {movement.order.algoStrategy}"
             )
-            _logger.debug(f"Placing Order: {order.__dict__}")
-            newRecord = OrderRecord.newFromOrder(str(uuid4()), millis_epoch(nowT), order)
-            self.orderRepo.insert([newRecord])
+            _logger.debug(f"Placing Order: {movement.order.__dict__}")
+            order: Order = movement.order.toOrder()
+            contract: Contract = movement.contract.to_contract()
             self.placeOrder(oid, contract, order)
-            self.newlyOrdered[oid] = (contract, newRecord)
+            self.newlyOrdered[oid] = movement
           else:
             _logger.error("Cannot Generate Order Id")
         if self.delay:
@@ -155,119 +152,19 @@ class PlaceOrders(BaseProxy):
   ) -> None:
       _logger.info(f"Receiving: openOrder[{orderId}] for {contract.symbol}")
       with self._lock:
-          pendingOrderRecord = self.newlyOrdered.get(orderId)
-      if not pendingOrderRecord:
+          pendingMovement = self.newlyOrdered.get(orderId)
+      if not pendingMovement:
           msg = f"Received openOrder for not pending orderId: {orderId}"
           _logger.info(msg)
           if orderId not in self.previousOrderMessages:
             self.previousOrderMessages[orderId] = []
           self.previousOrderMessages[orderId].append(OrderNotification(orderId, contract, order, orderState))
       else:
-          _, pendingOrder = pendingOrderRecord
           # del self.pendingOrders[orderId]
           self.partialResponse(orderId, {"openOrder": (contract, order, orderState)})
           self.completeResponse(orderId)
-          self.postProcess(orderId, contract, pendingOrder, orderState)
+          self.postProcess(orderId, contract, pendingMovement.order, orderState)
 
   def openOrderEnd(self) -> None:
       _logger.warning("Received openOrderEnd")
       self.stop("Received OpenOrderEnd")
-
-
-class OrderMonitor(BaseProxy):
-  def __init__(
-      self,
-      orderRepo: OrderRepo,
-      contractRepo: ContractRepo,
-      postProcess: Callable[[int, Contract, Order, OrderState], list[OrderResponse]],
-      host: str,
-      port: int,
-      clientId: int,
-      tIo: Optional[TextIO] = sys.stdout,
-      timeout: float = 15 * 60,
-      delay: Optional[float] = None,
-  ) -> None:
-      super().__init__(host, port, clientId, timeout=timeout)
-      self.order_repo = orderRepo
-      self.contract_repo = contractRepo
-      self.post_process = postProcess
-      self.delay = delay
-      self.tIo = tIo
-
-  def orderStatus(
-      self,
-      orderId: OrderId,
-      status: str,
-      filled: float,
-      remaining: float,
-      avgFillPrice: float,
-      permId: int,
-      parentId: int,
-      lastFillPrice: float,
-      clientId: int,
-      whyHeld: str,
-      mktCapPrice: float,
-  ) -> None:
-    orderRecord: Optional[OrderRecord] = self.order_repo.findByPermId(permId)
-    if not orderRecord:
-      msg = f"Received orderStatus for unknown clientId::orderId: {clientId}::{orderId} || {permId}"
-      _logger.warning(msg)
-      if self.tIo:
-          self.tIo.write(msg)
-      # raise Exception(msg) Not an error b/c it could have been placed from the UI or other client directly
-    else:
-      nowEpoch = millis_epoch()
-      if self.tIo:
-        self.tIo.write(
-            f"""
-    orderStatus[{orderId}] for Order [{permId}]:
-    \t{status}
-    \tfilled: {filled}
-    \tremaining: {remaining}
-    \tclientId: {clientId}
-  """
-        )
-        orderRecord.status = status  # type: ignore
-        orderRecord.at = nowEpoch
-        with self.order_repo.db as db:
-          with db.cursor():
-            self.order_repo.update(orderRecord)
-            self.order_repo.orderStatusRepo.insert(
-              [
-                OrderStatusRecord(
-                    str(uuid4()),
-                    nowEpoch,
-                    orderId,
-                    IbOrderStatus(status),
-                    filled,
-                    remaining,
-                    avgFillPrice,
-                    permId,
-                    parentId,
-                    lastFillPrice,
-                    clientId,
-                    whyHeld,
-                    mktCapPrice,
-                    orderRecord.rid,
-                )
-              ]
-            )
-
-  def execDetails(self, reqId: int, contract: Contract, execution: Execution) -> None:
-    if self.tIo:
-        self.tIo.write(
-            f"""
-      Execution[{reqId}] for Order: [{execution.permId}] for {contract.symbol}:
-      \tside: {execution.side}
-      \tfilled: {execution.shares}
-      \tcumQty: {execution.cumQty}
-      \tclientId: {execution.clientId}
-    """
-          )
-
-  def execDetailsEnd(self, reqId: int) -> None:
-    if self.tIo:
-        self.tIo.write(
-            f"""
-      Execution[{reqId}] End
-      """)

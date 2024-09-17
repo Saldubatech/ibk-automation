@@ -1,8 +1,8 @@
 cervino:
   app_id: cervino
   batch_prefix: order_batch
-  data_dir: '/Users/jmp/.cervino'
   log_file_name: logging.yml
+  allocation: C282 # Default value for Cervino
 
 input:
   input_dir: "."
@@ -23,9 +23,8 @@ output:
 
 db:
   storage_name: cervino.db
-  version_date: "2024-02-01 00:00:00.000"
-  min_required_version:
-  max_accepted_version:
+  echo: false
+
 
 tws:
   port: 7497

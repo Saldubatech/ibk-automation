@@ -2,7 +2,7 @@ import logging
 import time
 from typing import Callable, Optional
 
-from ibapi.contract import Contract, ContractDetails
+from ibapi.contract import Contract, ContractDetails  # pyright: ignore
 
 from salduba.ib_tws_proxy.base_proxy.tws_proxy import BaseProxy
 from salduba.ib_tws_proxy.operations import ErrorResponse
@@ -67,5 +67,8 @@ class LookupContractDetails(BaseProxy):
       raise Exception(msg)
     else:
       _logger.debug(f"Post Processing Contract: {contract.symbol}")
-      self.postProcess(contract, receivedDetails)
-      self.completeResponse(reqId)
+      try:
+        self.postProcess(contract, receivedDetails)
+        self.completeResponse(reqId)
+      except ValueError as v_error:
+        self.error(reqId, -1, str(v_error), '')

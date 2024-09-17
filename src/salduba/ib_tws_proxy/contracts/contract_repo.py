@@ -1,13 +1,18 @@
-import datetime
+# import datetime
 import logging
-from typing import Optional
+from typing import Callable, Optional
 
 from ibapi.contract import Contract, DeltaNeutralContract  # pyright: ignore
+from sqlalchemy import Boolean, Enum, Float, ForeignKey, Integer, String, and_
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from salduba.ib_tws_proxy.backing_db.db import TradingDB
-from salduba.ib_tws_proxy.backing_db.repo import Repo
-from salduba.ib_tws_proxy.contracts.model import ContractRecord, DeltaNeutralContractRecord
+from salduba.common.persistence.alchemy.db import UnitOfWork
+from salduba.common.persistence.alchemy.repo import RecordBase, RepoOps
+# from salduba.ib_tws_proxy.backing_db.db import TradingDB
+# from salduba.ib_tws_proxy.backing_db.repo import Repo
+# from salduba.ib_tws_proxy.contracts.model import ContractRecord, DeltaNeutralContractRecord
 from salduba.ib_tws_proxy.domain.enumerations import Currency, Exchange, SecType
+from salduba.util.time import millis_epoch
 
 _logger = logging.getLogger(__name__)
 
@@ -51,90 +56,118 @@ class ContractKey:
     return contract
 
 
-class DeltaNeutralContractRepo(Repo[DeltaNeutralContractRecord]):
-  def __init__(self, db: TradingDB):
-    super().__init__(db, DeltaNeutralContractRecord, "delta_neutral_contract")
+class DeltaNeutralContractRecord2(RecordBase):
+  __tablename__: str = "DELTA_NEUTRAL_CONTRACT"
+  con_id: Mapped[int] = mapped_column(Integer, nullable=False)
+  delta: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+  price: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
-
-def contractFromRecord(record: ContractRecord, dnc_r: Optional[DeltaNeutralContractRecord] = None) -> Contract:
-  contract: Contract = Contract()
-#  contract.expires_on = record.expires_on
-  contract.conId = record.conId
-  contract.symbol = record.symbol
-  contract.secType = record.secType
-  contract.lastTradeDateOrContractMonth = record.lastTradeDateOrContractMonth if record.lastTradeDateOrContractMonth else ''
-  contract.strike = record.strike
-  contract.right = record.right if record.right else ''
-  contract.multiplier = record.multiplier if record.multiplier else ''
-  contract.exchange = record.exchange
-  contract.currency = record.currency
-  contract.localSymbol = record.localSymbol if record.localSymbol else ''
-  contract.primaryExchange = record.primaryExchange
-  contract.tradingClass = record.tradingClass if record.tradingClass else ''
-  contract.includeExpired = record.includeExpired
-  contract.secIdType = record.secIdType if record.secIdType else ''
-  contract.secId = record.secId if record.secId else ''
-  contract.comboLegsDescrip = record.combo_legs_description if record.combo_legs_description else ''
-  if dnc_r:
+  def to_dnc(self) -> DeltaNeutralContract:
     dnc = DeltaNeutralContract()
-    dnc.conId = dnc_r.conid
-    dnc.delta = dnc_r.delta
-    dnc.price = dnc_r.price
-    contract.deltaNeutralContract = dnc
-  return contract
+    dnc.conId = self.con_id
+    dnc.delta = self.delta
+    dnc.price = self.price
+    return dnc
 
 
-class ContractRepo(Repo[ContractRecord]):
-  contract_shelf_life = 3 * 30 * 24 * 3600 * 1000
+class DeltaNeutralContractOps(RepoOps[DeltaNeutralContractRecord2]):
+  def __init__(self) -> None:
+    super().__init__(DeltaNeutralContractRecord2)
 
-  def __init__(self, db: TradingDB, deltaNeutralContractRepo: DeltaNeutralContractRepo) -> None:
-    super().__init__(db, ContractRecord, "CONTRACT")
-    self.deltaNeutralContractsRepo = deltaNeutralContractRepo
-    self.expiresAfterClause: str = "(expires_on is null or expires_on > ?)"
-    self.symbolClause: str = "(UPPER(symbol) = UPPER(?))"
-    self.secTypeClause: str = "(sec_type = ?)"
-    self.conidClause: str = "(con_id = ?)"
-    self.currencyClause: str = "(currency = ?)"
-    self.exchangeClause: str = "(exchange = ?)"
 
-  def findNominalContract(
+class ContractRecord2(RecordBase):
+  __tablename__: str = 'CONTRACT'
+
+  expires_on: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+  con_id: Mapped[int] = mapped_column(Integer, nullable=False)
+  symbol: Mapped[str] = mapped_column(String(255), nullable=False)
+  sec_type: Mapped[SecType] = mapped_column(Enum(SecType), nullable=False)
+  last_trade_date_or_contract_month: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  strike: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+  right: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  multiplier: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  lookup_exchange: Mapped[Exchange] = mapped_column(Enum(Exchange), nullable=False)
+  exchange: Mapped[Exchange] = mapped_column(Enum(Exchange), nullable=False)
+  primary_exchange: Mapped[Exchange] = mapped_column(Enum(Exchange), nullable=False)
+  currency: Mapped[Currency] = mapped_column(Enum(Currency), nullable=False)
+  local_symbol: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  trading_class: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  sec_id_type: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  sec_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  combo_legs_description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+  include_expired: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+  delta_neutral_contract_fk: Mapped[Optional[str]] = \
+    mapped_column(String(255), ForeignKey(DeltaNeutralContractRecord2.rid), nullable=True)
+  delta_neutral_contract: Mapped[Optional[DeltaNeutralContractRecord2]] = \
+    relationship(
+      DeltaNeutralContractRecord2,
+      foreign_keys=[delta_neutral_contract_fk],
+      uselist=False,
+      single_parent=True,
+      cascade="all, delete-orphan",
+      lazy=True)
+
+  def to_contract(self) -> Contract:
+    contract: Contract = Contract()
+  #  contract.expires_on = record.expires_on
+    contract.conId = self.con_id
+    contract.symbol = self.symbol
+    contract.secType = self.sec_type
+    contract.lastTradeDateOrContractMonth = \
+      self.last_trade_date_or_contract_month if self.last_trade_date_or_contract_month else ''
+    contract.strike = self.strike
+    contract.right = self.right if self.right else ''
+    contract.multiplier = self.multiplier if self.multiplier else ''
+    contract.exchange = self.exchange
+    contract.currency = self.currency
+    contract.localSymbol = self.local_symbol if self.local_symbol else ''
+    contract.primaryExchange = self.primary_exchange
+    contract.tradingClass = self.trading_class if self.trading_class else ''
+    contract.includeExpired = self.include_expired
+    contract.secIdType = self.sec_id_type if self.sec_id_type else ''
+    contract.secId = self.sec_id if self.sec_id else ''
+    contract.comboLegsDescrip = self.combo_legs_description if self.combo_legs_description else ''
+    if self.delta_neutral_contract:
+      contract.deltaNeutralContract = self.delta_neutral_contract.to_dnc()  # pyright: ignore
+    return contract
+
+
+class ContractRecordOps(RepoOps[ContractRecord2]):
+  def __init__(self) -> None:
+    super().__init__(ContractRecord2)
+
+  def find_nominal_contract(
     self,
     symbol: str,
-    ibk_type: str,
-    exchange: str,
-    alternate_exchange: Optional[str],
-    currency: str,
+    ibk_type: SecType,
+    exchange: Exchange,
+    alternate_exchange: Optional[Exchange],
+    currency: Currency,
     atTime: int,
-  ) -> Optional[ContractRecord]:
-    conditions = [
-      self.expiresAfterClause,
-      self.symbolClause,
-      self.secTypeClause,
-      self.exchangeClause if alternate_exchange is None else f"({self.exchangeClause} or {self.exchangeClause})",
-      self.currencyClause
-    ]
-    parameters = [atTime, symbol, str(ibk_type), str(exchange)] + \
-      ([str(alternate_exchange)] if alternate_exchange is not None else []) + \
-      [str(currency)]
-    _logger.debug(f"Lookup Symbol {symbol} with conditions {conditions} and parameters {parameters}")
-    found: list[ContractRecord] = self.select(parameters, conditions)
-    _logger.debug(f"\t With Result: {found}")
-    if found and len(found) > 1:
-      _logger.error(f"\tMore than one ContractRecord found for {symbol} at {exchange}:\n\t{found}")
-      raise Exception(f"Found more than one NOMINAL contract record for {symbol} with expiration later than {atTime}")
-    return found[0] if found else None
-
-  def registerUpdate(self, updated: ContractRecord) -> ContractRecord:
-    at: int = int(datetime.datetime.now().timestamp() * 1000)
-    preExisting = self.findNominalContract(
-      updated.symbol, updated.secType, updated.exchange, updated.primaryExchange, updated.currency, at
+  ) -> Callable[[UnitOfWork], Optional[ContractRecord2]]:
+    return self.find_one(
+      lambda q: q.where(
+        and_(
+          ContractRecord2.expires_on > atTime,
+          ContractRecord2.symbol == symbol,
+          ContractRecord2.sec_type == ibk_type,
+          (ContractRecord2.exchange.in_([exchange, alternate_exchange]) if alternate_exchange
+           else (ContractRecord2.exchange == exchange)),
+          ContractRecord2.currency == currency
+          )
+      )
     )
-    if preExisting:
-      preExisting.at = at
-      with self.db as db:
-        with db.cursor():
-          self.update(preExisting)
-          updated.expires_on = at + ContractRepo.contract_shelf_life
-          updated.at = at
-          self.insert([updated])
-    return updated
+
+  def register_update(self, updated: ContractRecord2) -> Callable[[UnitOfWork], ContractRecord2]:
+    def rs(uow: UnitOfWork) -> ContractRecord2:
+      at: int = millis_epoch()
+      pre_existing = self.find_nominal_contract(
+        updated.symbol,
+        updated.sec_type,
+        updated.exchange,
+        updated.primary_exchange,
+        updated.currency, at)(uow)
+      if pre_existing:
+        pre_existing.at = at
+      return updated
+    return rs
