@@ -11,7 +11,6 @@ The complete configuration, with its default values  and a brief explanation is:
   cervino:
     app_id: cervino # The name of the application
     batch_prefix: order_batch # The prefix to use in naming the batch of orders
-    data_dir: '/Users/jmp/.cervino' # The folder where the internal database will be stored
     log_file_name: logging.yml # The name of the logging configuration to use.
     allocation: XXXX # The name of the portfolio to allocate the orders for the batch.
 
