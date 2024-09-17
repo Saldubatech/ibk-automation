@@ -108,13 +108,19 @@ sample_errors = {
 sample_movements = [movementProbe("TestBatch", i) for i in range(1, 7)]
 
 
-def check_sheet(sheets: list[str], columns: list[str], probes: list[dict[str, Any]], sheet: Worksheet) -> None:
+def check_sheet(
+    sheets: list[str], columns: list[str], probes: list[dict[str, Any]], sheet: Worksheet, date_compare: bool = False) -> None:
   assert sheet
   assert sheet.max_row == len(probes)+1
   for c_idx, h in enumerate(columns):
     assert sheet.cell(row=1, column=c_idx+1).value == h
     for r_idx, ir in enumerate(probes):
-      assert sheet.cell(row=r_idx+2, column=c_idx+1).value == ir[h], f"Checking {h} in row {r_idx+2} against {ir}"
+      cell_value = sheet.cell(row=r_idx+2, column=c_idx+1).value
+      if h in ['expires_on', 'at'] and date_compare:
+        assert cell_value == datetime.datetime.fromtimestamp(ir[h]/1e3).strftime("%Y-%m-%d %H:%M:%S"), \
+          f"Checking {h} in row {r_idx+2} with value {cell_value} against {ir[h]}"
+      else:
+        assert cell_value == ir[h], f"Checking {h} in row {r_idx+2} with value {cell_value} against {ir[h]}"
 
 
 def test_input() -> None:
@@ -157,21 +163,21 @@ def test_missing() -> None:
 
 def test_known() -> None:
   probe = ResultsBatch(
-    datetime.datetime.now(),
-    "Testing Knowns render",
-    [],
-    sample_contracts,
-    [],
-    [],
-    [],
-    {}
+    atTime=datetime.datetime.now(),
+    message="Testing Knowns render",
+    inputs=[],
+    known=sample_contracts,
+    updated=[],
+    unknown=[],
+    movements_placed=[],
+    errors={}
   )
   probe.write_xlsx()
   result = load_workbook(probe.filename)
   assert len(result.sheetnames) == 1
   assert result.sheetnames[0] == probe.known_sheet
   sheet = result[probe.known_sheet]
-  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet)
+  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet, True)
 
 
 def test_updated() -> None:
@@ -190,7 +196,7 @@ def test_updated() -> None:
   assert len(result.sheetnames) == 1
   assert result.sheetnames[0] == probe.updated_sheet
   sheet = result[probe.updated_sheet]
-  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet)
+  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet, True)
 
 
 def test_orders() -> None:
@@ -273,10 +279,10 @@ def test_all_together() -> None:
   check_sheet([probe.input_sheet], input_columns, [r.__dict__ for r in probe.inputs], sheet)
 
   sheet = result[probe.known_sheet]
-  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet)
+  check_sheet([probe.known_sheet], contract_columns, [r.__dict__ for r in probe.known], sheet, True)
 
   sheet = result[probe.updated_sheet]
-  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet)
+  check_sheet([probe.updated_sheet], contract_columns, [r.__dict__ for r in probe.updated], sheet, True)
 
   sheet = result[probe.missing_sheet]
   check_sheet([probe.missing_sheet], input_columns, [r.__dict__ for r in probe.unknown], sheet)
