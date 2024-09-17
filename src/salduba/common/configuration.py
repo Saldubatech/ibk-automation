@@ -1,5 +1,7 @@
 
 import logging
+import logging.handlers
+import os
 import shutil
 from contextlib import AbstractContextManager
 from dataclasses import dataclass, field
@@ -62,35 +64,62 @@ class Meta:
   def config_file_path(self) -> Path:
     return self.resolve_configuration_file(self.config_file_name, self.default_config_file_context)
 
-  def resolve_configuration_file(
-      self,
-      file_name: str,
-      default_contents: AbstractContextManager[Path]) -> Path:
+  def resolve_configuration_dir(self) -> Path:
     config_dir_candidates: list[Path] = [
-          self.config_dir_path,
-          self.home,
-          Path(self.platform.user_config_dir),
-          Path(self.platform.user_documents_dir),
-          Path(self.platform.user_desktop_dir),
-          self.cwd
-        ]
+      self.config_dir_path,
+      self.home,
+      Path(self.platform.user_config_dir),
+      Path(self.platform.user_documents_dir),
+      Path(self.platform.user_desktop_dir),
+      self.cwd
+    ]
     existing_config_dirs: list[Path] = [cd for cd in config_dir_candidates if cd.is_dir()]
-    config_file_candidates = [
-      cf for cf in [cd.joinpath(file_name) for cd in existing_config_dirs] if cf.is_file()]
-    if config_file_candidates:
-      file_path = config_file_candidates[0]
-    else:
-      config_dir = existing_config_dirs[0]
-      if config_dir == self.home:
-        self.config_dir_path.mkdir()
-        config_dir = self.config_dir_path
-      file_path = config_dir.joinpath(file_name)
-    if not file_path.exists():
-      if not file_path.parent.exists():
-        file_path.parent.mkdir()
+    candidate = existing_config_dirs[0]
+    if candidate == self.home:
+      os.makedirs(self.config_dir_path)
+    return self.config_dir_path
+
+  def resolve_configuration_file(self, file_name: str, default_contents: AbstractContextManager[Path]) -> Path:
+    config_dir = self.resolve_configuration_dir()
+    candidate = config_dir.joinpath(file_name)
+    if candidate.is_dir():
+      raise Exception(f"Expected file at: {candidate} but found directory")
+    if not candidate.exists():
+      if not candidate.parent.exists():
+        os.makedirs(candidate.parent)
       with default_contents as default_file:
-        shutil.copyfile(default_file, file_path)
-    return file_path
+        shutil.copyfile(default_file, candidate)
+    return candidate
+
+  # def resolve_configuration_file(
+  #     self,
+  #     file_name: str,
+  #     default_contents: AbstractContextManager[Path]) -> Path:
+  #   config_dir_candidates: list[Path] = [
+  #         self.config_dir_path,
+  #         self.home,
+  #         Path(self.platform.user_config_dir),
+  #         Path(self.platform.user_documents_dir),
+  #         Path(self.platform.user_desktop_dir),
+  #         self.cwd
+  #       ]
+  #   existing_config_dirs: list[Path] = [cd for cd in config_dir_candidates if cd.is_dir()]
+  #   config_file_candidates = [
+  #     cf for cf in [cd.joinpath(file_name) for cd in existing_config_dirs] if cf.is_file()]
+  #   if config_file_candidates:
+  #     file_path = config_file_candidates[0]
+  #   else:
+  #     config_dir = existing_config_dirs[0]
+  #     if config_dir == self.home:
+  #       os.makedirs(self.config_dir_path)
+  #       config_dir = self.config_dir_path
+  #     file_path = config_dir.joinpath(file_name)
+  #   if not file_path.exists():
+  #     if not file_path.parent.exists():
+  #       os.makedirs(file_path.parent)
+  #     with default_contents as default_file:
+  #       shutil.copyfile(default_file, file_path)
+  #   return file_path
 
   def resolve_storage_file(self, storage_name: str, override_dir: Optional[str] = None) -> Path:
     if override_dir:
@@ -115,7 +144,7 @@ class Meta:
           storage_path = in_existing_dirs[0]
 
     if not storage_path.parent.exists():
-      storage_path.parent.mkdir()
+      os.makedirs(storage_path.parent)
     if not storage_path.is_file():
       storage_path.touch()
     return storage_path
@@ -130,6 +159,27 @@ class Meta:
 
 
 defaultMeta = Meta()
+
+
+class LogFileHandler(logging.handlers.RotatingFileHandler):
+  def __init__(
+      self,
+      filename: str,
+      mode: str = 'a',
+      maxBytes: int = 0,
+      backupCount: int = 0,
+      encoding: Optional[str] = None,
+      delay: bool = False,
+      errors: Optional[str] = None) -> None:
+    super().__init__(
+      defaultMeta.resolve_storage_file(filename),
+      mode,
+      maxBytes,
+      backupCount,
+      encoding,
+      delay,
+      errors
+    )
 
 
 @dataclass

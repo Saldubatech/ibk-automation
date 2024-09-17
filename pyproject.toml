@@ -9,7 +9,7 @@ name = "salduba_corvino"
 #   - https://github.com/mtkennerly/dunamai
 #
 # For example: `poetry version prerelease`
-version = "1.0.0a6" # "1.0.0a0.post2"
+version = "1.0.0a8" # "1.0.0a0.post2"
 description = "Automated Trade Management for Corvino Fund"
 authors = ["Miguel Pinilla <miguel.pinilla@saldubatech.com>"]
 readme = ["README.md"]
@@ -44,6 +44,7 @@ platformdirs = "^4.2.2"
 matplotlib = "^3.9.0"
 pyway = "^0.3.28"
 importlib = "^1.0.4"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 sphinx = "^7.3.7"

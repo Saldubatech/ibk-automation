@@ -1,8 +1,8 @@
 cervino:
   app_id: cervino
   batch_prefix: order_batch
-  data_dir: '/Users/jmp/.cervino'
   log_file_name: logging.yml
+  allocation: C282 # Default value for Cervino
 
 input:
   input_dir: "."
