@@ -157,7 +157,7 @@ def record_to_order() -> Tuple[OrderRecord2, Order]:
 
 
 def test_fields_present() -> None:
-  target = newOrderRecord(22, 222, datetime.now(), "orderRef", False, 33333)
+  target = newOrderRecord(22, 222, datetime.now(), "allocation", "orderRef", False, 33333)
   missing: list[str] = []
   keys = target.__dict__.keys()
   for k in (c.key for c in inspect(OrderRecord2).columns
