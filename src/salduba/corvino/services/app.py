@@ -261,6 +261,7 @@ class CorvinoApp:
     input_rows: list[InputRow],
     uow: UnitOfWork,
     batch: Optional[str] = None,
+    allocation: Optional[str] = None,
     execute_trades: bool = False
   ) -> ResultsBatch:
     nowT = datetime.datetime.now()
@@ -281,10 +282,10 @@ class CorvinoApp:
         )
     else:
       movements: list[MovementRecord2] = \
-        self._prepare_movements(batch, nowT, input_rows, execute_trades, uow, override_exchange=Exchange.SMART)
+        self._prepare_movements(batch, allocation, nowT, input_rows, execute_trades, uow, override_exchange=Exchange.SMART)
       self.order_repo.insert([m.order for m in movements])(uow)
       self.movements_repo.insert(movements)(uow)
-      errors = self._order_placement(batch, movements)
+      errors: Optional[dict[str, list[ErrorResponse]]] = self._order_placement(batch, movements)
       movements_for_batch: list[MovementRecord2] = list(self.movements_repo.find_for_batch(batch)(uow))
       if (errors) and ('error' in errors) and bool(errors['error']):
         return ResultsBatch(
@@ -311,6 +312,7 @@ class CorvinoApp:
   def _prepare_movements(
       self,
       batch: str,
+      allocation: Optional[str],
       nowT: datetime.datetime,
       input_rows: list[InputRow],
       execute_trades: bool,
@@ -324,12 +326,14 @@ class CorvinoApp:
         if override_exchange:
           cr.exchange = override_exchange
         order: OrderRecord2 = newOrderRecord(r.trade, cr.con_id,
-                                             nowT=nowT, orderRef=batch + "::" + r.ticker, transmit=execute_trades)
+                                             nowT=nowT, allocation=allocation,
+                                             orderRef=batch + "::" + r.ticker, transmit=execute_trades)
         movement: MovementRecord2 = MovementRecord2(
             rid=str(uuid4()),
             at=millis_epoch(),
             status=MovementStatus.NEW,
             batch=batch,
+            allocation=allocation,
             ticker=r.ticker,
             trade=r.trade,
             nombre=f"{cr.symbol}, {cr.sec_type}, {cr.local_symbol}",  # should be 'name',

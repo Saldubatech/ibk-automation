@@ -65,6 +65,7 @@ def test_place_orders(setup_db: Db) -> None:
       result = underTest.place_orders(
         probe,
         batch=f"TestBatch_{datetime.datetime.now().timestamp()}",
+        allocation="SomeAllocation",
         execute_trades=False,
         uow=uow
       )

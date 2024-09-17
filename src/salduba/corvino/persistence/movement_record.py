@@ -49,6 +49,7 @@ class MovementRecord2(RecordBase):
   __tablename__: str = 'MOVEMENT'
   status: Mapped[MovementStatus] = mapped_column(Enum(MovementStatus), nullable=False)
   batch: Mapped[str] = mapped_column(String(255), nullable=False)
+  allocation: Mapped[str] = mapped_column(String(255), nullable=True)
   ticker: Mapped[str] = mapped_column(String(255), nullable=False)
   trade: Mapped[int] = mapped_column(Integer, nullable=False)
   nombre: Mapped[str] = mapped_column(String(255), nullable=False)

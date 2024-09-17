@@ -9,7 +9,7 @@ name = "salduba_corvino"
 #   - https://github.com/mtkennerly/dunamai
 #
 # For example: `poetry version prerelease`
-version = "1.0.0a5" # "1.0.0a0.post2"
+version = "1.0.0a6" # "1.0.0a0.post2"
 description = "Automated Trade Management for Corvino Fund"
 authors = ["Miguel Pinilla <miguel.pinilla@saldubatech.com>"]
 readme = ["README.md"]
@@ -183,6 +183,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 # This is what defines what "top-level" scripts will be published.
+# Example Publishing: `poetry publish -r testpypi --build`
 corvino_cli = "salduba.corvino.commands.cli:cli"
 
 [tool.pytest.ini_options]

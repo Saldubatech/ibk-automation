@@ -13,6 +13,7 @@ The complete configuration, with its default values  and a brief explanation is:
     batch_prefix: order_batch # The prefix to use in naming the batch of orders
     data_dir: '/Users/jmp/.cervino' # The folder where the internal database will be stored
     log_file_name: logging.yml # The name of the logging configuration to use.
+    allocation: XXXX # The name of the portfolio to allocate the orders for the batch.
 
   input:
     sheet_name: Movements # The name of the sheet in the input file to use if it is an excel file

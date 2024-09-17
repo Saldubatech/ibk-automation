@@ -85,7 +85,7 @@ class InputParser:
       if len(df) == 0:
         raise Exception(f"No trades were read from file {movements_path}")
       if len(df[df['Trade'] == 0]) != 0:
-        raise Exception(f"An input trade if for zero quantity, likely an error: {df[df['Trade'] == 0]}")
+        _logger.info(f"An input trade if for zero quantity, likely an error: {df[df['Trade'] == 0]}")
       return [InputRow(
         r['Ticker'],  # pyright: ignore
         r['Trade'],  # pyright: ignore

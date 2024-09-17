@@ -1,4 +1,3 @@
-import datetime
 import logging
 import shutil
 from contextlib import AbstractContextManager
@@ -213,13 +212,8 @@ class OutputConfig:
 class CervinoConfig:
   data_dir: Path
   meta: Meta = field(default_factory=(lambda : defaultMeta))
-  batch_prefix: str = 'order_batch'
-
-  @staticmethod
-  def batch_name(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
-    assert isinstance(value, str) or value is None
-    nowT = datetime.datetime.now()
-    return value if value else f"{Defaults.cervino.batch_prefix}_{nowT.strftime('%Y%m%d%H%M%S')}"
+  batch_prefix: str = field(default_factory=(lambda : "order_batchLALA"))
+  allocation: str = field(default_factory=(lambda : ""))
 
   @staticmethod
   def configure(meta: Meta, values: dict[str, Any]) -> 'CervinoConfig':
@@ -230,7 +224,10 @@ class CervinoConfig:
       d['data_dir'] = meta.home.joinpath(f".{meta.app_id}")
     if 'batch_prefix' in values:
       d['batch_prefix'] = values['batch_prefix']
-    return CervinoConfig(**d)
+    if 'allocation' in values:
+      d['allocation'] = values['allocation']
+    cfg = CervinoConfig(**d)
+    return cfg
 
 
 @dataclass

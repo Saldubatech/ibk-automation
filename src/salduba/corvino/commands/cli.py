@@ -2,10 +2,11 @@ import logging
 from datetime import datetime
 from importlib import metadata
 from pathlib import Path
+from typing import Any
 
 import click
 
-from salduba.common.configuration import CervinoConfig, Cfg, InputConfig, Meta, defaultMeta
+from salduba.common.configuration import Cfg, InputConfig, Meta, defaultMeta
 from salduba.common.persistence.alchemy.db import Db, UnitOfWork
 from salduba.common.persistence.alchemy.repo import RecordBase
 from salduba.common.persistence.pyway.migrating import init_db
@@ -147,13 +148,33 @@ def lookup_contracts(ctx: click.Context, input_movements_file: str) -> None:
       click.echo(rs.message)
 
 
+def batch_name(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
+  assert isinstance(value, str) or value is None
+  nowT = datetime.now()
+  configured: Cfg = ctx.obj['config']
+  return value if value else f"{configured.cervino.batch_prefix}_{nowT.strftime('%Y%m%d%H%M%S')}"
+
+
+def resolved_allocation(ctx: click.Context, param: click.Option | click.Parameter, value: Any) -> str:
+  assert isinstance(value, str) or value is None
+  configured: Cfg = ctx.obj['config']
+  return value if value else configured.cervino.allocation
+
+
 @cli.command()
 @click.option(
   "--batch",
   type=str,
   required=False,
   help="The name of the batch to use for these orders, default: Date with seconds (Year-Month-Day:Hour:min:secs)",
-  callback=CervinoConfig.batch_name
+  callback=batch_name
+)
+@click.option(
+  "--allocation",
+  type=str,
+  required=False,
+  help="The Allocation of the batch of orders to a portfolio. Default from Configuration File",
+  callback=resolved_allocation
 )
 @click.option(
   "--execute-trades",
@@ -171,8 +192,10 @@ def lookup_contracts(ctx: click.Context, input_movements_file: str) -> None:
   callback=InputConfig.input_path
 )
 @click.pass_context
-def place_orders(ctx: click.Context, batch: str, execute_trades: bool, input_movements_file: str) -> None:
-  ctx.obj['config'].input.file_name = input_movements_file
+def place_orders(ctx: click.Context, batch: str, allocation: str, execute_trades: bool, input_movements_file: str) -> None:
+  configured: Cfg = ctx.obj['config']
+  configured.input.file_name = input_movements_file
+  configured.cervino.allocation = allocation
   app: CorvinoApp = ctx.obj['app']
   with app.db.for_work() as uow:
     rs = _do_lookup_contracts(app, ctx.obj['config'], uow)
@@ -191,7 +214,7 @@ def place_orders(ctx: click.Context, batch: str, execute_trades: bool, input_mov
 
       if confirmation:
         try:
-          order_rs = app.place_orders(rs.inputs, uow, batch, execute_trades)
+          order_rs = app.place_orders(rs.inputs, uow, batch, allocation, execute_trades)
           order_rs.write_xlsx()
           error_keys = [k.upper() for k in rs.errors.keys()]
           if "ERRORS" in error_keys:
