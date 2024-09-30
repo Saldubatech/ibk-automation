@@ -9,7 +9,7 @@ name = "salduba_corvino"
 #   - https://github.com/mtkennerly/dunamai
 #
 # For example: `poetry version prerelease`
-version = "1.0.0a9" # "1.0.0a0.post2"
+version = "1.0.0a10" # "1.0.0a0.post2"
 description = "Automated Trade Management for Corvino Fund"
 authors = ["Miguel Pinilla <miguel.pinilla@saldubatech.com>"]
 readme = ["README.md"]
