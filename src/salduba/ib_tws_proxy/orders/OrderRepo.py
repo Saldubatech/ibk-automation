@@ -376,7 +376,7 @@ def newOrderRecord(
     orderType=OrderType.MKT,
     lmtPrice=None,
     auxPrice=None,
-    tif=None,
+    tif='DAY',
     ocaGroup=None,
     ocaType=None,
     orderRef=orderRef,
